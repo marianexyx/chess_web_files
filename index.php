@@ -4,7 +4,11 @@
 		<meta charset="utf-8"/>
 		<title>Budgames - chess</title>
 		<meta name="description" content="" />
+		
 		<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+		
 		<script src="js/swfobject.js"></script>
 		<!-- <script src="js/websocket.js"></script>  // nie mogę używać php w javascripcie (jakoś tam się da, ale to jest magia)-->
 		<script src="js/functions.js"></script>
@@ -95,8 +99,41 @@
 					</script>
 					
 					<script> 
-						$(function() { //odpala funkcje dopiero po zaladowaniu sie strony
+						$(function() { //odpala funkcje dopiero po zaladowaniu sie strony 
 							var debugTextArea = document.getElementById("debugTextArea"); //konsola powiadomień
+						});
+						
+						$(function promotion() {
+							$("#dialog-promote").dialog({
+								autoOpen: false, 
+								buttons: {
+									'hetman': function() {
+										websocket.send("promote_to: q"); 
+										console.log('sent to core: promote_to: q');
+										$(this).dialog("close");}, //queen
+									'goniec': function() {
+										websocket.send("promote_to: b"); 
+										console.log('sent to core: promote_to: b');
+										$(this).dialog("close");}, //bishop
+									'skoczek': function() {
+										websocket.send("promote_to: k"); 
+										console.log('sent to core: promote_to: k');
+										$(this).dialog("close");}, //knight
+									'wieża': function() {
+										websocket.send("promote_to: r"); 
+										console.log('sent to core: promote_to: r');
+										$(this).dialog("close");} //rook
+								},
+								title: "Promocja",
+								position: {
+									my: "center",
+									at: "center",
+									of: window
+								}
+							});
+							$( "#opener-promote" ).click(function() {
+								$( "#dialog-promote" ).dialog( "open" );
+							});
 						});
 						
 						$(function(white_player_name, black_player_name, js_loginUzytkownika){ // ta funkcja jest tu prewencyjnie, bo istneiej to przy okazji checków
@@ -153,11 +190,12 @@
 									//console.log("reconnect to websocket server");
 								};
 								
-								websocket.onmessage = function (evt) {
+								websocket.onmessage = function (evt) { //wiadomości przychodzące websocketami
 									var new_player_nickname;
 									var what_is_checked;
 									var checked_value;
 									console.log('msg from websckt be4 case: ', evt.data); 
+									//poniższe "if'y" aż do switcha są oddzielnie poza switchem bo trzeba sprawdzić poszczególne części wiadomości
 									if (evt.data.substr(0,9) == 'new_white' || evt.data.substr(0,9) == 'new_black'){ //jeżeli wiadomość zaczyna się od "nowy-gracz"
 										new_player_nickname = evt.data.substr(10); //wyciągnij z wiadomości nick gracza
 										if (evt.data.substr(0,9) == 'new_white')
@@ -224,19 +262,36 @@
 										case 'connectionMaintained':
 										console.log("connection with weboscket server maintained");
 										break;
+										
+										case 'promote_to_what': //test na promocję zakończyony poprawnie. na co promować?
+										if (document.getElementById("white_player").value == js_loginUzytkownika && whose_turn == "white_turn")
+										{
+											console.log("show promotion buttons window");
+											promotion();
+										}
+										else if (document.getElementById("black_player").value == js_loginUzytkownika && whose_turn == "black_turn")
+										{
+											console.log("show promotion buttons window");
+											promotion();
+										}
+										break;
+										
 										case 'new_game': //jeżeli chenard server odpowie "OK" to znaczy że włączył nową grę
 										debugToGameTextArea("Nowa gra rozpoczęta. Białe wykonują ruch.");
 										document.getElementById("start_game").disabled = true;
 										white_turn(); 
 										break;
+										
 										case 'white_won': //białe wygrały
 										switch_turn("end_game");
 										debugToGameTextArea("Koniec gry: Białe wygrały");
 										break;
+										
 										case 'black_won': //czarne wygrały
 										switch_turn("end_game");
 										debugToGameTextArea("Koniec gry: Czarne wygrały");
 										break;
+										
 										case 'new_white': 
 										if (new_player_nickname == "Biały") { //jak nikt już nie jest zalogowany na białym, tj. gracz który był na białym powstał
 											document.getElementById("white_player").value = "Biały"; //to białe zostaje "Biały"m
@@ -265,6 +320,7 @@
 											document.getElementById("start_game").disabled = false; //to da się wcisnąć start
 										}
 										break;
+										
 										case 'new_black':
 										if (new_player_nickname == "Czarny"){ //jak nikt nie zalogowany na czarnym
 											document.getElementById("black_player").value = "Czarny";
@@ -293,10 +349,12 @@
 											document.getElementById("start_game").disabled = false; //to da się wcisnąć start
 										}
 										break;
+										
 										case 'draw': //remis
 										// !!! co dalej?? !!
 										debugToGameTextArea("Koniec gry: Remis");
 										break;
+										
 										case 'whose_turn': //gdy core powie nam, że wartość tury się zmieniła
 										if (whose_turn == "white_turn"){ //jeżeli teraz przypada tura białego
 											//console.log("White player turn. Waiting for move...");
@@ -343,6 +401,7 @@
 										}
 										else console.log('ERROR: WRONG whose_turn VARIABLE');
 										break;
+										
 										case 'checked': // !!!sprawdzić "new_player" pod kątem funkcji do skopiowania. brak sprawdzania dla ludzi niezalogowanych 
 										if (what_is_checked == 'checked_wp_is'){ //jeżeli sprawdzana wartośc w core to gracz biały...
 											white_player_name = checked_value;	
@@ -350,7 +409,7 @@
 											if (document.getElementById("white_player").value != "Biały") { //...i jeżeli na białym jest jakiś gracz...
 												document.getElementById('white_player').disabled = true; //...to nikt nie może usiąść na białym...
 												if(white_player_name == js_loginUzytkownika) //...i jeżeli sprawdzany gracz w core to gracz będący zalogowanym...
-													document.getElementById("stand_up_white").disabled = false; //...to przycisk do wstawania jest aktywny.
+												document.getElementById("stand_up_white").disabled = false; //...to przycisk do wstawania jest aktywny.
 												console.log('Biały gracz = jakiś nick (!="Biały") :',white_player_name);  
 											}
 											else if (document.getElementById("white_player").value == "Biały"){  //jednak jeżeli nikt nie siedzi na białym...
@@ -367,7 +426,7 @@
 											if (document.getElementById("black_player").value != "Czarny") { //...i jeżeli na czarnym jest jakiś gracz...
 												document.getElementById('black_player').disabled = true; //...to nikt nie może usiąść na czarnym...
 												if(black_player_name == js_loginUzytkownika) //...i jeżeli sprawdzany gracz w core to gracz będący zalogowanym...
-													document.getElementById("stand_up_black").disabled = false; //...to przycisk do wstawania jest aktywny.
+												document.getElementById("stand_up_black").disabled = false; //...to przycisk do wstawania jest aktywny.
 												console.log('Czarny gracz = jakiś nick (!="Czarny") :',black_player_name);  
 											}
 											else if (document.getElementById("black_player").value == "Czarny"){ <? //jednak jeżeli nikt nie siedzi na czarnym...
@@ -385,9 +444,11 @@
 											//console.log('ERROR! WRONG checked ENUM VALUE (this should never be possible...)');
 										}
 										break;
+										
 										case 'error': //chenard dał inną odpowiedź
 										debugToGameTextArea('ERROR: Niedozwolony ruch');
 										break;	
+										
 										default: //webscoket dał inną odpowiedź
 										console.log( 'ERROR! Wrong WebSocket message received: ' + evt.data );
 									}
@@ -509,6 +570,10 @@
 						<input type="text" id="pieceTo" maxlength="2" size="2" onkeydown="if(event.keyCode==13)sendMessage();" disabled />&nbsp;&nbsp;
 						<button id="movePieceButton" onClick="sendMessage();" disabled >Wyślij</button>
 					</p>
+					
+					<!--<div id="dialog-promote" title="promotion">Promuj piona na:</div> --><!-- testy okienka poup z buttonami-->
+					<!--<button id="opener-promote">Promocja</button> <!--  okienko popup z buttonami-->
+					
 				</td>  
 				<td align="center" valign="top">
 					<table width="100%" cellpadding="15">
