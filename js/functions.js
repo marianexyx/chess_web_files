@@ -1,119 +1,108 @@
-var whose_turn; 
-var white_player_name;
-var black_player_name;
-var js_loginUzytkownika 
+/*var whose_turn; 
+var whitePlayerName;
+var blackPlayerName;
+var js_loginUzytkownika */ //TODO: sprawdzić czy gdzieś tego nie powtarzam
 
-function new_white_name(){
-	if ( websocket != null ){ // jeżeli połączenie websocketowe jest aktywne (a może nie być?)
-		// !! tutaj wstawić funkcje sprawdzającą nickname aktualnych graczy z core'a !!
-		// !! oraz sprawdzanie czy gracz jeszcze jest zalogowany !! (nie robi się to z każdym wywołaniem funkcji?)
-		//if ($getBlackPlayer != $loginUzytkownika){ 
-		//var userLogin = "<? echo $loginUzytkownika ?>";
-		websocket.send("white_player_name "+ js_loginUzytkownika);
-		console.log( "string sent: white_player_name "+ js_loginUzytkownika);
+function gameInProgress(move, turn, status)
+{
+	if (turn == "wt")
+	{
+		wiadomoscNaTextArea = "Czarny wykonał ruch: " + movement_made + ". Ruch wykonują Białe.";
+		debugToGameTextArea(wiadomoscNaTextArea);
 	}
-	else console.log("ERROR! websocket == null");
+	else if (turn == "bt")
+	{
+		wiadomoscNaTextArea = "Biały wykonał ruch: " + movement_made + ". Ruch wykonują Czarne.";
+		debugToGameTextArea(wiadomoscNaTextArea);
+	}
+	else console.log('ERROR. Unknown turn value = ' + turn);
+	
+	switchTurn(turn); 
 }
 
-function new_black_name(){
-	if ( websocket != null ){ // jeżeli połączenie websocketowe jest aktywne (a może nie być?)
-		// !! tutaj wstawić funkcje sprawdzającą nickname aktualnych graczy z core'a !!
-		// !! oraz sprawdzanie czy gracz jeszcze jest zalogowany !! (nie robi się to z każdym wywołaniem funkcji?)
-		//if ($getBlackPlayer != $loginUzytkownika){ 
-		//var userLogin = "<? echo $loginUzytkownika ?>";
-		websocket.send("black_player_name "+ js_loginUzytkownika);
-		console.log( "string sent: black_player_name "+ js_loginUzytkownika);
+function switchTurn(whoseTurn)
+{
+	if (whoseTurn == "wt")
+	{ 
+		//console.log("White player turn. Waiting for move...");
+		if (document.getElementById("whitePlayer").value == js_loginUzytkownika) 
+		{
+			document.getElementById('pieceFrom').disabled = false;
+			document.getElementById('pieceTo').disabled = false;
+			document.getElementById('movePieceButton').disabled = false; //TODO: przycisk do wysyłania ma działać dodatkowo tylko gdy oba powyższe pola są dobrze wypełnione
+			//TODO: zezwolenie na core by ruch mógł teraz wykonać tylko biały
+			console.log("(white info) Ruch wykonuje teraz: Biały");
+		}
+		else if (document.getElementById("blackPlayer").value = js_loginUzytkownika) // zmiany w panelu czarnego gracza
+		{
+			document.getElementById('pieceFrom').disabled = true;
+			document.getElementById('pieceTo').disabled = true;
+			document.getElementById('movePieceButton').disabled = true; //TODO: przycisk do wysyłania ma działać dodatkowo tylko gdy oba powyższe pola są dobrze wypełnione
+			//TODO: zezwolenie na core by ruch mógł teraz wykonać tylko biały
+			console.log("(black info) Ruch wykonuje teraz: Biały");
+		}
+		else console.log("ERROR: STATEMENT DOESNT MET- NO LOGGED PLAYER AVAILABLE (PLAYERS NICK VALUES ARE EMPTY- SHOULDNT BE POSSIBLE)");
 	}
-	else console.log("ERROR! websocket == null");
+	else if (whose_turn == 'bt') //jeżeli teraz przypada tura białego
+	{
+		//console.log('Black player turn. Waiting for move...');
+		if (document.getElementById('whitePlayer').value == js_loginUzytkownika) 
+		{
+			document.getElementById('pieceFrom').disabled = true;
+			document.getElementById('pieceTo').disabled = true;
+			document.getElementById('movePieceButton').disabled = true; //TODO: przycisk do wysyłania ma działać dodatkowo tylko gdy oba powyższe pola są dobrze wypełnione
+			//TODO: zezwolenie na core by ruch mógł teraz wykonać tylko czarny
+			console.log("(white info) Ruch wykonuje teraz: Czarny");
+		}
+		else if (document.getElementById("blackPlayer").value == js_loginUzytkownika) 
+		{
+			document.getElementById('pieceFrom').disabled = false;
+			document.getElementById('pieceTo').disabled = false;
+			document.getElementById('movePieceButton').disabled = false; //TODO: przycisk do wysyłania ma działać dodatkowo tylko gdy oba powyższe pola są dobrze wypełnione
+			//TODO: zezwolenie na core by ruch mógł teraz wykonać tylko czarny
+			console.log("(black info) Ruch wykonuje teraz: Czarny");
+		}
+		else console.log('ERROR: STATEMENT DOESNT MET- NO LOGGED PLAYER AVAILABLE (PLAYERS NICK VALUES ARE EMPTY- SHOULDNT BE POSSIBLE)');
+	}
+	else if (whose_turn == 'nt')
+	{
+		console.log('End of game. No turn available. Waiting for new game...');	
+		document.getElementById('pieceFrom').disabled = true;
+		document.getElementById('pieceTo').disabled = true;
+		document.getElementById('movePieceButton').disabled = true;
+	}
+	else console.log('ERROR: WRONG whoseTurn VARIABLE');
 }
 
-function leave_white(){ //zalogowany na białym opuszcza grę
-	// ! dodać alert z zapytaniem czy na pewno chce opuścić grę !
-	// ! jeżeli gracz uciekł, to drugi gracz który został ma mozliwość zakończenia gry, badź grania dalej z robotem(później) !
-	// ! sprawdź czy biały to mój login !
-	console.log("bialy wstawaj");
-	if ( websocket != null ){ // jeżeli połączenie websocketowe jest aktywne (a może nie być?)
-		// !! tutaj wstawić funkcje sprawdzającą nickname aktualnych graczy z core'a !!
-		// !! oraz sprawdzanie czy gracz jeszcze jest zalogowany !! (nie robi się to z każdym wywołaniem funkcji?)
-		//if ($getBlackPlayer != $loginUzytkownika){ 
-		websocket.send("white_player_name Biały");
-		console.log("string sent: white_player_name Biały");
+function promoteToWhat()
+{
+	if (document.getElementById("whitePlayer").value == js_loginUzytkownika /*&& whose_turn == "whiteTurn" //TODO: sprawdzać gracza po sockecie WS */)
+	{
+		console.log("show promotion buttons window");
+		promotion();
 	}
-	else console.log("ERROR! websocket == null");
+	else if (document.getElementById("blackPlayer").value == js_loginUzytkownika /*&& whose_turn == "black_turn" //TODO: sprawdzać gracza po sockecie WS */)
+	{
+		console.log("show promotion buttons window");
+		promotion();
+	}
 }
 
-function leave_black(){ //zalogowany na czarnym opuszcza grę
-	// ! dodać alert z zapytaniem czy na pewno chce opuścić grę !
-	// ! jeżeli gracz uciekł, to drugi gracz który został ma mozliwość zakończenia gry, badź grania dalej z robotem(później) !
-	// ! sprawdź czy czarny to mój login !
-	console.log ("czarny wstawaj");
-	if ( websocket != null ){ // jeżeli połączenie websocketowe jest aktywne (a może nie być?) a co jeśli nie?
-		// !! tutaj wstawić funkcje sprawdzającą nickname aktualnych graczy z core'a !!
-		// !! oraz sprawdzanie czy gracz jeszcze jest zalogowany !! (nie robi się to z każdym wywołaniem funkcji?)
-		//if ($getBlackPlayer != $loginUzytkownika){ 
-		websocket.send("black_player_name Czarny");
-		console.log("string sent: black_player_name Czarny");
+function endOfGame(endType)
+{
+	if (endType == "whiteWon")
+	{
+		switchTurn("wt");
+		debugToGameTextArea("Koniec gry: Białe wygrały");
 	}
-	else console.log("ERROR! websocket == null");
-}
-
-function check_core_var(coreVar){ //sprawdzanie wartości zmiennej na kompie
-	if ( websocket != null ){ // jeżeli połączenie websocketowe jest aktywne (a może nie być?)
-		// !! sprawdzanie czy gracz jeszcze jest zalogowany !! (nie robi się to z każdym wywołaniem funkcji?)
-		console.log( "string to send: check " + coreVar);
-		websocket.send("check " + coreVar);
-		console.log( "string sent: check " + coreVar);
+	else if( endType == "black_won")
+	{
+		switchTurn("bt");
+		debugToGameTextArea("Koniec gry: Czarne wygrały");
 	}
-	else console.log("ERROR! websocket == null");
-}
-
-function sendMessage() { //wysyłanie wiadomości
-	var piece_from = document.getElementById("pieceFrom").value;
-	var piece_to = document.getElementById("pieceTo").value;
-	var strToSend = "move " + piece_from + piece_to;
-	console.log("sendMessage() function engaged");
-	if ( websocket != null ) { // jeżeli połączenie websocketowe jest aktywne (a może nie być?)
-		document.getElementById("pieceFrom").value = ""; //czyszczenie dla kolejnych zapytań
-		document.getElementById("pieceTo").value = "";
-		websocket.send( strToSend );
-		console.log( "string sent :", '"'+strToSend+'"' );
-		debugToGameTextArea(strToSend); // !! przenieść do odpowiedzi
+	else if( endType == "draw")
+	{
+		// TODO: co dalej?
+		debugToGameTextArea("Koniec gry: Remis");
 	}
-	else console.log("ERROR! websocket == null");
 }
-
-////////////////tura gry		
-function white_turn(){
-	if (websocket != null){ // jeżeli połączenie websocketowe jest aktywne (a może nie być?)
-		websocket.send("whose_turn white_turn");
-		console.log("string sent: whose_turn white_turn");
-	}
-	else console.log("ERROR! websocket == null");
-}
-
-function black_turn(){
-	if (websocket != null){ // jeżeli połączenie websocketowe jest aktywne (a może nie być?)
-		websocket.send("whose_turn black_turn");
-		console.log("string sent: whose_turn black_turn");
-	}
-	else console.log("ERROR! websocket == null");
-}
-
-function no_turn(){
-	if (websocket != null){ // jeżeli połączenie websocketowe jest aktywne (a może nie być?)
-		websocket.send("whose_turn no_turn");
-		console.log("string sent: whose_turn no_turn");
-	}
-	else console.log("ERROR! websocket == null");
-}
-
-function switch_turn(turn_state){ 
-	if(turn_state == "next_turn"){
-		if (whose_turn == "white_turn") black_turn();
-		else if (whose_turn == "black_turn") white_turn();
-		else console.log("ERROR: WRONG whose_turn VARIABLE VALUE: " + whose_turn);
-	}
-	else if (turn_state == "end_game") no_turn();
-	else console.log("ERROR: WRONG turn_state VARIABLE VALUE: " + turn_state);
-}
-
