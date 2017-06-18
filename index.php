@@ -122,12 +122,6 @@
 							else document.getElementById("standUpBlack").disabled = true;
 						});
 						
-						function debugToGameTextArea(message) 
-						{
-							debugTextArea.value += message + "\n";
-							debugTextArea.scrollTop = debugTextArea.scrollHeight;
-						}
-						
 						var wsUri = "ws://89.66.209.51:1234"; //parametry połączenia 
 						var websocket = null; //osobne połączenia
 												
@@ -172,9 +166,6 @@
 								}
 							} else alert("WebSockets not supported on your browser.");
 						}
-						
-						var piece_from;
-						var piece_to;
 											
 						function stopWebSocket()  //wyłącz połączenie - nie wiem czy potrzebuje. trochę poniżej to samo prawie
 						{
@@ -190,7 +181,11 @@
 							}
 						}*/
 						
-						setInterval(keepConnected),250000); //[ms]. Co 4 min podtrzymuj połączenie (po 10 min następuje WS sam się rozłączy)
+						setInterval(function()
+						{
+							websocket.send("keepConnected");
+							console.log("Wysłana do websocket servera pusta wiadomość podtrzymującą połączenie");
+						}, 250000); //[ms]
 						
 						initWebSocket(); //połącz z websocketami (ważne to jest tutaj by pobrać startowe wartości strony) 
 					</script> 	

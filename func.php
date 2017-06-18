@@ -1,7 +1,7 @@
 <?php     
 	//variables
-	$white = "Białe"; // ! make static ! change to "white" !
-	$black = "Czarne"; // ! make static ! change to "black" !
+	$white = "Białe"; //TODO: ! make static ! change to "white" !
+	$black = "Czarne"; //TODO: ! make static ! change to "black" !
 	
 	//functions
     function call($sql){ // Wywołanie zapytania do bazy (użytkownik)

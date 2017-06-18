@@ -1,18 +1,19 @@
-/*var whose_turn; 
-var whitePlayerName;
-var blackPlayerName;
-var js_loginUzytkownika */ //TODO: sprawdzić czy gdzieś tego nie powtarzam
-
-function gameInProgress(move, turn, status)
+function debugToGameTextArea(message) 
 {
-	if (turn == "wt")
+	debugTextArea.value += message + "\n";
+	debugTextArea.scrollTop = debugTextArea.scrollHeight;
+}
+
+function gameInProgress(move, turn)
+{
+	if (turn == "bt")
 	{
-		wiadomoscNaTextArea = "Czarny wykonał ruch: " + movement_made + ". Ruch wykonują Białe.";
+		wiadomoscNaTextArea = "Czarny wykonał ruch: " + move + ". Ruch wykonują Białe.";
 		debugToGameTextArea(wiadomoscNaTextArea);
 	}
-	else if (turn == "bt")
+	else if (turn == "wt")
 	{
-		wiadomoscNaTextArea = "Biały wykonał ruch: " + movement_made + ". Ruch wykonują Czarne.";
+		wiadomoscNaTextArea = "Biały wykonał ruch: " + move + ". Ruch wykonują Czarne.";
 		debugToGameTextArea(wiadomoscNaTextArea);
 	}
 	else console.log('ERROR. Unknown turn value = ' + turn);
@@ -22,7 +23,7 @@ function gameInProgress(move, turn, status)
 
 function switchTurn(whoseTurn)
 {
-	if (whoseTurn == "wt")
+	if (whoseTurn == "bt") //czarny skończył swój ruch
 	{ 
 		//console.log("White player turn. Waiting for move...");
 		if (document.getElementById("whitePlayer").value == js_loginUzytkownika) 
@@ -43,7 +44,7 @@ function switchTurn(whoseTurn)
 		}
 		else console.log("ERROR: STATEMENT DOESNT MET- NO LOGGED PLAYER AVAILABLE (PLAYERS NICK VALUES ARE EMPTY- SHOULDNT BE POSSIBLE)");
 	}
-	else if (whose_turn == 'bt') //jeżeli teraz przypada tura białego
+	else if (whoseTurn == 'wt') //biały skończył swój ruch
 	{
 		//console.log('Black player turn. Waiting for move...');
 		if (document.getElementById('whitePlayer').value == js_loginUzytkownika) 
@@ -64,7 +65,7 @@ function switchTurn(whoseTurn)
 		}
 		else console.log('ERROR: STATEMENT DOESNT MET- NO LOGGED PLAYER AVAILABLE (PLAYERS NICK VALUES ARE EMPTY- SHOULDNT BE POSSIBLE)');
 	}
-	else if (whose_turn == 'nt')
+	else if (whoseTurn == 'nt')
 	{
 		console.log('End of game. No turn available. Waiting for new game...');	
 		document.getElementById('pieceFrom').disabled = true;
