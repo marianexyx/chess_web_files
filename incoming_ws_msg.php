@@ -19,31 +19,31 @@
 	{
 		console.log('newWhitePlayerName: '+ newWhitePlayerName); 
 		
-		if (newWhitePlayerName == "White") { //jak nikt ju¿ nie jest zalogowany na bia³ym, tj. gracz który by³ na bia³ym powsta³
-			document.getElementById("whitePlayer").value = "White"; //to bia³e zostaje "Bia³y"m
+		if (newWhitePlayerName == "White") { //jak nikt juÅ¼ nie jest zalogowany na biaÅ‚ym, tj. gracz ktÃ³ry byÅ‚ na biaÅ‚ym powstaÅ‚
+			document.getElementById("whitePlayer").value = "White"; //to biaÅ‚e zostaje "BiaÅ‚y"m
 			<? 	if(!empty($_SESSION['id'])){ //tylko dla zalogowanych
-				echo 'document.getElementById("whitePlayer").disabled = false; //da siê usi¹œæ na bia³ym
+				echo 'document.getElementById("whitePlayer").disabled = false; //da siÄ™ usiÄ…Å›Ä‡ na biaÅ‚ym
 				if (document.getElementById("blackPlayer").value == "Black") //dodatkowo jak czarny to "Czarne" (tj. nikt)
-				document.getElementById("blackPlayer").disabled = false; //to czarny te¿ da siê wcisn¹æ i usi¹œæ';
+				document.getElementById("blackPlayer").disabled = false; //to czarny teÅ¼ da siÄ™ wcisnÄ…Ä‡ i usiÄ…Å›Ä‡';
 			} ?>
-			document.getElementById("standUpBlack").disabled = true; //na czarnym te¿ nie, ale to jest tylko zabezpieczenie
-			document.getElementById("standUpWhite").disabled = true; //i jak nikt nie siedzi na bia³ym to nikt nie mo¿e wstaæ na bia³ym
-			document.getElementById("startGame").disabled = true; //i je¿eli jakimœ cudem da³oby siê wcisn¹æ "start", no to siê nie da
-			debugToGameTextArea("Bia³y gracz opóœci³ stó³"); 
+			document.getElementById("standUpBlack").disabled = true; //na czarnym teÅ¼ nie, ale to jest tylko zabezpieczenie
+			document.getElementById("standUpWhite").disabled = true; //i jak nikt nie siedzi na biaÅ‚ym to nikt nie moÅ¼e wstaÄ‡ na biaÅ‚ym
+			document.getElementById("startGame").disabled = true; //i jeÅ¼eli jakimÅ› cudem daÅ‚oby siÄ™ wcisnÄ…Ä‡ "start", no to siÄ™ nie da
+			debugToGameTextArea("BiaÅ‚y gracz opÃ³Å›ciÅ‚ stÃ³Å‚"); 
 			console.log('white player = "White"');
 		}
-		else { //je¿eli ktoœ siada na bia³ych, tj. przes³any by³ jego nick 
-			document.getElementById("whitePlayer").value = newWhitePlayerName; //wartoœæ buttonu zmienia siê na jego nick
-			whitePlayerName = newWhitePlayerName; //zapamiêtaj nazwê bia³ego
-			document.getElementById("whitePlayer").disabled = true; //nie da siê usi¹œæ na bia³ym
-			if (document.getElementById("whitePlayer").value == js_loginUzytkownika){ //je¿eli gracz bia³y jest zalogowanym
-				document.getElementById("blackPlayer").disabled = true; //to nie mo¿e on usi¹œæ na czarnych 
-				document.getElementById("standUpWhite").disabled = false; //tylko ten co siedzi mo¿e wstaæ
+		else { //jeÅ¼eli ktoÅ› siada na biaÅ‚ych, tj. przesÅ‚any byÅ‚ jego nick 
+			document.getElementById("whitePlayer").value = newWhitePlayerName; //wartoÅ›Ä‡ buttonu zmienia siÄ™ na jego nick
+			whitePlayerName = newWhitePlayerName; //zapamiÄ™taj nazwÄ™ biaÅ‚ego
+			document.getElementById("whitePlayer").disabled = true; //nie da siÄ™ usiÄ…Å›Ä‡ na biaÅ‚ym
+			if (document.getElementById("whitePlayer").value == js_loginUzytkownika){ //jeÅ¼eli gracz biaÅ‚y jest zalogowanym
+				document.getElementById("blackPlayer").disabled = true; //to nie moÅ¼e on usiÄ…Å›Ä‡ na czarnych 
+				document.getElementById("standUpWhite").disabled = false; //tylko ten co siedzi moÅ¼e wstaÄ‡
 			}
-			debugToGameTextArea("Gracz figur bia³ych: "+ newWhitePlayerName);
+			debugToGameTextArea("Gracz figur biaÅ‚ych: "+ newWhitePlayerName);
 			console.log('white player = ', newWhitePlayerName);
-			if (document.getElementById("whitePlayer").value != "White" && document.getElementById("blackPlayer").value != "Black") //je¿eli bia³y i czarny siedz¹ na stole
-			document.getElementById("startGame").disabled = false; //to da siê wcisn¹æ start
+			if (document.getElementById("whitePlayer").value != "White" && document.getElementById("blackPlayer").value != "Black") //jeÅ¼eli biaÅ‚y i czarny siedzÄ… na stole
+			document.getElementById("startGame").disabled = false; //to da siÄ™ wcisnÄ…Ä‡ start
 		}
 	}
 	
@@ -54,28 +54,28 @@
 		if (newBlackPlayerName == "Black"){ //jak nikt nie zalogowany na czarnym
 			document.getElementById("blackPlayer").value = "Black";
 			<? 	if(!empty($_SESSION['id'])){ //tylko dla zalogowanych
-				echo 'document.getElementById("blackPlayer").disabled = false; //da siê usi¹œæ na czarnym
-				if (document.getElementById("whitePlayer").value == "White") //dodatkowo jak bia³y to "Bia³y" (tj. nikt)
-				document.getElementById("whitePlayer").disabled = false; //to bia³y te¿ da siê wcisn¹æ i usi¹œæ';
+				echo 'document.getElementById("blackPlayer").disabled = false; //da siÄ™ usiÄ…Å›Ä‡ na czarnym
+				if (document.getElementById("whitePlayer").value == "White") //dodatkowo jak biaÅ‚y to "BiaÅ‚y" (tj. nikt)
+				document.getElementById("whitePlayer").disabled = false; //to biaÅ‚y teÅ¼ da siÄ™ wcisnÄ…Ä‡ i usiÄ…Å›Ä‡';
 			} ?>
-			document.getElementById("standUpWhite").disabled = true; //i jak nikt nie siedzi na bia³ym to nikt nie mo¿e wstaæ na bia³ym
-			document.getElementById("standUpBlack").disabled = true; //nie da siê wstaæ jak nikt nie siedzi
+			document.getElementById("standUpWhite").disabled = true; //i jak nikt nie siedzi na biaÅ‚ym to nikt nie moÅ¼e wstaÄ‡ na biaÅ‚ym
+			document.getElementById("standUpBlack").disabled = true; //nie da siÄ™ wstaÄ‡ jak nikt nie siedzi
 			document.getElementById("startGame").disabled = true; //to jest tylko zabezpieczenie
-			debugToGameTextArea("Czarny gracz opóœci³ stó³");
+			debugToGameTextArea("Czarny gracz opÃ³Å›ciÅ‚ stÃ³Å‚");
 			console.log('black player = "Black"');
 		}
-		else { //je¿eli ktoœ siada na czarnych, tj. przes³any by³ jego nick 
-			document.getElementById("blackPlayer").value = newBlackPlayerName; //wartoœæ buttonu czarnego zmienia siê na jego nick
-			blackPlayerName = newBlackPlayerName; //zapamiêtaj nazwê czarnego
-			document.getElementById("blackPlayer").disabled = true; //nikt nie mo¿e usi¹œæ na czarnym jak tam w³aœnie siad³ gracz
-			if (document.getElementById("blackPlayer").value == js_loginUzytkownika){ //je¿eli gracz czarny jest zalogowanym
-				document.getElementById("whitePlayer").disabled = true; //to nie mo¿e on usi¹œæ jednoczeœnie na bia³ych
-				document.getElementById("standUpBlack").disabled = false; //tylko ten co siedzi mo¿e wstaæ 
+		else { //jeÅ¼eli ktoÅ› siada na czarnych, tj. przesÅ‚any byÅ‚ jego nick 
+			document.getElementById("blackPlayer").value = newBlackPlayerName; //wartoÅ›Ä‡ buttonu czarnego zmienia siÄ™ na jego nick
+			blackPlayerName = newBlackPlayerName; //zapamiÄ™taj nazwÄ™ czarnego
+			document.getElementById("blackPlayer").disabled = true; //nikt nie moÅ¼e usiÄ…Å›Ä‡ na czarnym jak tam wÅ‚aÅ›nie siadÅ‚ gracz
+			if (document.getElementById("blackPlayer").value == js_loginUzytkownika){ //jeÅ¼eli gracz czarny jest zalogowanym
+				document.getElementById("whitePlayer").disabled = true; //to nie moÅ¼e on usiÄ…Å›Ä‡ jednoczeÅ›nie na biaÅ‚ych
+				document.getElementById("standUpBlack").disabled = false; //tylko ten co siedzi moÅ¼e wstaÄ‡ 
 			}
 			debugToGameTextArea("Gracz figur czarnych: "+ newBlackPlayerName);
 			console.log('black player = ', newBlackPlayerName);
-			if (document.getElementById("whitePlayer").value != "White" && document.getElementById("blackPlayer").value != "Black") //je¿eli bia³y i czarny siedz¹ na stole
-			document.getElementById("startGame").disabled = false; //to da siê wcisn¹æ start
+			if (document.getElementById("whitePlayer").value != "White" && document.getElementById("blackPlayer").value != "Black") //jeÅ¼eli biaÅ‚y i czarny siedzÄ… na stole
+			document.getElementById("startGame").disabled = false; //to da siÄ™ wcisnÄ…Ä‡ start
 		}
 	}
 	
@@ -86,7 +86,7 @@
 	
 	function newGameStarted()
 	{
-		debugToGameTextArea("Nowa gra rozpoczêta. Bia³e wykonuj¹ ruch.");
+		debugToGameTextArea("Nowa gra rozpoczÄ™ta. BiaÅ‚e wykonujÄ… ruch.");
 		document.getElementById("startGame").disabled = true;
 		switchTurn("bt");
 	}
@@ -106,59 +106,59 @@
 	
 	function coreIsReady()
 	{
-		debugToGameTextArea("Wciœnij START, aby rozpocz¹æ grê.");
+		debugToGameTextArea("WciÅ›nij START, aby rozpoczÄ…Ä‡ grÄ™.");
 		document.getElementById("startGame").disabled = false;
 	}
 	
 	function checked(whatWasChecked)
 	{
-		if (whatWasChecked.substr(0,5) == 'White') //je¿eli sprawdzana wartoœc w core to gracz bia³y...
+		if (whatWasChecked.substr(0,5) == 'White') //jeÅ¼eli sprawdzana wartoÅ›c w core to gracz biaÅ‚y...
 		{ 
 			var whitePlayerName = whatWasChecked.substr(6);	
 			whitePlayerName = whitePlayerName.trim(); //remove whitespaces
-			document.getElementById('whitePlayer').value = whitePlayerName; //...to nazwa bia³ego jest tym kto siedzi na bia³ym wg core...
-			if (document.getElementById("whitePlayer").value != "White") //...i je¿eli na bia³ym jest jakiœ gracz...
+			document.getElementById('whitePlayer').value = whitePlayerName; //...to nazwa biaÅ‚ego jest tym kto siedzi na biaÅ‚ym wg core...
+			if (document.getElementById("whitePlayer").value != "White") //...i jeÅ¼eli na biaÅ‚ym jest jakiÅ› gracz...
 			{ 
-				document.getElementById('whitePlayer').disabled = true; //...to nikt nie mo¿e usi¹œæ na bia³ym...
-				if(whitePlayerName == js_loginUzytkownika) //...i je¿eli sprawdzany gracz w core to gracz bêd¹cy zalogowanym...
+				document.getElementById('whitePlayer').disabled = true; //...to nikt nie moÅ¼e usiÄ…Å›Ä‡ na biaÅ‚ym...
+				if(whitePlayerName == js_loginUzytkownika) //...i jeÅ¼eli sprawdzany gracz w core to gracz bÄ™dÄ…cy zalogowanym...
 				document.getElementById("standUpWhite").disabled = false; //...to przycisk do wstawania jest aktywny.
 				console.log('white player (!=White) =', whitePlayerName);  
 			}
-			else if (document.getElementById("whitePlayer").value == "White") //jednak je¿eli nikt nie siedzi na bia³ym...
+			else if (document.getElementById("whitePlayer").value == "White") //jednak jeÅ¼eli nikt nie siedzi na biaÅ‚ym...
 			{  
 				<? if(!empty($_SESSION['id'])) //...i klient jest zalogowany na stronie...
 					{ 
-						echo 'document.getElementById("whitePlayer").disabled = false; //...to mozna usi¹œæ na bia³ym...
-						document.getElementById("standUpWhite").disabled = true; //...a guzik wstawania jest wy³¹czony.
+						echo 'document.getElementById("whitePlayer").disabled = false; //...to mozna usiÄ…Å›Ä‡ na biaÅ‚ym...
+						document.getElementById("standUpWhite").disabled = true; //...a guzik wstawania jest wyÅ‚Ä…czony.
 						console.log("white player = White");';
 					} ?>
 			}
 		}							
-		else if (whatWasChecked.substr(0,5) == 'Black')//je¿eli sprawdzana wartoœæ w core to gracz czarny...
+		else if (whatWasChecked.substr(0,5) == 'Black')//jeÅ¼eli sprawdzana wartoÅ›Ä‡ w core to gracz czarny...
 		{ 
 			var blackPlayerName = whatWasChecked.substr(6);
 			blackPlayerName = blackPlayerName.trim(); //remove whitespaces
 			document.getElementById('blackPlayer').value = blackPlayerName; //...to nazwa czarnego jest tym kto siedzi na czarnym wg core...
-			if (document.getElementById("blackPlayer").value != "Black") //...i je¿eli na czarnym jest jakiœ gracz...
+			if (document.getElementById("blackPlayer").value != "Black") //...i jeÅ¼eli na czarnym jest jakiÅ› gracz...
 			{ 
-				document.getElementById('blackPlayer').disabled = true; //...to nikt nie mo¿e usi¹œæ na czarnym...
-				if(blackPlayerName == js_loginUzytkownika) //...i je¿eli sprawdzany gracz w core to gracz bêd¹cy zalogowanym...
+				document.getElementById('blackPlayer').disabled = true; //...to nikt nie moÅ¼e usiÄ…Å›Ä‡ na czarnym...
+				if(blackPlayerName == js_loginUzytkownika) //...i jeÅ¼eli sprawdzany gracz w core to gracz bÄ™dÄ…cy zalogowanym...
 				document.getElementById("standUpBlack").disabled = false; //...to przycisk do wstawania jest aktywny.
 				console.log('black player (!=Czarny) =', blackPlayerName);  
 			}
-			else if (document.getElementById("blackPlayer").value == "Black") //jednak je¿eli nikt nie siedzi na czarnym...
+			else if (document.getElementById("blackPlayer").value == "Black") //jednak jeÅ¼eli nikt nie siedzi na czarnym...
 			{  
 				<? if(!empty($_SESSION['id'])) //i klient jest zalogowany na stronie...
 					{ 
-						echo 'document.getElementById("blackPlayer").disabled = false; //to mozna usi¹œæ na czarnym...
-						document.getElementById("standUpBlack").disabled = true; //...a guzik wstawania jest wy³¹czony.
+						echo 'document.getElementById("blackPlayer").disabled = false; //to mozna usiÄ…Å›Ä‡ na czarnym...
+						document.getElementById("standUpBlack").disabled = true; //...a guzik wstawania jest wyÅ‚Ä…czony.
 						console.log("black player = Black");';
 					} ?>
 			}
 		}
 		else if (whatWasChecked.substr(0,4) == 'Turn')
 		{ 
-			//TODO: czy to siê przyda?
+			//TODO: czy to siÄ™ przyda?
 			var checkedTurn = whatWasChecked.substr(5)
 			console.log('checked whoseTurn is = ' + checkedTurn);
 		}
@@ -173,8 +173,8 @@
 		switch(promotePiece)
 		{
 			case q: promoteType = "hetmana"; break
-			case r: promoteType = "wie¿ê"; break
-			case b: promoteType = "goñca"; break
+			case r: promoteType = "wieÅ¼Ä™"; break
+			case b: promoteType = "goÅ„ca"; break
 			case k: promoteType = "skoczka"; break	
 		}
 		
@@ -183,21 +183,21 @@
 		var gameState;
 		switch(gameStateAfterPromotion)
 		{
-			case 'continue': gameState = "Ruch wykonuje " + (promoteTurn == 'bt' ?  "Bia³y." : "Czarny."); break;
-			case 'whiteWon': gameState = "Koniec gry. Wygra³ Bia³y."; break;
-			case 'blackWon': gameState = "Koniec gry. Wygra³ Czarny."; break;
+			case 'continue': gameState = "Ruch wykonuje " + (promoteTurn == 'bt' ?  "BiaÅ‚y." : "Czarny."); break;
+			case 'whiteWon': gameState = "Koniec gry. WygraÅ‚ BiaÅ‚y."; break;
+			case 'blackWon': gameState = "Koniec gry. WygraÅ‚ Czarny."; break;
 			case 'draw': gameState = "Koniec gry. Remis."; break;
 			default: console.log('ERROR. promoted(): Unknown gameStateAfterPromotion var = ' + gameState); break;
 		}
 		
-		debugToGameTextArea((promoteTurn == 'bt' ?  "Bia³y." : "Czarny.") + " wykona³ promocjê piona ruchem " + 
+		debugToGameTextArea((promoteTurn == 'bt' ?  "BiaÅ‚y." : "Czarny.") + " wykonaÅ‚ promocjÄ™ piona ruchem " + 
 		promotingMove + " na " + promoteType + ". " + gameState);
 	}
 	
 	function badMove(coreAnswer) //TODO: only for sender
 	{
 		console.log('badMove: ' + coreAnswer);
-		var textAreaMsg = "B³êdne rz¹danie ruchu: " + coreAnswer + "! Wpisz inny ruch.";
+		var textAreaMsg = "BÅ‚Ä™dne rzÄ…danie ruchu: " + coreAnswer + "! Wpisz inny ruch.";
 		debugToGameTextArea(textAreaMsg);
 	}
 	

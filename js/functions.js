@@ -75,17 +75,57 @@ function switchTurn(whoseTurn)
 	else console.log('ERROR: WRONG whoseTurn VARIABLE');
 }
 
+$("#dialog").dialog(
+{
+	autoOpen: false, 
+	dialogClass: "no-close",
+	buttons: 
+	{
+		'hetman': function() 
+		{
+			websocket.send("promoteTo: q"); //queen
+			console.log('sent to core: promoteTo: q');
+			$(this).dialog("close");
+		}, 
+		'goniec': function() 
+		{
+			websocket.send("promoteTo: b"); //bishop
+			console.log('sent to core: promoteTo: b');
+			$(this).dialog("close");
+		}, 
+		'skoczek': function() 
+		{
+			websocket.send("promoteTo: k"); //knight
+			console.log('sent to core: promoteTo: k');
+			$(this).dialog("close");
+		}, 
+		'wieża': function() 
+		{
+			websocket.send("promoteTo: r"); //rook
+			console.log('sent to core: promoteTo: r');
+			$(this).dialog("close");
+		}
+	},
+	title: "Promocja",
+	position: 
+	{
+		my: "center",
+		at: "center",
+		of: window
+	}
+});
+
+function openDialogPromote()
+{
+	console.log("show promotion buttons window");
+	$("#dialog").dialog('open');
+}
+
 function promoteToWhat()
 {
-	if (document.getElementById("whitePlayer").value == js_loginUzytkownika /*&& whose_turn == "whiteTurn" //TODO: sprawdzać gracza po sockecie WS */)
+	if (document.getElementById("whitePlayer").value == js_loginUzytkownika) //prośbę o promocję dostanie tylko ten gracz który wysyłał ruch- TODO: sprawdzić
 	{
-		console.log("show promotion buttons window");
-		promotion();
-	}
-	else if (document.getElementById("blackPlayer").value == js_loginUzytkownika /*&& whose_turn == "black_turn" //TODO: sprawdzać gracza po sockecie WS */)
-	{
-		console.log("show promotion buttons window");
-		promotion();
+		openDialogPromote();
 	}
 }
 

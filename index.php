@@ -6,8 +6,11 @@
 		<meta name="description" content="" />
 		
 		<script src="http://code.jquery.com/jquery-latest.min.js"></script>
-		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
-		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+		<!--<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>-->
+		
+		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 		
 		<script src="js/swfobject.js"></script>
 		<!-- <script src="js/websocket.js"></script>  // nie mogę używać php w javascripcie (jakoś tam się da, ale to jest magia)-->
@@ -99,12 +102,14 @@
 						js_loginUzytkownika = <? echo json_encode($loginUzytkownika); ?>; //TODO: kiedy to się zmienia i czy trzeba to kontrolowac?
 						var whitePlayerName; //todo: W functions.js są te same zmienne
 						var blackPlayerName;
-
+						
+						$.getScript("js/functions.js", function(){});
+						
 						$(function()  //odpala funkcje dopiero po zaladowaniu sie strony 
 						{
 							var debugTextArea = document.getElementById("debugTextArea"); //konsola powiadomień
 						});
-												
+						
 						$(function(whitePlayerName, blackPlayerName, js_loginUzytkownika) // ta funkcja jest tu prewencyjnie, bo istnieje to przy okazji checków
 						{
 							if(whitePlayerName == js_loginUzytkownika)
@@ -124,7 +129,7 @@
 						
 						var wsUri = "ws://89.66.209.51:1234"; //parametry połączenia 
 						var websocket = null; //osobne połączenia
-												
+						
 						function initWebSocket() 
 						{
 							if ("WebSocket" in window) //jeżeli przeglądarka obsługuje websockety
@@ -166,7 +171,7 @@
 								}
 							} else alert("WebSockets not supported on your browser.");
 						}
-											
+						
 						function stopWebSocket()  //wyłącz połączenie - nie wiem czy potrzebuje. trochę poniżej to samo prawie
 						{
 							if (websocket)
@@ -202,8 +207,7 @@
 						<button id="movePieceButton" onClick="movePiece();" disabled >Wyślij</button>
 					</p>
 					
-					<!--<div id="dialog-promote" title="promotion">Promuj piona na:</div> --><!-- testy okienka poup z buttonami-->
-					<!--<button id="opener-promote">Promocja</button> <!--  okienko popup z buttonami-->
+					<div id="dialog" title="Promocja"> <p>Promuj piona na:</p> </div> <!-- bez tego nie chce mi działać dialog-promote-->
 					
 				</td>  
 				<td align="center" valign="top">
@@ -232,7 +236,7 @@
 				</td>
 			</tr>
 		</table>  
-
+		
 		<p align="center">
 			<font size="2">
 				<a href="http://cosinekitty.com/chenard/">Chess engine</a> by <a href="http://cosinekitty.com/">Don Cross</a>
