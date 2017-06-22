@@ -6,11 +6,11 @@
 		<meta name="description" content="" />
 		
 		<script src="http://code.jquery.com/jquery-latest.min.js"></script>
-		<!--<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
-		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>-->
 		
 		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+		
+		<link rel="stylesheet" type="text/css" href="css/dialogNoClose.css">
 		
 		<script src="js/swfobject.js"></script>
 		<!-- <script src="js/websocket.js"></script>  // nie mogę używać php w javascripcie (jakoś tam się da, ale to jest magia)-->
@@ -87,11 +87,7 @@
 					<? 
 						$user = getUser($_SESSION['id']);
 						/*$_SESSION['table_id'] = 1; //póki co jest tylko jeden stół, więc zmienna zbędna
-							$player = getPlayer($_SESSION['table_id']); //wyciąga z bazy wiersz z danymi stołu !!!TODO: czy nie wywołuje tej samej funkcji kilka razy?
-							$getWhitePlayer = $player['whitePlayerName']; 
-							$getBlackPlayer = $player['blackPlayerName']; 
-							$isWhiteTaken = $player['is_white_taken']; 
-						$isBlackTaken = $player['is_black_taken']; */
+						$player = getPlayer($_SESSION['table_id']); //wyciąga z bazy wiersz z danymi stołu !!!TODO: czy nie wywołuje tej samej funkcji kilka razy?*/
 						$loginUzytkownika = $user['login'];  
 						
 						require_once('incoming_ws_msg.php');
@@ -226,7 +222,12 @@
 					</table>
 					<table width="80%" cellpadding="15">
 						<!-- <td align="left">Czas 1</td> -->
-						<td align="center"><? echo '<input type="button" id="startGame" value="start" onclick="newGame()" disabled />'?> </td>
+						<td align="center">
+							<input type="button" id="startGame" value="start" onclick="newGame()" disabled />
+							
+							<button id="openGiveUpDialogButton" disabled>rezygnuję</button>
+							<div id="giveUpDialog"><p>Czy chcesz opóścić grę?</p></div>
+						</td>
 						<!-- <td align="right">Czas 2</td> -->
 					</table> 
 					<!-- chat -->

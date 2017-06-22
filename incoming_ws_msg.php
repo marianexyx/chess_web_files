@@ -19,31 +19,40 @@
 	{
 		console.log('newWhitePlayerName: '+ newWhitePlayerName); 
 		
-		if (newWhitePlayerName == "White") { //jak nikt już nie jest zalogowany na białym, tj. gracz który był na białym powstał
-			document.getElementById("whitePlayer").value = "White"; //to białe zostaje "Biały"m
-			<? 	if(!empty($_SESSION['id'])){ //tylko dla zalogowanych
-				echo 'document.getElementById("whitePlayer").disabled = false; //da się usiąść na białym
-				if (document.getElementById("blackPlayer").value == "Black") //dodatkowo jak czarny to "Czarne" (tj. nikt)
-				document.getElementById("blackPlayer").disabled = false; //to czarny też da się wcisnąć i usiąść';
+		if (newWhitePlayerName == "White") 
+		{ 
+			document.getElementById("whitePlayer").value = "White";
+			<? 	if(!empty($_SESSION['id'])) 
+			{ 
+				echo '
+				if (document.getElementById("blackPlayer").value != js_loginUzytkownika) 
+					document.getElementById("whitePlayer").disabled = false; 
+				else document.getElementById("whitePlayer").disabled = true; 
+				
+				if (document.getElementById("blackPlayer").value == "Black") 
+					document.getElementById("blackPlayer").disabled = false;';
 			} ?>
-			document.getElementById("standUpBlack").disabled = true; //na czarnym też nie, ale to jest tylko zabezpieczenie
-			document.getElementById("standUpWhite").disabled = true; //i jak nikt nie siedzi na białym to nikt nie może wstać na białym
-			document.getElementById("startGame").disabled = true; //i jeżeli jakimś cudem dałoby się wcisnąć "start", no to się nie da
+			if (document.getElementById("blackPlayer").value == "Black") 
+				document.getElementById("standUpBlack").disabled = true; 
+			document.getElementById("standUpWhite").disabled = true; 
+			document.getElementById("startGame").disabled = true; 
+			document.getElementById("openGiveUpDialogButton").disabled = true;
 			debugToGameTextArea("Biały gracz opóścił stół"); 
 			console.log('white player = "White"');
 		}
-		else { //jeżeli ktoś siada na białych, tj. przesłany był jego nick 
-			document.getElementById("whitePlayer").value = newWhitePlayerName; //wartość buttonu zmienia się na jego nick
-			whitePlayerName = newWhitePlayerName; //zapamiętaj nazwę białego
-			document.getElementById("whitePlayer").disabled = true; //nie da się usiąść na białym
-			if (document.getElementById("whitePlayer").value == js_loginUzytkownika){ //jeżeli gracz biały jest zalogowanym
-				document.getElementById("blackPlayer").disabled = true; //to nie może on usiąść na czarnych 
-				document.getElementById("standUpWhite").disabled = false; //tylko ten co siedzi może wstać
+		else 
+		{ 
+			document.getElementById("whitePlayer").value = newWhitePlayerName;
+			whitePlayerName = newWhitePlayerName; 
+			document.getElementById("whitePlayer").disabled = true; 
+			if (document.getElementById("whitePlayer").value == js_loginUzytkownika)
+			{
+				document.getElementById("blackPlayer").disabled = true; 
+				document.getElementById("standUpWhite").disabled = false; 
 			}
 			debugToGameTextArea("Gracz figur białych: "+ newWhitePlayerName);
 			console.log('white player = ', newWhitePlayerName);
-			if (document.getElementById("whitePlayer").value != "White" && document.getElementById("blackPlayer").value != "Black") //jeżeli biały i czarny siedzą na stole
-			document.getElementById("startGame").disabled = false; //to da się wcisnąć start
+			isStartReady();
 		}
 	}
 	
@@ -51,31 +60,49 @@
 	{
 		console.log('newWhitePlayerName: '+ newBlackPlayerName);
 		
-		if (newBlackPlayerName == "Black"){ //jak nikt nie zalogowany na czarnym
+		if (newBlackPlayerName == "Black")
+		{ 
 			document.getElementById("blackPlayer").value = "Black";
-			<? 	if(!empty($_SESSION['id'])){ //tylko dla zalogowanych
-				echo 'document.getElementById("blackPlayer").disabled = false; //da się usiąść na czarnym
-				if (document.getElementById("whitePlayer").value == "White") //dodatkowo jak biały to "Biały" (tj. nikt)
-				document.getElementById("whitePlayer").disabled = false; //to biały też da się wcisnąć i usiąść';
+			<? 	if(!empty($_SESSION['id']))
+			{ 
+				echo '
+				if (document.getElementById("whitePlayer").value != js_loginUzytkownika) 
+					document.getElementById("blackPlayer").disabled = false; 
+				else document.getElementById("blackPlayer").disabled = true; 
+				
+				if (document.getElementById("whitePlayer").value == "White") 
+					document.getElementById("whitePlayer").disabled = false;';
 			} ?>
-			document.getElementById("standUpWhite").disabled = true; //i jak nikt nie siedzi na białym to nikt nie może wstać na białym
-			document.getElementById("standUpBlack").disabled = true; //nie da się wstać jak nikt nie siedzi
-			document.getElementById("startGame").disabled = true; //to jest tylko zabezpieczenie
+			if (document.getElementById("whitePlayer").value == "White") 
+				document.getElementById("standUpWhite").disabled = true; 
+			document.getElementById("standUpBlack").disabled = true; 
+			document.getElementById("startGame").disabled = true; 
+			document.getElementById("openGiveUpDialogButton").disabled = true;
 			debugToGameTextArea("Czarny gracz opóścił stół");
 			console.log('black player = "Black"');
 		}
-		else { //jeżeli ktoś siada na czarnych, tj. przesłany był jego nick 
-			document.getElementById("blackPlayer").value = newBlackPlayerName; //wartość buttonu czarnego zmienia się na jego nick
-			blackPlayerName = newBlackPlayerName; //zapamiętaj nazwę czarnego
-			document.getElementById("blackPlayer").disabled = true; //nikt nie może usiąść na czarnym jak tam właśnie siadł gracz
-			if (document.getElementById("blackPlayer").value == js_loginUzytkownika){ //jeżeli gracz czarny jest zalogowanym
-				document.getElementById("whitePlayer").disabled = true; //to nie może on usiąść jednocześnie na białych
-				document.getElementById("standUpBlack").disabled = false; //tylko ten co siedzi może wstać 
+		else 
+		{ 
+			document.getElementById("blackPlayer").value = newBlackPlayerName; 
+			blackPlayerName = newBlackPlayerName; 
+			document.getElementById("blackPlayer").disabled = true; 
+			if (document.getElementById("blackPlayer").value == js_loginUzytkownika)
+			{
+				document.getElementById("whitePlayer").disabled = true;
+				document.getElementById("standUpBlack").disabled = false; 
 			}
 			debugToGameTextArea("Gracz figur czarnych: "+ newBlackPlayerName);
 			console.log('black player = ', newBlackPlayerName);
-			if (document.getElementById("whitePlayer").value != "White" && document.getElementById("blackPlayer").value != "Black") //jeżeli biały i czarny siedzą na stole
-			document.getElementById("startGame").disabled = false; //to da się wcisnąć start
+			isStartReady();
+		}
+	}
+	
+	function isStartReady()
+	{
+		if (document.getElementById("whitePlayer").value != "White" && document.getElementById("blackPlayer").value != "Black")
+		{
+			debugToGameTextArea("Wciśnij START, aby rozpocząć grę.");
+			document.getElementById("startGame").disabled = false; 
 		}
 	}
 	
@@ -86,9 +113,18 @@
 	
 	function newGameStarted()
 	{
-		debugToGameTextArea("Nowa gra rozpoczęta. Białe wykonują ruch.");
 		document.getElementById("startGame").disabled = true;
-		switchTurn("bt");
+		document.getElementById("openGiveUpDialogButton").disabled = false;
+		if (document.getElementById("whitePlayer").value != "White" && document.getElementById("blackPlayer").value != "Black")
+		{
+			debugToGameTextArea("Nowa gra rozpoczęta. Białe wykonują ruch.");
+			switchTurn("wt");
+		}
+		else 
+		{
+			debugToGameTextArea("Oczekiwanie na graczy.");
+			switchTurn("nt");
+		}
 	}
 	
 	function moveRespond(coreAnswer)
@@ -100,7 +136,7 @@
 		
 		if (gameStatus == "continue") gameInProgress(moveOk, whoseTurn);
 		else if (gameStatus == "promote") promoteToWhat();
-		else if (gameStatus == "whiteWon" || gameStatus == "blackWon" || gameStatus == "draw") endOfGame(gameStatus);
+		else if (gameStatus == "whiteWon" || gameStatus == "blackWon" || gameStatus == "draw") endOfGame(moveOk, gameStatus);
 		else console.log("ERROR: moveRespond(): unknown gameStatus value = " + gameStatus);
 	}
 	
@@ -120,9 +156,11 @@
 			if (document.getElementById("whitePlayer").value != "White") //...i jeżeli na białym jest jakiś gracz...
 			{ 
 				document.getElementById('whitePlayer').disabled = true; //...to nikt nie może usiąść na białym...
-				if(whitePlayerName == js_loginUzytkownika) //...i jeżeli sprawdzany gracz w core to gracz będący zalogowanym...
-				document.getElementById("standUpWhite").disabled = false; //...to przycisk do wstawania jest aktywny.
-				console.log('white player (!=White) =', whitePlayerName);  
+				if (whitePlayerName == js_loginUzytkownika) //...i jeżeli sprawdzany gracz w core to gracz będący zalogowanym...
+				{
+					document.getElementById("standUpWhite").disabled = false; //...to przycisk do wstawania jest aktywny.
+					console.log('white player (!=White) =', whitePlayerName);  
+				}
 			}
 			else if (document.getElementById("whitePlayer").value == "White") //jednak jeżeli nikt nie siedzi na białym...
 			{  
@@ -142,9 +180,11 @@
 			if (document.getElementById("blackPlayer").value != "Black") //...i jeżeli na czarnym jest jakiś gracz...
 			{ 
 				document.getElementById('blackPlayer').disabled = true; //...to nikt nie może usiąść na czarnym...
-				if(blackPlayerName == js_loginUzytkownika) //...i jeżeli sprawdzany gracz w core to gracz będący zalogowanym...
-				document.getElementById("standUpBlack").disabled = false; //...to przycisk do wstawania jest aktywny.
-				console.log('black player (!=Czarny) =', blackPlayerName);  
+				if (blackPlayerName == js_loginUzytkownika) //...i jeżeli sprawdzany gracz w core to gracz będący zalogowanym...
+				{	
+					document.getElementById("standUpBlack").disabled = false; //...to przycisk do wstawania jest aktywny.
+					console.log('black player (!=Czarny) =', blackPlayerName);
+				}
 			}
 			else if (document.getElementById("blackPlayer").value == "Black") //jednak jeżeli nikt nie siedzi na czarnym...
 			{  

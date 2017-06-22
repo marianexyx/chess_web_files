@@ -35,11 +35,14 @@
         }
 	 }
 	 
-	function player_enabling(){ //przygaś guziki !!!!!!!!!WARUNKI MUSZĄ BYĆ OSOBNE I TAK ...co to ja miałem tutaj na myśli? na pewno funkcja aktualnie nic nei robi
+	function player_enabling(){ //TODO: przygaś guziki !!!!!!!!!WARUNKI MUSZĄ BYĆ OSOBNE I TAK ...
+	//...co to ja miałem tutaj na myśli? na pewno funkcja aktualnie nic nei robi
 		if(!isset($_SESSION['id'])){ 
 			return 'disabled="enabled"';
 		}
 	}
+	
+	//todo: tych kilka poniższych funkcji jest nieużywanych?
 	
 	function stand_up_white_enabling($white_player_name, $login){
 		if(isset($_SESSION['id'])){ //jeżeli gracz jest zalogowany
