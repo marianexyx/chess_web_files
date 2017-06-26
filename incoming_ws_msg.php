@@ -23,22 +23,22 @@
 		{ 
 			document.getElementById("whitePlayer").value = "White";
 			<? 	if(!empty($_SESSION['id'])) 
-			{ 
-				echo '
-				if (document.getElementById("blackPlayer").value != js_loginUzytkownika) 
+				{ 
+					echo '
+					if (document.getElementById("blackPlayer").value != js_loginUzytkownika) 
 					document.getElementById("whitePlayer").disabled = false; 
-				else document.getElementById("whitePlayer").disabled = true; 
-				
-				if (document.getElementById("blackPlayer").value == "Black") 
+					else document.getElementById("whitePlayer").disabled = true; 
+					
+					if (document.getElementById("blackPlayer").value == "Black") 
 					document.getElementById("blackPlayer").disabled = false;';
-			} ?>
-			if (document.getElementById("blackPlayer").value == "Black") 
+				} ?>
+				if (document.getElementById("blackPlayer").value == "Black") 
 				document.getElementById("standUpBlack").disabled = true; 
-			document.getElementById("standUpWhite").disabled = true; 
-			document.getElementById("startGame").disabled = true; 
-			document.getElementById("openGiveUpDialogButton").disabled = true;
-			debugToGameTextArea("Biały gracz opóścił stół"); 
-			console.log('white player = "White"');
+				document.getElementById("standUpWhite").disabled = true; 
+				document.getElementById("startGame").disabled = true; 
+				document.getElementById("openGiveUpDialogButton").disabled = true;
+				debugToGameTextArea("Biały gracz opóścił stół"); 
+				console.log('white player = "White"');
 		}
 		else 
 		{ 
@@ -64,22 +64,22 @@
 		{ 
 			document.getElementById("blackPlayer").value = "Black";
 			<? 	if(!empty($_SESSION['id']))
-			{ 
-				echo '
-				if (document.getElementById("whitePlayer").value != js_loginUzytkownika) 
+				{ 
+					echo '
+					if (document.getElementById("whitePlayer").value != js_loginUzytkownika) 
 					document.getElementById("blackPlayer").disabled = false; 
-				else document.getElementById("blackPlayer").disabled = true; 
-				
-				if (document.getElementById("whitePlayer").value == "White") 
+					else document.getElementById("blackPlayer").disabled = true; 
+					
+					if (document.getElementById("whitePlayer").value == "White") 
 					document.getElementById("whitePlayer").disabled = false;';
-			} ?>
-			if (document.getElementById("whitePlayer").value == "White") 
+				} ?>
+				if (document.getElementById("whitePlayer").value == "White") 
 				document.getElementById("standUpWhite").disabled = true; 
-			document.getElementById("standUpBlack").disabled = true; 
-			document.getElementById("startGame").disabled = true; 
-			document.getElementById("openGiveUpDialogButton").disabled = true;
-			debugToGameTextArea("Czarny gracz opóścił stół");
-			console.log('black player = "Black"');
+				document.getElementById("standUpBlack").disabled = true; 
+				document.getElementById("startGame").disabled = true; 
+				document.getElementById("openGiveUpDialogButton").disabled = true;
+				debugToGameTextArea("Czarny gracz opóścił stół");
+				console.log('black player = "Black"');
 		}
 		else 
 		{ 
@@ -234,11 +234,14 @@
 		promotingMove + " na " + promoteType + ". " + gameState);
 	}
 	
-	function badMove(coreAnswer) //TODO: only for sender
+	function badMove(coreAnswer)
 	{
 		console.log('badMove: ' + coreAnswer);
 		var textAreaMsg = "Błędne rządanie ruchu: " + coreAnswer + "! Wpisz inny ruch.";
 		debugToGameTextArea(textAreaMsg);
+		document.getElementById("pieceFrom").disabled = false;
+		document.getElementById("pieceTo").disabled = false;
+		document.getElementById("movePieceButton").disabled = false;
 	}
 	
 </script> 									

@@ -134,7 +134,7 @@
 								{
 									websocket = new WebSocket(wsUri); 
 									console.log("create new websocket connection");
-								} else { console.log("Already connected to webscoket server"); }	
+								} else { console.log("Already connected to webscoket server. websocket =" + websocket); }	
 								
 								websocket.onerror = function (evt) 
 								{
@@ -144,8 +144,9 @@
 								websocket.onclose = function (evt) 
 								{
 									debugToGameTextArea("DISCONNECTED");
-									//websocket = new WebSocket(wsUri); //TODO: experyment -wznawianie połączenia zawsze jak się z jakiegoś powodu rozłączymy z websocketami
-									//console.log("reconnect to websocket server");
+									console.log('Socket is closed. Reconnect will be attempted in 1 second.', evt.reason);
+									websocket = null;
+									setTimeout(function() { initWebSocket(); }, 1000)
 								};
 								
 								websocket.onmessage = function (evt) { onMessage(evt) };
@@ -162,25 +163,18 @@
 										default: { stateStr = "UNKNOW"; break; }
 									}
 									console.log("WebSocket state = " + websocket.readyState + " ( " + stateStr + " )");
-									checkCoreVar('whitePlayer'); //zczytaj z core nazwe aktualnego gracza białego
-									checkCoreVar('blackPlayer'); //sczytaj z core nazwe aktualnego gracza czarnego
+									
+									checkCoreVar('whitePlayer'); 
+									checkCoreVar('blackPlayer'); 
 								}
 							} else alert("WebSockets not supported on your browser.");
 						}
 						
-						function stopWebSocket()  //wyłącz połączenie - nie wiem czy potrzebuje. trochę poniżej to samo prawie
+						function stopWebSocket() 
 						{
 							if (websocket)
 							websocket.close();
 						}
-						
-						/*function end_game(){ //zakończ grę/połączenie. TODO: jeżeli przypadkiem połączenie padnie, nawiąż je ponownie (czy tak można? w 
-							//sensie czy websocket nie disconnectuje się przy wychodzeniu ze strony?
-							if (websocket) {
-							websocket.close();
-							websocket = null; //TODO: to wyżej nie zeruje? potrzebne to wogle?
-							}
-						}*/
 						
 						setInterval(function()
 						{

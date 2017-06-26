@@ -39,9 +39,12 @@
 								{
 									document.getElementById("pieceFrom").value = ""; //czyszczenie dla kolejnych zapytań
 									document.getElementById("pieceTo").value = "";
+									document.getElementById("pieceFrom").disabled = true;
+									document.getElementById("pieceTo").disabled = true;
+									document.getElementById("movePieceButton").disabled = true;
+									
 									websocket.send( strToSend );
 									console.log( "string sent :", '"'+strToSend+'"' );
-									//debugToGameTextArea(strToSend);
 								}
 								else 
 								{
@@ -124,7 +127,7 @@
 		//TODO: dodać alert z zapytaniem czy na pewno chce opuścić grę !
 		//TODO: jeżeli gracz uciekł, to drugi gracz który został ma mozliwość zakończenia gry, bądź grania dalej z robotem(później) !
 		//TODO: sprawdź czy biały to login zalogowanego
-		change("whitePlayerName", "White");
+		change("whitePlayer", "White");
 	}
 	
 	function leaveBlack() 
@@ -132,7 +135,7 @@
 		//TODO: dodać alert z zapytaniem czy na pewno chce opuścić grę !
 		//TODO: jeżeli gracz uciekł, to drugi gracz który został ma mozliwość zakończenia gry, badź grania dalej z robotem(później) !
 		//TODO: sprawdź czy czarny to login zalogowanego
-		change("blackPlayerName", "Black");
+		change("blackPlayer", "Black");
 	}
 				
 	</script> 										
