@@ -23,8 +23,25 @@ function gameInProgress(move, turn)
 
 function switchTurn(whoseTurn)
 {
+	document.getElementById("whitePlayer").disabled = true; 
+	document.getElementById("blackPlayer").disabled = true; 
+	
+	if (document.getElementById("whitePlayer").value == js_loginUzytkownika) 
+	{
+		document.getElementById("standUpWhite").disabled = false; 
+		document.getElementById("standUpBlack").disabled = true; 
+	}
+	else if (document.getElementById("blackPlayer").value = js_loginUzytkownika)
+	{
+		document.getElementById("standUpWhite").disabled = true; 
+		document.getElementById("standUpBlack").disabled = false; 
+	}
+		
 	if (whoseTurn == "wt") //czarny skończył swój ruch
 	{ 
+		document.getElementById("startGame").disabled == true;
+		document.getElementById('openGiveUpDialogButton').disabled = false;
+		
 		if (document.getElementById("whitePlayer").value == js_loginUzytkownika) 
 		{
 			document.getElementById('pieceFrom').disabled = false;
@@ -34,7 +51,10 @@ function switchTurn(whoseTurn)
 			console.log("(white info) Ruch wykonuje teraz: Biały");
 		}
 		else if (document.getElementById("blackPlayer").value = js_loginUzytkownika) // zmiany w panelu czarnego gracza
-		{
+		{			
+			document.getElementById("startGame").disabled == true;
+			document.getElementById('openGiveUpDialogButton').disabled = false;
+			
 			document.getElementById('pieceFrom').disabled = true;
 			document.getElementById('pieceTo').disabled = true;
 			document.getElementById('movePieceButton').disabled = true; //TODO: przycisk do wysyłania ma działać dodatkowo tylko gdy oba powyższe pola są dobrze wypełnione
@@ -45,8 +65,11 @@ function switchTurn(whoseTurn)
 	}
 	else if (whoseTurn == 'bt') //biały skończył swój ruch
 	{
+		document.getElementById("startGame").disabled == true;
+		document.getElementById('openGiveUpDialogButton').disabled = false;
+	
 		if (document.getElementById('whitePlayer').value == js_loginUzytkownika) 
-		{
+		{			
 			document.getElementById('pieceFrom').disabled = true;
 			document.getElementById('pieceTo').disabled = true;
 			document.getElementById('movePieceButton').disabled = true; //TODO: przycisk do wysyłania ma działać dodatkowo tylko gdy oba powyższe pola są dobrze wypełnione
@@ -70,6 +93,7 @@ function switchTurn(whoseTurn)
 		document.getElementById('pieceTo').disabled = true;
 		document.getElementById('movePieceButton').disabled = true;
 		document.getElementById('openGiveUpDialogButton').disabled = true;
+		isStartReady();
 	}
 	else console.log('ERROR: WRONG whoseTurn VARIABLE');
 }

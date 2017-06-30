@@ -17,7 +17,7 @@
 	
 	function newWhite(newWhitePlayerName)
 	{
-		console.log('newWhitePlayerName: '+ newWhitePlayerName); 
+		console.log('new white player name: '+ newWhitePlayerName); 
 		
 		if (newWhitePlayerName == "White") 
 		{ 
@@ -25,15 +25,18 @@
 			<? 	if(!empty($_SESSION['id'])) 
 				{ 
 					echo '
-					if (document.getElementById("blackPlayer").value != js_loginUzytkownika) 
+					if (document.getElementById("blackPlayer").value != js_loginUzytkownika)
+					{
 					document.getElementById("whitePlayer").disabled = false; 
+					}
 					else document.getElementById("whitePlayer").disabled = true; 
 					
-					if (document.getElementById("blackPlayer").value == "Black") 
-					document.getElementById("blackPlayer").disabled = false;';
+					if (document.getElementById("blackPlayer").value == "Black")
+					{
+					document.getElementById("blackPlayer").disabled = true;
+					document.getElementById("standUpBlack").disabled = true; 
+					}';
 				} ?>
-				if (document.getElementById("blackPlayer").value == "Black") 
-				document.getElementById("standUpBlack").disabled = true; 
 				document.getElementById("standUpWhite").disabled = true; 
 				document.getElementById("startGame").disabled = true; 
 				document.getElementById("openGiveUpDialogButton").disabled = true;
@@ -67,14 +70,18 @@
 				{ 
 					echo '
 					if (document.getElementById("whitePlayer").value != js_loginUzytkownika) 
+					{
+					console.log("whitePlayer.value == js_loginUzytkownika. Enable black player button");
 					document.getElementById("blackPlayer").disabled = false; 
+					}
 					else document.getElementById("blackPlayer").disabled = true; 
 					
 					if (document.getElementById("whitePlayer").value == "White") 
-					document.getElementById("whitePlayer").disabled = false;';
+					{
+					document.getElementById("whitePlayer").disabled = true;
+					document.getElementById("standUpWhite").disabled = true; 
+					}';
 				} ?>
-				if (document.getElementById("whitePlayer").value == "White") 
-				document.getElementById("standUpWhite").disabled = true; 
 				document.getElementById("standUpBlack").disabled = true; 
 				document.getElementById("startGame").disabled = true; 
 				document.getElementById("openGiveUpDialogButton").disabled = true;
@@ -99,11 +106,22 @@
 	
 	function isStartReady()
 	{
-		if (document.getElementById("whitePlayer").value != "White" && document.getElementById("blackPlayer").value != "Black")
-		{
-			debugToGameTextArea("Wciśnij START, aby rozpocząć grę.");
-			document.getElementById("startGame").disabled = false; 
-		}
+		var tempWhite = document.getElementById("whitePlayer").value;
+		var tempblack = document.getElementById("blackPlayer").value;
+		
+		<? if(!empty($_SESSION['id']))
+			{ 
+				echo '
+				if (document.getElementById("whitePlayer").value != "White" && document.getElementById("blackPlayer").value != "Black" &&
+				(document.getElementById("whitePlayer").value == js_loginUzytkownika || document.getElementById("blackPlayer").value == js_loginUzytkownika))
+				{
+				console.log("2 players on chairs. White player name = ", tempWhite, ", black player name =", tempblack);
+				debugToGameTextArea("Wciśnij START, aby rozpocząć grę.");
+				document.getElementById("startGame").disabled = false; 
+				}
+				else console.log("Players not on chairs. White player name = ", tempWhite, ", black player name =", tempblack);
+				';
+			} ?>
 	}
 	
 	function connectionOnline()
@@ -148,59 +166,74 @@
 	
 	function checked(whatWasChecked)
 	{
-		if (whatWasChecked.substr(0,5) == 'White') //jeżeli sprawdzana wartośc w core to gracz biały...
+		if (whatWasChecked.substr(0,5) == 'White') 
 		{ 
 			var whitePlayerName = whatWasChecked.substr(6);	
 			whitePlayerName = whitePlayerName.trim(); //remove whitespaces
-			document.getElementById('whitePlayer').value = whitePlayerName; //...to nazwa białego jest tym kto siedzi na białym wg core...
-			if (document.getElementById("whitePlayer").value != "White") //...i jeżeli na białym jest jakiś gracz...
+			document.getElementById('whitePlayer').value = whitePlayerName; 
+			if (document.getElementById("whitePlayer").value != "White") 
 			{ 
-				document.getElementById('whitePlayer').disabled = true; //...to nikt nie może usiąść na białym...
-				if (whitePlayerName == js_loginUzytkownika) //...i jeżeli sprawdzany gracz w core to gracz będący zalogowanym...
+				document.getElementById('whitePlayer').disabled = true; 
+				if (whitePlayerName == js_loginUzytkownika) 
 				{
-					document.getElementById("standUpWhite").disabled = false; //...to przycisk do wstawania jest aktywny.
+					document.getElementById("standUpWhite").disabled = false; 
+					document.getElementById("blackPlayer").disabled = true; 
+					document.getElementById("standUpBlack").disabled = true; 
 					console.log('white player (!=White) =', whitePlayerName);  
 				}
 			}
-			else if (document.getElementById("whitePlayer").value == "White") //jednak jeżeli nikt nie siedzi na białym...
+			else if (document.getElementById("whitePlayer").value == "White") 
 			{  
-				<? if(!empty($_SESSION['id'])) //...i klient jest zalogowany na stronie...
+				<? if(!empty($_SESSION['id'])) 
 					{ 
-						echo 'document.getElementById("whitePlayer").disabled = false; //...to mozna usiąść na białym...
-						document.getElementById("standUpWhite").disabled = true; //...a guzik wstawania jest wyłączony.
+						echo '
+						if (document.getElementById("blackPlayer").value == js_loginUzytkownika) 
+						{ 
+						document.getElementById("whitePlayer").disabled = true; 
+						document.getElementById("standUpWhite").disabled = true; 
+						}
+						else document.getElementById("whitePlayer").disabled = false; 
 						console.log("white player = White");';
 					} ?>
 			}
 		}							
-		else if (whatWasChecked.substr(0,5) == 'Black')//jeżeli sprawdzana wartość w core to gracz czarny...
+		else if (whatWasChecked.substr(0,5) == 'Black')
 		{ 
 			var blackPlayerName = whatWasChecked.substr(6);
 			blackPlayerName = blackPlayerName.trim(); //remove whitespaces
-			document.getElementById('blackPlayer').value = blackPlayerName; //...to nazwa czarnego jest tym kto siedzi na czarnym wg core...
-			if (document.getElementById("blackPlayer").value != "Black") //...i jeżeli na czarnym jest jakiś gracz...
+			document.getElementById('blackPlayer').value = blackPlayerName; 
+			if (document.getElementById("blackPlayer").value != "Black") 
 			{ 
-				document.getElementById('blackPlayer').disabled = true; //...to nikt nie może usiąść na czarnym...
-				if (blackPlayerName == js_loginUzytkownika) //...i jeżeli sprawdzany gracz w core to gracz będący zalogowanym...
+				document.getElementById('blackPlayer').disabled = true;
+				if (blackPlayerName == js_loginUzytkownika) 
 				{	
-					document.getElementById("standUpBlack").disabled = false; //...to przycisk do wstawania jest aktywny.
+					document.getElementById("standUpBlack").disabled = false; 
+					document.getElementById("whitePlayer").disabled = true; 
+					document.getElementById("standUpWhite").disabled = true; 
 					console.log('black player (!=Czarny) =', blackPlayerName);
 				}
+				else console.log('blackPlayerName != js_loginUzytkownika. blackPlayerName =', blackPlayerName, ', js_loginUzytkownika =', js_loginUzytkownika);
 			}
-			else if (document.getElementById("blackPlayer").value == "Black") //jednak jeżeli nikt nie siedzi na czarnym...
+			else if (document.getElementById("blackPlayer").value == "Black") 
 			{  
-				<? if(!empty($_SESSION['id'])) //i klient jest zalogowany na stronie...
+				<? if(!empty($_SESSION['id'])) 
 					{ 
-						echo 'document.getElementById("blackPlayer").disabled = false; //to mozna usiąść na czarnym...
-						document.getElementById("standUpBlack").disabled = true; //...a guzik wstawania jest wyłączony.
+						echo '
+						if (document.getElementById("whitePlayer").value == js_loginUzytkownika) 
+						{ 
+						document.getElementById("blackPlayer").disabled = true; 
+						document.getElementById("standUpBlack").disabled = true; 
+						}
+						else document.getElementById("blackPlayer").disabled = false; 
 						console.log("black player = Black");';
 					} ?>
 			}
 		}
 		else if (whatWasChecked.substr(0,4) == 'Turn')
 		{ 
-			//TODO: czy to się przyda?
 			var checkedTurn = whatWasChecked.substr(5)
 			console.log('checked whoseTurn is = ' + checkedTurn);
+			isStartReady();
 		}
 		else console.log('unknown checked function parameter = ' + whatWasChecked);
 	}

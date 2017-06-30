@@ -92,6 +92,7 @@
 						
 						require_once('incoming_ws_msg.php');
 						require_once('outgoing_ws_msg.php');
+						require_once('disabling.php');
 					?>
 					
 					<script>
@@ -166,6 +167,7 @@
 									
 									checkCoreVar('whitePlayer'); 
 									checkCoreVar('blackPlayer'); 
+									checkCoreVar('whoseTurn');
 								}
 							} else alert("WebSockets not supported on your browser.");
 						}
