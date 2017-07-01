@@ -4,8 +4,6 @@
 		//TODO: ! warunek by nie zaczynać gry, jeżeli gracz nie opuści gry ! (?)
 		if (websocket != null && document.getElementById("startGame").disabled == false)  //jeżeli mamy połączenie i przycisk dało się wcisnąć
 		{
-			document.getElementById("startGame").disabled = true; // jeżeli wcisnął gracz start raz, to przycisk się wyłącza 
-			//TODO: @up !! w razie problemów przycisk musi ponownie zadziałać !!
 			var wiadomosc = "newGame"; //wiadomość rozpoczynająca nową grę
 			websocket.send(wiadomosc); //wyślij wiadomość na serwer
 			console.log("send 'new' websocket command to server");
@@ -39,9 +37,6 @@
 								{
 									document.getElementById("pieceFrom").value = ""; //czyszczenie dla kolejnych zapytań
 									document.getElementById("pieceTo").value = "";
-									document.getElementById("pieceFrom").disabled = true;
-									document.getElementById("pieceTo").disabled = true;
-									document.getElementById("movePieceButton").disabled = true;
 									
 									websocket.send( strToSend );
 									console.log( "string sent :", '"'+strToSend+'"' );

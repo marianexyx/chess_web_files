@@ -18,84 +18,7 @@ function gameInProgress(move, turn)
 	}
 	else console.log('ERROR. Unknown turn value = ' + turn);
 	
-	switchTurn(turn); 
-}
-
-function switchTurn(whoseTurn)
-{
-	document.getElementById("whitePlayer").disabled = true; 
-	document.getElementById("blackPlayer").disabled = true; 
-	
-	if (document.getElementById("whitePlayer").value == js_loginUzytkownika) 
-	{
-		document.getElementById("standUpWhite").disabled = false; 
-		document.getElementById("standUpBlack").disabled = true; 
-	}
-	else if (document.getElementById("blackPlayer").value = js_loginUzytkownika)
-	{
-		document.getElementById("standUpWhite").disabled = true; 
-		document.getElementById("standUpBlack").disabled = false; 
-	}
-		
-	if (whoseTurn == "wt") //czarny skończył swój ruch
-	{ 
-		document.getElementById("startGame").disabled == true;
-		document.getElementById('openGiveUpDialogButton').disabled = false;
-		
-		if (document.getElementById("whitePlayer").value == js_loginUzytkownika) 
-		{
-			document.getElementById('pieceFrom').disabled = false;
-			document.getElementById('pieceTo').disabled = false;
-			document.getElementById('movePieceButton').disabled = false; //TODO: przycisk do wysyłania ma działać dodatkowo tylko gdy oba powyższe pola są dobrze wypełnione
-			//TODO: zezwolenie na core by ruch mógł teraz wykonać tylko biały
-			console.log("(white info) Ruch wykonuje teraz: Biały");
-		}
-		else if (document.getElementById("blackPlayer").value = js_loginUzytkownika) // zmiany w panelu czarnego gracza
-		{			
-			document.getElementById("startGame").disabled == true;
-			document.getElementById('openGiveUpDialogButton').disabled = false;
-			
-			document.getElementById('pieceFrom').disabled = true;
-			document.getElementById('pieceTo').disabled = true;
-			document.getElementById('movePieceButton').disabled = true; //TODO: przycisk do wysyłania ma działać dodatkowo tylko gdy oba powyższe pola są dobrze wypełnione
-			//TODO: zezwolenie na core by ruch mógł teraz wykonać tylko biały
-			console.log("(black info) Ruch wykonuje teraz: Biały");
-		}
-		else console.log("ERROR: STATEMENT DOESNT MET- NO LOGGED PLAYER AVAILABLE (PLAYERS NICK VALUES ARE EMPTY- SHOULDNT BE POSSIBLE)");
-	}
-	else if (whoseTurn == 'bt') //biały skończył swój ruch
-	{
-		document.getElementById("startGame").disabled == true;
-		document.getElementById('openGiveUpDialogButton').disabled = false;
-	
-		if (document.getElementById('whitePlayer').value == js_loginUzytkownika) 
-		{			
-			document.getElementById('pieceFrom').disabled = true;
-			document.getElementById('pieceTo').disabled = true;
-			document.getElementById('movePieceButton').disabled = true; //TODO: przycisk do wysyłania ma działać dodatkowo tylko gdy oba powyższe pola są dobrze wypełnione
-			//TODO: zezwolenie na core by ruch mógł teraz wykonać tylko czarny
-			console.log("(white info) Ruch wykonuje teraz: Czarny");
-		}
-		else if (document.getElementById("blackPlayer").value == js_loginUzytkownika) 
-		{
-			document.getElementById('pieceFrom').disabled = false;
-			document.getElementById('pieceTo').disabled = false;
-			document.getElementById('movePieceButton').disabled = false; //TODO: przycisk do wysyłania ma działać dodatkowo tylko gdy oba powyższe pola są dobrze wypełnione
-			//TODO: zezwolenie na core by ruch mógł teraz wykonać tylko czarny
-			console.log("(black info) Ruch wykonuje teraz: Czarny");
-		}
-		else console.log('ERROR: STATEMENT DOESNT MET- NO LOGGED PLAYER AVAILABLE (PLAYERS NICK VALUES ARE EMPTY- SHOULDNT BE POSSIBLE)');
-	}
-	else if (whoseTurn == 'nt')
-	{
-		console.log('whoseTurn == nt');	
-		document.getElementById('pieceFrom').disabled = true;
-		document.getElementById('pieceTo').disabled = true;
-		document.getElementById('movePieceButton').disabled = true;
-		document.getElementById('openGiveUpDialogButton').disabled = true;
-		isStartReady();
-	}
-	else console.log('ERROR: WRONG whoseTurn VARIABLE');
+	isStartReady();
 }
 
 $("#dialog").dialog(
@@ -146,7 +69,8 @@ function openDialogPromote()
 
 function promoteToWhat()
 {
-	if (document.getElementById("whitePlayer").value == js_loginUzytkownika) //prośbę o promocję dostanie tylko ten gracz który wysyłał ruch- TODO: sprawdzić
+	//prośbę o promocję dostanie tylko ten gracz który wysyłał ruch- TODO: sprawdzić
+	if (document.getElementById("whitePlayer").value == js_loginUzytkownika) 
 	{
 		openDialogPromote();
 	}
@@ -187,19 +111,19 @@ $('#giveUpDialog').dialog({
 			if (whitePlayerName == js_loginUzytkownika)
 			{
 				debugToGameTextArea("Koniec gry: Biały gracz opóścił stół");
-				document.getElementById("standUpWhite").disabled = true;
+				document.getElementById("standUpWhite").disabled = true; //todo: upchać to tam gdzie tego miejsce
 				change("whitePlayer", "White")
 			}
 			else if (blackPlayerName == js_loginUzytkownika)
 			{
 				debugToGameTextArea("Koniec gry: Czarny gracz opóścił stół");
-				document.getElementById("standUpBlack").disabled = true;
+				document.getElementById("standUpBlack").disabled = true; //todo: upchać to tam gdzie tego miejsce
 				change("blackPlayer", "Black") 
 			}
 			
-			document.getElementById("startGame").disabled = true;
-			document.getElementById("openGiveUpDialogButton").disabled = true;
-			switchTurn('nt');
+			document.getElementById("startGame").disabled = true; //todo: upchać to tam gdzie tego miejsce
+			document.getElementById("openGiveUpDialogButton").disabled = true; //todo: upchać to tam gdzie tego miejsce
+			switchTurn('nt'); //todo: ogarnąć brak tej funkcji
 			resetBoard();
 
 			$(this).dialog("close");

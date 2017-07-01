@@ -12,7 +12,7 @@
 			if (document.getElementById("blackPlayer").value == "Black") chair = true;
 			else chair = false;
 		}
-		else console.log('ERROR: isChairEmpty(): unknown playerType: ' playerType,);
+		else console.log('ERROR: isChairEmpty(): unknown playerType: ', playerType);
 		
 		return chair;
 	}
@@ -30,7 +30,7 @@
 			if (document.getElementById("blackPlayer").value == js_loginUzytkownika) loggedPlayerOnChair = true;
 			else loggedPlayerOnChair = false;
 		}
-		else console.log('ERROR: isPlayerOnChair(): unknown playerType: ' playerType,);
+		else console.log('ERROR: isPlayerOnChair(): unknown playerType: ', playerType);
 		
 		return loggedPlayerOnChair;
 	}
@@ -53,7 +53,9 @@
 		else return false;
 	}
 	
-	function checkEnabling(state, whoseTrun)
+	//console.log('ZAKLADKA');
+	
+	function enabling(state, whoseTrun = 'nt')
 	{
 		//auto disable all. cases: notLoggedIn, noTurn, clicked: white/black chair, start, sendMove
 		var whitePlayerBtn = false;
@@ -66,7 +68,7 @@
 		var pieceToInput = false;
 		var sendBtn = false;
 		
-		var logged = <? empty($_SESSION['id']) ? echo 'false;' : echo 'true;'; ?>
+		var logged = <? if (empty($_SESSION['id'])) { echo 'false;';} else {echo 'true;';}; ?>
 		console.log('logged = ', logged);
 		
 		if (logged)
@@ -145,8 +147,8 @@
 				if (isLoggedPlayerOnChair('white')) whiteStandUp = true;
 				if (isLoggedPlayerOnChair('black')) blackStandUp = true;
 				if (isLoggedPlayerOnAnyChair()) giveUpBtn = true;
-				if (whoseTrun == 'wt' && isLoggedPlayerOnChair('white')) ||
-				(whoseTrun == 'bt' && isLoggedPlayerOnChair('black'))
+				if ((whoseTrun == 'wt' && isLoggedPlayerOnChair('white')) ||
+				(whoseTrun == 'bt' && isLoggedPlayerOnChair('black')))
 				{
 					pieceFromInput = true;
 					pieceToInput = true;
@@ -155,6 +157,8 @@
 				break;
 				
 				case 'endOfGame':
+				if (isChairEmpty('white') && !isLoggedPlayerOnChair('black')) whitePlayerBtn = true;
+				if (isChairEmpty('black') && !isLoggedPlayerOnChair('white')) blackPlayerBtn = true;
 				if (isLoggedPlayerOnChair('white')) whiteStandUp = true;
 				if (isLoggedPlayerOnChair('black')) blackStandUp = true;
 				if (are2PlayersOnChairs() && isLoggedPlayerOnAnyChair()) startBtn = true;
@@ -163,18 +167,15 @@
 				default: break;
 				}
 			}
-			
-		return 
-		{
-			whitePlayerBtn: whitePlayerBtn,
-			blackPlayerBtn: blackPlayerBtn,
-			whiteStandUp: whiteStandUp,
-			blackStandUp: blackStandUp,
-			startBtn: startBtn,
-			giveUpBtn: giveUpBtn,
-			pieceFromInput: pieceFromInput,
-			pieceToInput: pieceToInput,
-			sendBtn: sendBtn,
-		}
+		
+		document.getElementById("whitePlayer").disabled = !whitePlayerBtn; 
+		document.getElementById("blackPlayer").disabled = !blackPlayerBtn; 
+		document.getElementById("standUpWhite").disabled = !whiteStandUp; 
+		document.getElementById("standUpBlack").disabled = !blackStandUp; 
+		document.getElementById("startGame").disabled = !startBtn; 
+		document.getElementById("openGiveUpDialogButton").disabled = !giveUpBtn; 
+		document.getElementById("pieceFrom").disabled = !pieceFromInput; 
+		document.getElementById("pieceTo").disabled = !pieceToInput; 
+		document.getElementById("movePieceButton").disabled = !sendBtn; 
 	}
 </script>								

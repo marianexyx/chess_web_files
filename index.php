@@ -4,21 +4,29 @@
 		<meta charset="utf-8"/>
 		<title>Budgames - chess</title>
 		<meta name="description" content="" />
+			
+		<style> //todo: do zewnętrznego pliku dać
+			html, body { height:100%; overflow:auto; }
+			body { margin:0; }
+			#CameraViewer 
+			{
+				width: 640px;
+				height: 480px; 
+			}
+		</style>
+		<link rel="stylesheet" type="text/css" href="css/dialogNoClose.css">
+		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 		
 		<script src="http://code.jquery.com/jquery-latest.min.js"></script>
-		
-		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-		
-		<link rel="stylesheet" type="text/css" href="css/dialogNoClose.css">
-		
 		<script src="js/swfobject.js"></script>
-		<!-- <script src="js/websocket.js"></script>  // nie mogę używać php w javascripcie (jakoś tam się da, ale to jest magia)-->
+		<!-- <script src="js/websocket.js"></script>  // todo: zmyślnie umieścić kod websocketów w zewnętrznym pliku -->
 		<script src="js/functions.js"></script>
-		<script> //stream  params
-			var flashvars = {
-			};
-			var params = {
+		<script> //stream  params //todo: do zewnętrznego pliku dać
+			var flashvars = {};
+			
+			var params = 
+			{
 				menu: "false",
 				scale: "noScale",
 				allowFullscreen: "true",
@@ -26,26 +34,17 @@
 				bgcolor: "",
 				wmode: "direct" // can cause issues with FP settings & webcam
 			};
-			var attributes = {
-				id:"CameraViewer"
-			};
-			swfobject.embedSWF(
-			"CameraViewer.swf", 
-			"altContent", "100%", "100%", "10.0.0", 
-			"expressInstall.swf", 
-			flashvars, params, attributes
+			
+			var attributes = { id:"CameraViewer" };
+			
+			swfobject.embedSWF
+			(
+				"CameraViewer.swf", 
+				"altContent", "100%", "100%", "10.0.0", 
+				"expressInstall.swf", 
+				flashvars, params, attributes
 			);
 		</script>
-		
-		<style>
-			html, body { height:100%; overflow:auto; }
-			body { margin:0; }
-			#CameraViewer {
-			width: 640px;
-			height: 480px; 
-			}
-		</style>
-		
 	</head>
 	<body>	
 		<table  align="center"  cellspacing="5" cellpadding="5" width="900" border="1">
@@ -101,27 +100,10 @@
 						var blackPlayerName;
 						
 						$.getScript("js/functions.js", function(){});
-						
+											
 						$(function()  //odpala funkcje dopiero po zaladowaniu sie strony 
 						{
 							var debugTextArea = document.getElementById("debugTextArea"); //konsola powiadomień
-						});
-						
-						$(function(whitePlayerName, blackPlayerName, js_loginUzytkownika) // ta funkcja jest tu prewencyjnie, bo istnieje to przy okazji checków
-						{
-							if(whitePlayerName == js_loginUzytkownika)
-							{ 
-								if (document.getElementById("whitePlayer").value == "Biały")
-								document.getElementById("standUpWhite").disabled = false; //to guzik jest aktywny
-							}
-							else document.getElementById("standUpWhite").disabled = true;
-							
-							if(blackPlayerName == js_loginUzytkownika)
-							{ 
-								if (document.getElementById("blackPlayer").value == "Czarny")
-								document.getElementById("standUpBlack").disabled = false; //to guzik jest aktywny
-							}
-							else document.getElementById("standUpBlack").disabled = true;
 						});
 						
 						var wsUri = "ws://89.66.209.51:1234"; //parametry połączenia 
@@ -165,9 +147,7 @@
 									}
 									console.log("WebSocket state = " + websocket.readyState + " ( " + stateStr + " )");
 									
-									checkCoreVar('whitePlayer'); 
-									checkCoreVar('blackPlayer'); 
-									checkCoreVar('whoseTurn');
+									checkCoreVar('tableData'); 
 								}
 							} else alert("WebSockets not supported on your browser.");
 						}
@@ -240,5 +220,7 @@
 				| Camera stream by Michał Blaumann
 			</font>
 		</p>
+		
+		<script> enabling("notLoggedIn"); //TODO: TO TU DOBRZE?*/ <script>
 	</body>
 </html>																							
