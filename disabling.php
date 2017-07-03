@@ -53,11 +53,10 @@
 		else return false;
 	}
 	
-	//console.log('ZAKLADKA');
-	
 	function enabling(state, whoseTrun = 'nt')
 	{
-		//auto disable all. cases: notLoggedIn, noTurn, clicked: white/black chair, start, sendMove
+		//Auto disabling all in cases: notLoggedIn, noTurn, clicked: white/black chair, start, sendMove, standup white/black, giveUp
+		
 		var whitePlayerBtn = false;
 		var blackPlayerBtn = false;
 		var whiteStandUp = false;
@@ -69,8 +68,8 @@
 		var sendBtn = false;
 		
 		var logged = <? if (empty($_SESSION['id'])) { echo 'false;';} else {echo 'true;';}; ?>
-		console.log('logged = ', logged);
 		
+		console.log('enabling state = ', state);
 		if (logged)
 		{
 			switch (state)
@@ -78,29 +77,33 @@
 				case 'loggedIn':
 				if (isChairEmpty('white') && !isLoggedPlayerOnChair('black')) whitePlayerBtn = true;
 				if (isChairEmpty('black') && !isLoggedPlayerOnChair('white')) blackPlayerBtn = true;
-				if (isLoggedPlayerOnChair('white')) whiteStandUp = true;
-				if (isLoggedPlayerOnChair('black')) blackStandUp = true;
+				if (isLoggedPlayerOnChair('white') && whoseTrun == 'nt') whiteStandUp = true;
+				if (isLoggedPlayerOnChair('black') && whoseTrun == 'nt') blackStandUp = true;
 				break;
 				
 				case 'whiteEmpty':
-				if (!isLoggedPlayerOnChair('black')) whitePlayerBtn = true;
+				if (!isLoggedPlayerOnChair('black') && isChairEmpty('white')) whitePlayerBtn = true;
 				if (isChairEmpty('black')) blackPlayerBtn = true;
 				if (isLoggedPlayerOnChair('black')) blackStandUp = true;
 				break;
 				
 				case 'blackEmpty':
-				if (!isLoggedPlayerOnChair('white')) blackPlayerBtn = true;
+				if (!isLoggedPlayerOnChair('white') && isChairEmpty('black')) blackPlayerBtn = true;
 				if (isChairEmpty('white')) whitePlayerBtn = true;
 				if (isLoggedPlayerOnChair('white')) whiteStandUp = true;
 				break;
 				
 				case 'newWhite':
-				if (!isLoggedPlayerOnChair('white')) blackPlayerBtn = true;
-				if (isLoggedPlayerOnChair('white')) whiteStandUp = true;
-				if (isLoggedPlayerOnChair('black')) blackStandUp = true;
+				if (!isLoggedPlayerOnChair('white') && isChairEmpty('black')) blackPlayerBtn = true;
+				if (isLoggedPlayerOnChair('white') && whoseTrun == 'nt') whiteStandUp = true;
+				if (isLoggedPlayerOnChair('black') && whoseTrun == 'nt') blackStandUp = true;
 				if (are2PlayersOnChairs())
 				{
-					if (!isGameInProgress() && isLoggedPlayerOnAnyChair()) startBtn = true;
+					if (!isGameInProgress() && isLoggedPlayerOnAnyChair()) 
+					{
+						startBtn = true;
+						debugToGameTextArea("Wciśnij START, aby rozpocząć grę.");
+					}
 					if (isGameInProgress() && isLoggedPlayerOnAnyChair()) giveUpBtn = true;
 					if (isGameInProgress() && ((whoseTrun == 'wt' && isLoggedPlayerOnChair('white')) ||
 					(whoseTrun == 'bt' && isLoggedPlayerOnChair('black'))))
@@ -113,12 +116,16 @@
 				break;
 				
 				case 'newBlack':
-				if (!isLoggedPlayerOnChair('black')) whitePlayerBtn = true;
-				if (isLoggedPlayerOnChair('white')) whiteStandUp = true;
-				if (isLoggedPlayerOnChair('black')) blackStandUp = true;
+				if (!isLoggedPlayerOnChair('black') && isChairEmpty('white')) whitePlayerBtn = true;
+				if (isLoggedPlayerOnChair('white') && whoseTrun == 'nt') whiteStandUp = true;
+				if (isLoggedPlayerOnChair('black') && whoseTrun == 'nt') blackStandUp = true;
 				if (are2PlayersOnChairs())
 				{
-					if (!isGameInProgress() && isLoggedPlayerOnAnyChair()) startBtn = true;
+					if (!isGameInProgress() && isLoggedPlayerOnAnyChair()) 
+					{
+						startBtn = true;
+						debugToGameTextArea("Wciśnij START, aby rozpocząć grę.");
+					}
 					if (isGameInProgress() && isLoggedPlayerOnAnyChair()) giveUpBtn = true;
 					if (isGameInProgress() && ((whoseTrun == 'wt' && isLoggedPlayerOnChair('white')) ||
 					(whoseTrun == 'bt' && isLoggedPlayerOnChair('black'))))
@@ -131,8 +138,6 @@
 				break;
 				
 				case 'newGame':
-				if (isLoggedPlayerOnChair('white')) whiteStandUp = true;
-				if (isLoggedPlayerOnChair('black')) blackStandUp = true;
 				if (isLoggedPlayerOnAnyChair()) giveUpBtn = true;
 				if (isLoggedPlayerOnChair('white')) 
 				{
@@ -144,8 +149,6 @@
 				
 				case 'badMove':
 				case 'gameInProgress':
-				if (isLoggedPlayerOnChair('white')) whiteStandUp = true;
-				if (isLoggedPlayerOnChair('black')) blackStandUp = true;
 				if (isLoggedPlayerOnAnyChair()) giveUpBtn = true;
 				if ((whoseTrun == 'wt' && isLoggedPlayerOnChair('white')) ||
 				(whoseTrun == 'bt' && isLoggedPlayerOnChair('black')))
@@ -161,9 +164,23 @@
 				if (isChairEmpty('black') && !isLoggedPlayerOnChair('white')) blackPlayerBtn = true;
 				if (isLoggedPlayerOnChair('white')) whiteStandUp = true;
 				if (isLoggedPlayerOnChair('black')) blackStandUp = true;
-				if (are2PlayersOnChairs() && isLoggedPlayerOnAnyChair()) startBtn = true;
+				if (are2PlayersOnChairs() && isLoggedPlayerOnAnyChair()) 
+				{
+					startBtn = true;
+					debugToGameTextArea("Wciśnij START, aby rozpocząć grę.");
+				}
 				break;
 				
+				case 'resetComplited':
+				if (isChairEmpty('white') && !isLoggedPlayerOnChair('black')) whitePlayerBtn = true;
+				if (isChairEmpty('black') && !isLoggedPlayerOnChair('white')) blackPlayerBtn = true;
+				if (isLoggedPlayerOnChair('white')) whiteStandUp = true;
+				if (isLoggedPlayerOnChair('black')) blackStandUp = true;
+				debugToGameTextArea("Plansza zrestartowana. Oczekiwanie na graczy...");
+				break;
+				 
+				case 'noTurn':
+				case 'clickedBtn':
 				default: break;
 				}
 			}

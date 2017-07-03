@@ -8,12 +8,16 @@
 		else if	(evt.data == 'connectionOnline') 		{ connectionOnline(); }
 		else if	(evt.data == 'newOk') 					{ newGameStarted(); }
 		else if	(evt.data.substr(0,6) == 'moveOk') 		{ moveRespond(evt.data.substr(7)); }
-		else if	(evt == 'ready') 						{ coreIsReady(); }
+		else if (evt.data == 'reseting')				{ reseting(); }
+		else if	(evt.data == 'ready') 					{ coreIsReady(); }
 		else if	(evt.data.substr(0,7) == 'checked') 	{ checked(evt.data.substr(7)); }
 		else if	(evt.data.substr(0,8) == 'promoted') 	{ promoted(evt.data.substr(9)); }
 		else if	(evt.data.substr(0,7) == 'badMove') 	{ badMove(evt.data.substr(8)); }
 		else console.log('ERROR. Unknown onMessage value = ' + evt.data);
 	}
+	
+	var whitePlayerName = "White";
+	var blackPlayerName = "Black";
 	
 	function newWhite(newWhitePlayerName)
 	{
@@ -22,18 +26,16 @@
 		if (newWhitePlayerName == "White") 
 		{ 
 			document.getElementById("whitePlayer").value = "White";
-			debugToGameTextArea("Biały gracz opóścił stół"); 
-			console.log('white player = "White"');
 			enabling('whiteEmpty');
+			console.log('white player = "White"');
 		}
 		else 
 		{ 
 			document.getElementById("whitePlayer").value = newWhitePlayerName;
 			whitePlayerName = newWhitePlayerName; 
 			debugToGameTextArea("Gracz figur białych: "+ newWhitePlayerName);
-			console.log('white player = ', newWhitePlayerName);
-			isStartReady();
 			enabling('newWhite');
+			console.log('white player = ', newWhitePlayerName);
 		}
 	}
 	
@@ -44,39 +46,17 @@
 		if (newBlackPlayerName == "Black")
 		{ 
 			document.getElementById("blackPlayer").value = "Black";
-			debugToGameTextArea("Czarny gracz opóścił stół");
-			console.log('black player = "Black"');
 			enabling('blackEmpty');
+			console.log('black player = "Black"');
 		}
 		else 
 		{ 
 			document.getElementById("blackPlayer").value = newBlackPlayerName; 
 			blackPlayerName = newBlackPlayerName; 
 			debugToGameTextArea("Gracz figur czarnych: "+ newBlackPlayerName);
-			console.log('black player = ', newBlackPlayerName);
-			isStartReady();
 			enabling('newBlack');
+			console.log('black player = ', newBlackPlayerName);
 		}
-	}
-	
-	function isStartReady() //todo: pewnie da się to mądrze gdzie indziej upchnąć
-	{
-		var tempWhite = document.getElementById("whitePlayer").value;
-		var tempblack = document.getElementById("blackPlayer").value;
-		
-		<? if(!empty($_SESSION['id']))
-			{ 
-				echo '
-				if (document.getElementById("whitePlayer").value != "White" && document.getElementById("blackPlayer").value != "Black" &&
-				(document.getElementById("whitePlayer").value == js_loginUzytkownika || document.getElementById("blackPlayer").value == js_loginUzytkownika))
-				{
-					console.log("2 players on chairs. White player name = ", tempWhite, ", black player name =", tempblack);
-					debugToGameTextArea("Wciśnij START, aby rozpocząć grę.");
-				}
-				else 
-					console.log("Players not on chairs. White player name = ", tempWhite, ", black player name =", tempblack);
-				';
-			} ?>
 	}
 	
 	function connectionOnline()
@@ -89,7 +69,6 @@
 		if (document.getElementById("whitePlayer").value != "White" && document.getElementById("blackPlayer").value != "Black")
 		{
 			debugToGameTextArea("Nowa gra rozpoczęta. Białe wykonują ruch.");
-			isStartReady();
 			enabling('newGame', whoseTrun = 'wt')
 		}
 		else console.log("ERROR: game started when players aren't on chairs");
@@ -108,9 +87,14 @@
 		else console.log("ERROR: moveRespond(): unknown gameStatus value = " + gameStatus);
 	}
 	
+	function reseting()
+	{
+		debugToGameTextArea("Koniec gry: Gracz opuścił stół. Resetownie planszy...");
+	}
+	
 	function coreIsReady()
 	{
-		debugToGameTextArea("Wciśnij START, aby rozpocząć grę.");
+		enabling('resetComplited');
 	}
 	
 	function checked(whatWasChecked)
@@ -126,16 +110,15 @@
 		{ 
 			var blackPlayerName = whatWasChecked.substr(6);
 			blackPlayerName = blackPlayerName.trim(); //remove whitespaces
-			document.getElementById('blackPlayer').value = blackPlayerName; 
-			enabling('newBlack');
+			document.getElementById('blackPlayer').value = blackPlayerName;
+			enabling('newBlack');			
 		}
 		else if (whatWasChecked.substr(0,4) == 'Turn')
 		{ 
 			var checkedTurn = whatWasChecked.substr(5);
-			console.log('checked whoseTurn is = ' + checkedTurn);
-			isStartReady();
 			if (checkedTurn != 'nt') enabling('gameInProgress', checkedTurn);
 			else enabling('endOfGame');
+			console.log('checked whoseTurn is = ' + checkedTurn);
 		}
 		else if (whatWasChecked.substr(0,9) == 'TableData')
 		{
@@ -150,11 +133,9 @@
 			document.getElementById('blackPlayer').value = blackPlayerName;
 			
 			var checkedTurn = tableData[3];
-			console.log('checked whoseTurn is = ' + checkedTurn);
-			isStartReady();
-			
 			if (checkedTurn != 'nt') enabling('gameInProgress', checkedTurn);
 			else enabling('endOfGame');
+			console.log('checked whoseTurn is = ' + checkedTurn);
 		}
 		else console.log('unknown checked function parameter = ' + whatWasChecked);
 	}

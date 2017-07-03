@@ -4,6 +4,7 @@
 		//TODO: ! warunek by nie zaczynać gry, jeżeli gracz nie opuści gry ! (?)
 		if (websocket != null && document.getElementById("startGame").disabled == false)  //jeżeli mamy połączenie i przycisk dało się wcisnąć
 		{
+			enabling('clickedBtn');
 			var wiadomosc = "newGame"; //wiadomość rozpoczynająca nową grę
 			websocket.send(wiadomosc); //wyślij wiadomość na serwer
 			console.log("send 'new' websocket command to server");
@@ -38,6 +39,7 @@
 									document.getElementById("pieceFrom").value = ""; //czyszczenie dla kolejnych zapytań
 									document.getElementById("pieceTo").value = "";
 									
+									enabling('clickedBtn');
 									websocket.send( strToSend );
 									console.log( "string sent :", '"'+strToSend+'"' );
 								}
@@ -105,6 +107,7 @@
 		//TODO: sprawdzanie czy gracz jeszcze jest zalogowany (nie robi się to z każdym wywołaniem funkcji?)
 		//if ($getBlackPlayer != $loginUzytkownika){ 
 		//var userLogin = "<? echo $loginUzytkownika ?>";
+		enabling('clickedBtn');
 		change("whitePlayer", js_loginUzytkownika);
 	}
 	
@@ -114,6 +117,7 @@
 		//TODO: sprawdzanie czy gracz jeszcze jest zalogowany (nie robi się to z każdym wywołaniem funkcji?)
 		//if ($getBlackPlayer != $loginUzytkownika){ 
 		//var userLogin = "<? echo $loginUzytkownika ?>";
+		enabling('clickedBtn');
 		change("blackPlayer", js_loginUzytkownika);
 	}
 	
@@ -122,6 +126,7 @@
 		//TODO: dodać alert z zapytaniem czy na pewno chce opuścić grę !
 		//TODO: jeżeli gracz uciekł, to drugi gracz który został ma mozliwość zakończenia gry, bądź grania dalej z robotem(później) !
 		//TODO: sprawdź czy biały to login zalogowanego
+		enabling('clickedBtn');
 		change("whitePlayer", "White");
 	}
 	
@@ -130,6 +135,7 @@
 		//TODO: dodać alert z zapytaniem czy na pewno chce opuścić grę !
 		//TODO: jeżeli gracz uciekł, to drugi gracz który został ma mozliwość zakończenia gry, badź grania dalej z robotem(później) !
 		//TODO: sprawdź czy czarny to login zalogowanego
+		enabling('clickedBtn');
 		change("blackPlayer", "Black");
 	}
 				

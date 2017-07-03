@@ -96,8 +96,6 @@
 					
 					<script>
 						js_loginUzytkownika = <? echo json_encode($loginUzytkownika); ?>; //TODO: kiedy to się zmienia i czy trzeba to kontrolowac?
-						var whitePlayerName; //todo: W functions.js są te same zmienne
-						var blackPlayerName;
 						
 						$.getScript("js/functions.js", function(){});
 											
@@ -161,7 +159,7 @@
 						setInterval(function()
 						{
 							websocket.send("keepConnected");
-							console.log("Wysłana do websocket servera pusta wiadomość podtrzymującą połączenie");
+							console.log("maintain websocket connection with core");
 						}, 250000); //[ms]
 						
 						initWebSocket(); //połącz z websocketami (ważne to jest tutaj by pobrać startowe wartości strony) 
@@ -193,18 +191,15 @@
 							<img src="grafiki/black_pawn.jpg" alt="b_pawn" />
 							<input type="button" id="blackPlayer" onClick="newBlackName()" value="Loading..." disabled />
 							<input type="button" id="standUpBlack" onClick="leaveBlack()" value="Wstań" disabled />
-							<!-- <script>stand_up_enabling(whitePlayerName, blackPlayerName, js_loginUzytkownika);</script> -->
 						</td>						
 					</table>
 					<table width="80%" cellpadding="15">
-						<!-- <td align="left">Czas 1</td> -->
 						<td align="center">
 							<input type="button" id="startGame" value="start" onclick="newGame()" disabled />
 							
 							<button id="openGiveUpDialogButton" disabled>rezygnuję</button>
 							<div id="giveUpDialog"><p>Czy chcesz opóścić grę?</p></div>
 						</td>
-						<!-- <td align="right">Czas 2</td> -->
 					</table> 
 					<!-- chat -->
 					<div id="chatarea" data-style="large"></div>
@@ -221,6 +216,6 @@
 			</font>
 		</p>
 		
-		<script> enabling("notLoggedIn"); //TODO: TO TU DOBRZE?*/ <script>
+		<script> enabling("notLoggedIn"); /*TODO: TO TU DOBRZE?*/ </script>
 	</body>
 </html>																							

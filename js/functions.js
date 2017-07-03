@@ -6,6 +6,8 @@ function debugToGameTextArea(message)
 
 function gameInProgress(move, turn)
 {
+	enabling('gameInProgress', turn);
+	
 	if (turn == "wt")
 	{
 		wiadomoscNaTextArea = "Czarny wykonał ruch: " + move + ". Ruch wykonują Białe.";
@@ -17,8 +19,6 @@ function gameInProgress(move, turn)
 		debugToGameTextArea(wiadomoscNaTextArea);
 	}
 	else console.log('ERROR. Unknown turn value = ' + turn);
-	
-	isStartReady();
 }
 
 $("#dialog").dialog(
@@ -78,8 +78,6 @@ function promoteToWhat()
 
 function endOfGame(checkmate, endType)
 {
-	switchTurn("nt");
-	
 	if (endType == "whiteWon")
 	{
 		console.log("endOfGame(): whiteWon");
@@ -98,8 +96,6 @@ function endOfGame(checkmate, endType)
 		// na kurniku obu graczy deklalure remis bodajże
 	}
 	else console.log("endOfGame(): ERROR: unknown parameter");
-	
-	isStartReady();
 }
 
 $('#giveUpDialog').dialog({
@@ -108,22 +104,17 @@ $('#giveUpDialog').dialog({
 	{
 		'tak': function() 
 		{
+			enabling('clickedBtn');
+			
 			if (whitePlayerName == js_loginUzytkownika)
 			{
-				debugToGameTextArea("Koniec gry: Biały gracz opóścił stół");
-				document.getElementById("standUpWhite").disabled = true; //todo: upchać to tam gdzie tego miejsce
 				change("whitePlayer", "White")
 			}
 			else if (blackPlayerName == js_loginUzytkownika)
 			{
-				debugToGameTextArea("Koniec gry: Czarny gracz opóścił stół");
-				document.getElementById("standUpBlack").disabled = true; //todo: upchać to tam gdzie tego miejsce
 				change("blackPlayer", "Black") 
 			}
 			
-			document.getElementById("startGame").disabled = true; //todo: upchać to tam gdzie tego miejsce
-			document.getElementById("openGiveUpDialogButton").disabled = true; //todo: upchać to tam gdzie tego miejsce
-			switchTurn('nt'); //todo: ogarnąć brak tej funkcji
 			resetBoard();
 
 			$(this).dialog("close");
