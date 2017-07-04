@@ -138,3 +138,21 @@ $('#openGiveUpDialogButton').click(function()
     $('#giveUpDialog').dialog('open');
     return false;
 });
+
+function deleteask()
+{
+	if (confirm('Czy na pewno chcesz się wylogować?')) 
+	{
+		if (document.getElementById("whitePlayer").value == js_loginUzytkownika) change('whitePlayer', 'White');
+		else if (document.getElementById("blackPlayer").value == js_loginUzytkownika) change('blackPlayer', 'Black');
+		
+		enabling('clikedBtn');
+		
+		console.log('logged out');
+
+		return true;
+	}
+	else return false;   
+  }
+  
+  

@@ -55,7 +55,7 @@
 	
 	function enabling(state, whoseTrun = 'nt')
 	{
-		//Auto disabling all in cases: notLoggedIn, noTurn, clicked: white/black chair, start, sendMove, standup white/black, giveUp
+		//Auto disabling all in cases: notLoggedIn, noTurn, clicked: white/black chair, start, sendMove, standup white/black, giveUp, logOut
 		
 		var whitePlayerBtn = false;
 		var blackPlayerBtn = false;

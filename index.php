@@ -4,14 +4,14 @@
 		<meta charset="utf-8"/>
 		<title>Budgames - chess</title>
 		<meta name="description" content="" />
-			
+		
 		<style> //todo: do zewnętrznego pliku dać
 			html, body { height:100%; overflow:auto; }
 			body { margin:0; }
 			#CameraViewer 
 			{
-				width: 640px;
-				height: 480px; 
+			width: 640px;
+			height: 480px; 
 			}
 		</style>
 		<link rel="stylesheet" type="text/css" href="css/dialogNoClose.css">
@@ -39,10 +39,10 @@
 			
 			swfobject.embedSWF
 			(
-				"CameraViewer.swf", 
-				"altContent", "100%", "100%", "10.0.0", 
-				"expressInstall.swf", 
-				flashvars, params, attributes
+			"CameraViewer.swf", 
+			"altContent", "100%", "100%", "10.0.0", 
+			"expressInstall.swf", 
+			flashvars, params, attributes
 			);
 		</script>
 	</head>
@@ -62,7 +62,7 @@
 							<a href="index.php?a=login">Zaloguj się</a></center>';
 						} //else wyświetl stronę gracza zalogowanego
 						else echo '<center><a href="index.php?a=game">Info</a> | 
-						<a href="index.php?a=log_out">Wyloguj się</a></center>';
+						<a href="index.php?a=logout" onclick="return deleteask();">Wyloguj się</a></center>';
 						
 						switch($_GET['a']) //zmienna w pasku ustalająca stronę po ob_end_flush; 'a' pobierane z "a href'ów"
 						{
@@ -70,7 +70,7 @@
 							case 'login': require_once('login.php'); break;
 							case 'register': require_once('register.php'); break;
 							case 'game': require_once('game.php'); break;
-							case 'log_out':
+							case 'logout':
 							$_SESSION = array(); // czyszczenie sesji pustą tablicą
 							session_destroy(); // niszczenie sesji. resetuje się na nowe
 							header("Location: index.php"); //header przenosi na stronę główną
@@ -98,7 +98,7 @@
 						js_loginUzytkownika = <? echo json_encode($loginUzytkownika); ?>; //TODO: kiedy to się zmienia i czy trzeba to kontrolowac?
 						
 						$.getScript("js/functions.js", function(){});
-											
+						
 						$(function()  //odpala funkcje dopiero po zaladowaniu sie strony 
 						{
 							var debugTextArea = document.getElementById("debugTextArea"); //konsola powiadomień
@@ -215,6 +215,22 @@
 				| Camera stream by Michał Blaumann
 			</font>
 		</p>
+		
+		<script> 
+			document.getElementById("pieceFrom").onkeyup = function() {pieceFromOnKeyPress()};
+			document.getElementById("pieceTo").onkeyup = function() {pieceToOnKeyPress()};
+			
+			function pieceFromOnKeyPress() 
+			{
+				if (document.getElementById("pieceFrom").value.length >= 2) document.getElementById("pieceTo").focus();
+			}
+			
+			function pieceToOnKeyPress() 
+			{
+				if (document.getElementById("pieceFrom").value.length >= 2 && document.getElementById("pieceTo").value.length >= 2) 
+				document.getElementById("movePieceButton").focus();
+			}
+		</script>
 		
 		<script> enabling("notLoggedIn"); /*TODO: TO TU DOBRZE?*/ </script>
 	</body>

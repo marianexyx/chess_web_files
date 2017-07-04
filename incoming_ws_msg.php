@@ -172,8 +172,9 @@
 	function badMove(coreAnswer)
 	{
 		console.log('badMove: ' + coreAnswer);
-		var textAreaMsg = "Błędne rządanie ruchu: " + coreAnswer + "! Wpisz inny ruch.";
+		var textAreaMsg = "Błędne rządanie ruchu: " + coreAnswer.substr(0,4); + "! Wpisz inny ruch.";
 		debugToGameTextArea(textAreaMsg);
+		enabling('badMove', coreAnswer.substr(5));
 	}
 	
 </script> 									
