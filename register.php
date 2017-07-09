@@ -1,5 +1,10 @@
 <p>REJESTRACJA</p>
 <?php
+	//todo: sprawdzić logowanie i resejtrowanie
+	//todo: akceptuje regulamin
+	//todo: captcha
+	//todo: przywróć dane jeżeli wpisałeś coś źle (oprócz tego co źle) 
+	
 	if (!empty($_POST))
 	{
 		if(!empty($_POST['login']) && !empty($_POST['pass']) && !empty($_POST['pass2']) && !empty($_POST['email']))
@@ -35,6 +40,9 @@
 		else echo '<center><b>Wypełnij pola poprawnie.</b></center>';
 	}
 ?>
+
+<script src='https://www.google.com/recaptcha/api.js'></script>
+
 <form action="index.php?a=register" method="POST">
 	<table align="center">
 		<tr>
@@ -62,4 +70,6 @@
 			<td><center><input type="submit" style="width: 100px" value="Zarejestruj się"/></center></td>
 		</tr>
 	</table>
+	
+	<div class="g-recaptcha" data-sitekey="6Lf9PygUAAAAAEPWjrGrWkXqkKbK6_uxtW64eKDj"></div>
 </form>

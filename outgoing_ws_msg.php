@@ -14,7 +14,7 @@
 	
 	var pieceFrom;
 	var pieceTo;
-	function movePiece(msg)
+	function movePiece(msg) //todo: post?
 	{
 		pieceFrom = document.getElementById("pieceFrom").value;
 		pieceTo = document.getElementById("pieceTo").value;

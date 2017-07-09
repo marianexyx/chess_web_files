@@ -1,9 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE HTML>
+<html lang="pl">
 	<head>
 		<meta charset="utf-8"/>
-		<title>Budgames - chess</title>
 		<meta name="description" content="" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+		<title>Budgames - chess</title>
 		
 		<style> //todo: do zewnętrznego pliku dać
 			html, body { height:100%; overflow:auto; }
@@ -51,18 +52,20 @@
 			<tr align="center">
 				<td colspan="2">
 					<?
+						//todo: turę trzymać w globalnej zmiennej. stan gry też? 
 						ob_start();
-						session_start(); //mechanizm sesji online
+						session_start(); //mechanizm sesji online (można używać globalnego pojemnika na zmiennie $_SESSION)
 						require_once('include/inc.php');
 						
 						error_reporting( error_reporting() & ~E_NOTICE ); //wyłącz ostrzeżenie, że niezdefiniowana jest zmienna 'a' i inne tego typu
 						
-						if(empty($_SESSION['id'])){ //jeżeli id jest puste (gracz nie jest zalogowany, id=null) wyświetl pasek z rejestracją i loginem
+						if(empty($_SESSION['id'])) //jeżeli id jest puste (gracz nie jest zalogowany, id=null) wyświetl pasek z rejestracją i loginem
+						{
 							echo '<center><a href="index.php?a=register">Zarejestruj się</a> | 
 							<a href="index.php?a=login">Zaloguj się</a></center>';
-						} //else wyświetl stronę gracza zalogowanego
+						} 
 						else echo '<center><a href="index.php?a=game">Info</a> | 
-						<a href="index.php?a=logout" onclick="return deleteask();">Wyloguj się</a></center>';
+						<a href="index.php?a=logout" onclick="return deleteask();">Wyloguj się</a></center>'; //else wyświetl stronę gracza zalogowanego
 						
 						switch($_GET['a']) //zmienna w pasku ustalająca stronę po ob_end_flush; 'a' pobierane z "a href'ów"
 						{
@@ -72,7 +75,7 @@
 							case 'game': require_once('game.php'); break;
 							case 'logout':
 							$_SESSION = array(); // czyszczenie sesji pustą tablicą
-							session_destroy(); // niszczenie sesji. resetuje się na nowe
+							session_destroy(); // niszczenie sesji. resetuje się na nowe //todo: czy msie rozni od session_unset?
 							header("Location: index.php"); //header przenosi na stronę główną
 							break;
 							default: require_once('home.php'); break;
