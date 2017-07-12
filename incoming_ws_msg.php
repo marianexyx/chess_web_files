@@ -1,95 +1,103 @@
-<script> 
-	function onMessage(evt)
+<?
+	function onMessage($evt)
 	{
-		console.log('clear msg from core:', evt.data); 
+		$consoleMsg = 'clear msg from core:'.$evt;
+		debugToConsole($consoleMsg);
 		
-		if (evt.data.substr(0,8) == 'newWhite') 		{ newWhite(evt.data.substr(9)); }
-		else if (evt.data.substr(0,8) == 'newBlack') 	{ newBlack(evt.data.substr(9)); }
-		else if	(evt.data == 'connectionOnline') 		{ connectionOnline(); }
-		else if	(evt.data == 'newOk') 					{ newGameStarted(); }
-		else if	(evt.data.substr(0,6) == 'moveOk') 		{ moveRespond(evt.data.substr(7)); }
-		else if (evt.data == 'reseting')				{ reseting(); }
-		else if	(evt.data == 'ready') 					{ coreIsReady(); }
-		else if	(evt.data.substr(0,7) == 'checked') 	{ checked(evt.data.substr(7)); }
-		else if	(evt.data.substr(0,8) == 'promoted') 	{ promoted(evt.data.substr(9)); }
-		else if	(evt.data.substr(0,7) == 'badMove') 	{ badMove(evt.data.substr(8)); }
-		else console.log('ERROR. Unknown onMessage value = ' + evt.data);
+		if 		(substr($evt,0,8) == 'newWhite') 	{ newWhite(substr($evt,9)); }
+		else if (substr($evt,0,8) == 'newBlack') 	{ newBlack(substr($evt,9)); }
+		else if	($evt == 'connectionOnline') 		{ connectionOnline(); }
+		else if	($evt == 'newOk') 					{ newGameStarted(); }
+		else if	(substr($evt,0,6) == 'moveOk') 		{ moveRespond(substr($evt,7)); }
+		else if ($evt == 'reseting')				{ reseting(); }
+		else if	($evt == 'ready') 					{ coreIsReady(); }
+		else if	(substr($evt,0,7) == 'checked') 	{ checked(substr($evt,7)); }
+		else if	(substr($evt,0,8) == 'promoted') 	{ promoted(substr($evt,9)); }
+		else if	(substr($evt,0,7) == 'badMove') 	{ badMove(substr($evt,8)); }
+		else 
+		{
+			$consoleMsg = 'ERROR. Unknown onMessage value = '.$evt;
+			debugToConsole($consoleMsg);
+		}
 	}
 	
-	var whitePlayerName = "White";
-	var blackPlayerName = "Black";
-	
-	function newWhite(newWhitePlayerName)
-	{
-		console.log('new white player name: '+ newWhitePlayerName); 
-		
-		if (newWhitePlayerName == "White") 
+	function newWhite($newWhitePlayerName)
+	{		
+		if ($newWhitePlayerName == WHITE) 
 		{ 
-			document.getElementById("whitePlayer").value = "White";
+			$_SESSION['white'] = WHITE;
+			echo '<script>document.getElementById("whitePlayer").value = '.WHITE.');</script>';
 			enabling('whiteEmpty');
-			console.log('white player = "White"');
+			debugToConsole('white player ='.WHITE);
 		}
 		else 
 		{ 
-			document.getElementById("whitePlayer").value = newWhitePlayerName;
-			whitePlayerName = newWhitePlayerName; 
-			debugToGameTextArea("Gracz figur białych: "+ newWhitePlayerName);
+			$_SESSION['white'] = $newWhitePlayerName;
+			echo '<script>document.getElementById("whitePlayer").value = '.$newWhitePlayerName.');</script>';
+			echo '<script>debugToGameTextArea("Gracz figur białych: "'.$newWhitePlayerName.');</script>';
 			enabling('newWhite');
-			console.log('white player = ', newWhitePlayerName);
+			$consoleMsg = 'white player = '. $newWhitePlayerName;
+			debugToConsole($consoleMsg);
 		}
 	}
 	
-	function newBlack(newBlackPlayerName)
-	{
-		console.log('newWhitePlayerName: '+ newBlackPlayerName);
-		
-		if (newBlackPlayerName == "Black")
+	function newBlack($newBlackPlayerName)
+	{		
+		if ($newBlackPlayerName == BLACK) 
 		{ 
-			document.getElementById("blackPlayer").value = "Black";
+			echo 'document.getElementById("blackPlayer").value = '.BLACK.');</script>';
 			enabling('blackEmpty');
-			console.log('black player = "Black"');
+			debugToConsole('black player ='.BLACK);
 		}
 		else 
 		{ 
-			document.getElementById("blackPlayer").value = newBlackPlayerName; 
-			blackPlayerName = newBlackPlayerName; 
-			debugToGameTextArea("Gracz figur czarnych: "+ newBlackPlayerName);
+			$_SESSION['black'] = $newBlackPlayerName; 
+			echo '<script>document.getElementById("blackPlayer").value = '.$newBlackPlayerName.');</script>'; 
+			echo '<script>debugToGameTextArea("Gracz figur czarnych: '.$newBlackPlayerName.');</script>';
 			enabling('newBlack');
-			console.log('black player = ', newBlackPlayerName);
+			$consoleMsg = 'black player = '.$newBlackPlayerName;
+			debugToConsole($consoleMsg);
 		}
 	}
 	
 	function connectionOnline()
 	{
-		console.log("connection with weboscket server maintained");
+		debugToConsole("connection with weboscket server maintained");
 	}
 	
 	function newGameStarted()
 	{
-		if (document.getElementById("whitePlayer").value != "White" && document.getElementById("blackPlayer").value != "Black")
+		if ($_SESSION['white'] != WHITE && $_SESSION['black'] != BLACK)
 		{
-			debugToGameTextArea("Nowa gra rozpoczęta. Białe wykonują ruch.");
-			enabling('newGame', whoseTrun = 'wt')
+			echo '<script>debugToGameTextArea("Nowa gra rozpoczęta. Białe wykonują ruch.");</script>';
+			enabling('newGame');
 		}
-		else console.log("ERROR: game started when players aren't on chairs");
+		else debugToConsole("ERROR: game started when players aren't on chairs");
 	}
 	
-	function moveRespond(coreAnswer)
+	function moveRespond($coreAnswer)
 	{
-		var moveOk = coreAnswer.substr(0,4);
-		var whoseTurn = coreAnswer.substr(5,2);
-		var gameStatus = coreAnswer.substr(8);
-		console.log("moveOk = " + moveOk + ", whoseTurn = " + whoseTurn + ", gameStatus = " + gameStatus);
+		$moveOk = substr($coreAnswer,0,4); 
+		$whoseTurn = substr($coreAnswer,5,2);
+		$gameStatus = substr($coreAnswer,8);
+
+		$consoleMsg = 'moveOk = '. $moveOk .', whoseTurn = '.$whoseTurn.'gameStatus = '.$gameStatus;
+		debugToConsole($consoleMsg);
 		
-		if (gameStatus == "continue") gameInProgress(moveOk, whoseTurn);
-		else if (gameStatus == "promote") promoteToWhat();
-		else if (gameStatus == "whiteWon" || gameStatus == "blackWon" || gameStatus == "draw") endOfGame(moveOk, gameStatus);
-		else console.log("ERROR: moveRespond(): unknown gameStatus value = " + gameStatus);
+		if ($gameStatus == "continue") gameInProgress($moveOk, $whoseTurn);
+		else if ($gameStatus == "promote") promoteToWhat();
+		else if ($gameStatus == "whiteWon" || $gameStatus == "blackWon" || $gameStatus == "draw") 
+			echo '<script> endOfGame($moveOk, $gameStatus); </script>';
+		else 
+		{
+			$consoleMsg = 'ERROR: moveRespond(): unknown gameStatus value = '.$gameStatus;
+			debugToConsole($consoleMsg);
+		}
 	}
 	
 	function reseting()
 	{
-		debugToGameTextArea("Koniec gry: Gracz opuścił stół. Resetownie planszy...");
+		echo '<script>debugToGameTextArea("Koniec gry: Gracz opuścił stół. Resetownie planszy...");</script>';
 	}
 	
 	function coreIsReady()
@@ -97,84 +105,108 @@
 		enabling('resetComplited');
 	}
 	
-	function checked(whatWasChecked)
+	function checked($whatWasChecked)
 	{
-		if (whatWasChecked.substr(0,5) == 'White') 
+		if (substr($whatWasChecked,0,5) == 'White')
 		{ 
-			var whitePlayerName = whatWasChecked.substr(6);	
-			whitePlayerName = whitePlayerName.trim(); //remove whitespaces
-			document.getElementById('whitePlayer').value = whitePlayerName; 
+			$_SESSION['white'] = substr($whatWasChecked,6);
+			echo '<script>document.getElementById("whitePlayer").value ='.$_SESSION['white'].';</script>'; 
 			enabling('newWhite');
 		}							
-		else if (whatWasChecked.substr(0,5) == 'Black')
+		else if (substr($whatWasChecked,0,5) == 'Black')
 		{ 
-			var blackPlayerName = whatWasChecked.substr(6);
-			blackPlayerName = blackPlayerName.trim(); //remove whitespaces
-			document.getElementById('blackPlayer').value = blackPlayerName;
+			$_SESSION['black'] = substr($whatWasChecked,6);
+			echo '<script>document.getElementById("blackPlayer").value ='.$_SESSION["black"].';</script>'; 
 			enabling('newBlack');			
 		}
-		else if (whatWasChecked.substr(0,4) == 'Turn')
+		else if (substr($whatWasChecked,0,4) == 'Turn')
 		{ 
-			var checkedTurn = whatWasChecked.substr(5);
-			if (checkedTurn != 'nt') enabling('gameInProgress', checkedTurn);
+			$checkedTurn = substr($whatWasChecked,5);
+			
+			if ($checkedTurn == 'nt') $_SESSION['turn'] = NO_TURN; 
+			else if($checkedTurn == 'wt') $_SESSION['turn'] = WHITE_TURN;
+			else if($checkedTurn == 'bt') $_SESSION['turn'] = BLACK_TURN;
+			else 
+			{
+				$consoleMsg = 'ERROR: unknown turn type = '.$checkedTurn;
+				debugToConsole($consoleMsg);
+			}
+			
+			if ($_SESSION['turn'] != NO_TURN) enabling('gameInProgress');
 			else enabling('endOfGame');
-			console.log('checked whoseTurn is = ' + checkedTurn);
+
+			$consoleMsg = 'checked whoseTurn is = '.$_SESSION['turn'];
+			debugToConsole($consoleMsg);
 		}
-		else if (whatWasChecked.substr(0,9) == 'TableData')
+		else if (substr($whatWasChecked,0,9) == 'TableData')
 		{
-			var tableData = whatWasChecked.split(" ");
+			$tableData = explode(" ",$whatWasChecked);
 			
-			var whitePlayerName = tableData[1];	
-			whitePlayerName = whitePlayerName.trim(); //remove whitespaces
-			document.getElementById('whitePlayer').value = whitePlayerName; 
+			$_SESSION['white'] = $tableData[1];	
+			echo '<script>document.getElementById("whitePlayer").value ='.$_SESSION['white'].';</script>';  
 			
-			var blackPlayerName = tableData[2];
-			blackPlayerName = blackPlayerName.trim(); //remove whitespaces
-			document.getElementById('blackPlayer').value = blackPlayerName;
+			$_SESSION['black'] = $tableData[2];
+			echo '<script>document.getElementById("blackPlayer").value ='.$_SESSION['black'].';</script>'; 
 			
-			var checkedTurn = tableData[3];
-			if (checkedTurn != 'nt') enabling('gameInProgress', checkedTurn);
+			$_SESSION['turn'] = $tableData[3];
+			if ($_SESSION['turn'] != NO_TURN) enabling('gameInProgress');
 			else enabling('endOfGame');
-			console.log('checked whoseTurn is = ' + checkedTurn);
+
+			$consoleMsg = 'checked whoseTurn is = '.$_SESSION['turn'];
+			debugToConsole($consoleMsg);
 		}
-		else console.log('unknown checked function parameter = ' + whatWasChecked);
+		else 
+		{
+			$consoleMsg = 'ERROR: unknown checked function parameter = '.$whatWasChecked;
+			debugToConsole($consoleMsg);
+		}
 	}
 	
-	function promoted(promotedTo)
+	function promoted($promotedTo)
 	{
-		var promotingMove = promotedTo.substr(0,4);	
-		var promotePiece = promotedTo.substr(5,1);
-		var promoteType;
-		switch(promotePiece)
+		$promotingMove = substr($promotedTo,0,4);	
+		$promotePiece = substr($promotedTo,5,1);
+		$promoteType;
+		switch($promotePiece)
 		{
-			case q: promoteType = "hetmana"; break
-			case r: promoteType = "wieżę"; break
-			case b: promoteType = "gońca"; break
-			case k: promoteType = "skoczka"; break	
+			case q: $promoteType = "hetmana"; break;
+			case r: $promoteType = "wieżę"; break;
+			case b: $promoteType = "gońca"; break;
+			case k: $promoteType = "skoczka"; break	;
+			default:
+				$consoleMsg = 'ERROR. promoted(): Unknown $promotePiece var = '.$promotePiece;
+				debugToConsole($consoleMsg);
+				break;
 		}
 		
-		var promoteTurn = promotedTo.substr(7,2);
-		var gameStateAfterPromotion = promotedTo.substr(10);
-		var gameState;
-		switch(gameStateAfterPromotion)
+		$promoteTurn = substr($promotedTo,7,2); 
+		$gameStateAfterPromotion = substr($promotedTo,10);
+		$gameState;
+		switch($gameStateAfterPromotion)
 		{
-			case 'continue': gameState = "Ruch wykonuje " + (promoteTurn == 'bt' ?  "Biały." : "Czarny."); break;
-			case 'whiteWon': gameState = "Koniec gry. Wygrał Biały."; break;
-			case 'blackWon': gameState = "Koniec gry. Wygrał Czarny."; break;
-			case 'draw': gameState = "Koniec gry. Remis."; break;
-			default: console.log('ERROR. promoted(): Unknown gameStateAfterPromotion var = ' + gameState); break;
+			case 'continue': $gameState = "Ruch wykonuje ". ($promoteTurn == 'bt' ?  "Biały." : "Czarny."); break;
+			case 'whiteWon': $gameState = "Koniec gry. Wygrał Biały."; break;
+			case 'blackWon': $gameState = "Koniec gry. Wygrał Czarny."; break;
+			case 'draw': $gameState = "Koniec gry. Remis."; break;
+			default: 
+				$consoleMsg = 'ERROR. promoted(): Unknown $gameStateAfterPromotion var = '. $gameStateAfterPromotion;
+				debugToConsole($consoleMsg);
+				break;
 		}
 		
-		debugToGameTextArea((promoteTurn == 'bt' ?  "Biały." : "Czarny.") + " wykonał promocję piona ruchem " + 
-		promotingMove + " na " + promoteType + ". " + gameState);
+		echo '<script>debugToGameTextArea("Koniec gry: Gracz opuścił stół. Resetownie planszy...");</script>';
+		echo '<script>debugToGameTextArea('.($promoteTurn == "bt" ?  "Biały." : "Czarny.").' wykonał promocję piona ruchem ' 
+		.$promotingMove.' na '.$promoteType.'. '.$gameState.');</script>';
 	}
 	
-	function badMove(coreAnswer)
+	function badMove($coreAnswer)
 	{
-		console.log('badMove: ' + coreAnswer);
-		var textAreaMsg = "Błędne rządanie ruchu: " + coreAnswer.substr(0,4); + "! Wpisz inny ruch.";
-		debugToGameTextArea(textAreaMsg);
-		enabling('badMove', coreAnswer.substr(5));
+		$consoleMsg = 'badMove: '.$coreAnswer;
+		debugToConsole($consoleMsg);
+
+		$textAreaMsg = "Błędne rządanie ruchu: ".substr($coreAnswer,0,4)."! Wpisz inny ruch.";
+		echo '<script>debugToGameTextArea'.($textAreaMsg).';</script>';
+		enabling('badMove');
 	}
 	
-</script> 									
+?>							

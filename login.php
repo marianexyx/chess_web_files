@@ -22,7 +22,7 @@
 					header('Location: index.php?a=game'); //posiadając gracza wszędzie tam gdzie jest "session_start()" przechodzimy do indexu. skrypt tu się urywa
 				} 
 				else echo 'Taki gracz nie istnieje lub hasło jest niepoprawne.';
-			} 
+			}
 			else echo 'Niepoprawna nazwa użytkownika. Login może składać się tylko z znaków alfanumerycznych.';
 		} 
 		else echo '<center><b>Wypełnij pola poprawnie.</b></center>';

@@ -20,6 +20,7 @@
 		
 		<script src="http://code.jquery.com/jquery-latest.min.js"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+		<script src='https://www.google.com/recaptcha/api.js'></script>
 		<script src="js/swfobject.js"></script>
 		<!-- <script src="js/websocket.js"></script>  // todo: zmyślnie umieścić kod websocketów w zewnętrznym pliku -->
 		<script src="js/functions.js"></script>
@@ -98,9 +99,9 @@
 					?>
 					
 					<script>
-						js_loginUzytkownika = <? echo json_encode($loginUzytkownika); ?>; //TODO: kiedy to się zmienia i czy trzeba to kontrolowac?
+						//js_loginUzytkownika = <? echo json_encode($loginUzytkownika); ?>; //TODO: kiedy to się zmienia i czy trzeba to kontrolowac?
 						
-						$.getScript("js/functions.js", function(){});
+						$.getScript("js/functions.js", function(){}); //todo: dlaczego dopiero tutaj?
 						
 						$(function()  //odpala funkcje dopiero po zaladowaniu sie strony 
 						{
@@ -133,7 +134,7 @@
 									setTimeout(function() { initWebSocket(); }, 1000)
 								};
 								
-								websocket.onmessage = function (evt) { onMessage(evt) };
+								websocket.onmessage = function (evt) { onMessage(evt.data) };
 								
 								websocket.onopen = function (evt) 
 								{ 

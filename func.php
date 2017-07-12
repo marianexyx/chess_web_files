@@ -1,12 +1,17 @@
 <?php     
-	//variables
-	$white = "Białe"; //TODO: ! make static ! change to "white" !
-	$black = "Czarne"; //TODO: ! make static ! change to "black" !
+	define("WHITE", "Białe");
+	define("BLACK", "Czarne");
+	$_SESSION['white'] = WHITE;
+	$_SESSION['black'] = BLACK;
 	
-	//functions
+	define("NO_TURN", "noTurn");
+	define("WHITE_TURN", "whiteTurn");
+	define("BLACK_TURN", "blackTurn");
+	$_SESSION['turn'] = NO_TURN;
+	
     function call($sql) // Wywołanie zapytania do bazy (użytkownik)
 	{
-        global $con;
+        global $con; //to nie jest deklaracja, tylko odwołanie się do zmiennej globalnej, bo funkcję łapią zasięgiem bodajże tylko zmienne lokalne
         return mysqli_query($con, $sql);
     }
      
@@ -20,6 +25,7 @@
 	{
         global $con;
         return trim(mysqli_real_escape_string($con, strip_tags($var)));
+		//trim() - Usuwa białe, puste znaki z początku oraz końca ciągu.
     }
      
 	function getUser($id) // Funkcja wybierająca szereg danych o graczu z podanym ID
@@ -36,21 +42,41 @@
 	{
         if(empty($sid)) // Jeżeli puste ID sesji...
 		{
-            return header("Location: index.php?a=login"); // ...Przejście do strony logowania
-			exit();
+            return header("Location: index.php?a=login"); // ...przejście do strony logowania
         } 
 		else  // Gdy ID sesji jest poprawne...
 		{
-            return $sid = (int)$sid; // ...Zmiana lub utrzymanie stanu ID jako integer (postać numeryczna)
+            return $sid = (int)$sid; // ...zmiana lub utrzymanie stanu ID jako integer (postać numeryczna)
         }
 	 }
+	 
+	function debugToConsole($data) 
+	{
+		$output = $data;
+		if (is_array($output))
+        $output = implode(',', $output);
+
+		echo '<script> console.log( "Debug Objects: '.$output.'"); </script>';
+	}
+	
+	function gameInProgress($move, $turn)
+	{
+		enabling('gameInProgress', $turn);
+		
+		if (turn == WHITE_TURN)
+		{
+			$wiadomoscNaTextArea = 'Czarny wykonał ruch: "'.$move.'". Ruch wykonują Białe.';
+			echo '<script> debugToGameTextArea(wiadomoscNaTextArea); </script>';
+		}
+		else if (turn == BLACK_TURN)
+		{
+			$wiadomoscNaTextArea = 'Biały wykonał ruch: "'.$move.'". Ruch wykonują Czarne.';
+			echo '<script> debugToGameTextArea(wiadomoscNaTextArea); </script>';
+		}
+		else 
+		{
+			$consoleMsg = 'ERROR. Unknown turn value = '.$turn;
+			debugToConsole($consoleMsg);
+		}
+	}
 ?>
-
-
-
-
-
-
-
-
-

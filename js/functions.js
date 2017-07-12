@@ -4,51 +4,34 @@ function debugToGameTextArea(message)
 	debugTextArea.scrollTop = debugTextArea.scrollHeight;
 }
 
-function gameInProgress(move, turn)
-{
-	enabling('gameInProgress', turn);
-	
-	if (turn == "wt")
-	{
-		wiadomoscNaTextArea = "Czarny wykonał ruch: " + move + ". Ruch wykonują Białe.";
-		debugToGameTextArea(wiadomoscNaTextArea);
-	}
-	else if (turn == "bt")
-	{
-		wiadomoscNaTextArea = "Biały wykonał ruch: " + move + ". Ruch wykonują Czarne.";
-		debugToGameTextArea(wiadomoscNaTextArea);
-	}
-	else console.log('ERROR. Unknown turn value = ' + turn);
-}
-
 $("#dialog").dialog(
 {
 	autoOpen: false, 
 	dialogClass: "no-close",
 	buttons: 
 	{
-		'hetman': function() 
+		'&#9819;': function() //hex: &#x265B;	js: \u265B	css: \00265B
 		{
 			websocket.send("promoteTo: q"); //queen
-			console.log('sent to core: promoteTo: q');
+			console.log('clicked: promoteTo: q');
 			$(this).dialog("close");
 		}, 
-		'goniec': function() 
+		'&#9821;': function() 
 		{
 			websocket.send("promoteTo: b"); //bishop
-			console.log('sent to core: promoteTo: b');
+			console.log('clicked: promoteTo: b');
 			$(this).dialog("close");
 		}, 
-		'skoczek': function() 
+		'&#9822;': function() 
 		{
 			websocket.send("promoteTo: k"); //knight
-			console.log('sent to core: promoteTo: k');
+			console.log('clicked: promoteTo: k');
 			$(this).dialog("close");
 		}, 
-		'wieża': function() 
+		'&#9820;': function() 
 		{
 			websocket.send("promoteTo: r"); //rook
-			console.log('sent to core: promoteTo: r');
+			console.log('clicked: promoteTo: r');
 			$(this).dialog("close");
 		}
 	},
@@ -61,19 +44,10 @@ $("#dialog").dialog(
 	}
 });
 
-function openDialogPromote()
+function promoteToWhat()
 {
 	console.log("show promotion buttons window");
 	$("#dialog").dialog('open');
-}
-
-function promoteToWhat()
-{
-	//prośbę o promocję dostanie tylko ten gracz który wysyłał ruch- TODO: sprawdzić
-	if (document.getElementById("whitePlayer").value == js_loginUzytkownika) 
-	{
-		openDialogPromote();
-	}
 }
 
 function endOfGame(checkmate, endType)
@@ -92,8 +66,7 @@ function endOfGame(checkmate, endType)
 	{
 		console.log("endOfGame(): draw");
 		debugToGameTextArea("Koniec gry: Remis");
-		// TODO: co dalej?
-		// na kurniku obu graczy deklalure remis bodajże
+		// TODO: co dalej?  na kurniku obu graczy deklalure remis bodajże
 	}
 	else console.log("endOfGame(): ERROR: unknown parameter");
 }
@@ -104,20 +77,17 @@ $('#giveUpDialog').dialog({
 	{
 		'tak': function() 
 		{
-			enabling('clickedBtn');
-			
-			if (whitePlayerName == js_loginUzytkownika)
+			var request = $.ajax(
 			{
-				change("whitePlayer", "White")
-			}
-			else if (blackPlayerName == js_loginUzytkownika)
-			{
-				change("blackPlayer", "Black") 
-			}
-			
-			resetBoard();
+				url: "giveup.php",
+				type: "GET",			
+				dataType: "html"
+			});
 
-			$(this).dialog("close");
+			request.done(function() 
+			{
+				$(this).dialog("close");		
+			});
 		}, 
 		'nie': function() 
 		{
@@ -141,18 +111,24 @@ $('#openGiveUpDialogButton').click(function()
 
 function deleteask()
 {
-	if (confirm('Czy na pewno chcesz się wylogować?')) 
+	if (confirm("Czy na pewno chcesz się wylogować?")) 
 	{
-		if (document.getElementById("whitePlayer").value == js_loginUzytkownika) change('whitePlayer', 'White');
-		else if (document.getElementById("blackPlayer").value == js_loginUzytkownika) change('blackPlayer', 'Black');
-		
-		enabling('clikedBtn');
-		
-		console.log('logged out');
+		var request = $.ajax(
+		{
+			url: "logout.php",
+			type: "GET",			
+			dataType: "html"
+		});
 
-		return true;
+		request.done(function() 
+		{
+			return true;		
+		});
+		
+		request.fail(function() 
+		{
+			return false;		
+		});
 	}
 	else return false;   
-  }
-  
-  
+}

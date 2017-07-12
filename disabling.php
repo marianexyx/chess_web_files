@@ -1,182 +1,188 @@
-<script>
-	function isChairEmpty(playerType)
+<?
+	function isChairEmpty($playerType)
 	{
-		var chair = false;
-		if (playerType == 'white') 
+		$chair = false;
+		if ($playerType == WHITE) 
 		{
-			if (document.getElementById("whitePlayer").value == "White") chair = true;
-			else chair = false;
+			if ($_SESSION['white'] == WHITE) $chair = true;
+			else $chair = false;
 		}
-		else if (playerType == 'black') 
+		else if ($playerType == BLACK) 
 		{
-			if (document.getElementById("blackPlayer").value == "Black") chair = true;
-			else chair = false;
+			if ($_SESSION['black'] = BLACK) $chair = true;
+			else $chair = false;
 		}
-		else console.log('ERROR: isChairEmpty(): unknown playerType: ', playerType);
-		
-		return chair;
+		else 
+		{
+			$consoleMsg = 'ERROR: isChairEmpty(): unknown playerType: ', $playerType;
+			debugToConsole($consoleMsg);
+		}
+		return $chair;
 	}
 	
-	function isLoggedPlayerOnChair(playerType)
+	function isLoggedPlayerOnChair($playerType)
 	{
-		var loggedPlayerOnChair = false;
-		if (playerType == 'white') 
+		$loggedPlayerOnChair = false;
+		if ($playerType == WHITE) 
 		{
-			if (document.getElementById("whitePlayer").value == js_loginUzytkownika) loggedPlayerOnChair = true;
-			else loggedPlayerOnChair = false;
+			if ($_SESSION['white'] == $loginUzytkownika) $loggedPlayerOnChair = true;
+			else $loggedPlayerOnChair = false;
 		}
-		else if (playerType == 'black') 
+		else if ($playerType == BLACK) 
 		{
-			if (document.getElementById("blackPlayer").value == js_loginUzytkownika) loggedPlayerOnChair = true;
-			else loggedPlayerOnChair = false;
+			if ($_SESSION['black'] == $loginUzytkownika) $loggedPlayerOnChair = true;
+			else $loggedPlayerOnChair = false;
 		}
-		else console.log('ERROR: isPlayerOnChair(): unknown playerType: ', playerType);
-		
-		return loggedPlayerOnChair;
+		else
+		{
+			$consoleMsg = 'ERROR: isPlayerOnChair(): unknown playerType: ', $playerType;
+			debugToConsole($consoleMsg);
+		}
+		return $loggedPlayerOnChair;
 	}
 	
 	function isLoggedPlayerOnAnyChair()
 	{
-		if (isLoggedPlayerOnChair('white') || isLoggedPlayerOnChair('black')) return true
+		if (isLoggedPlayerOnChair(WHITE) || isLoggedPlayerOnChair(BLACK)) return true
 		else return false;
 	}
 	
 	function are2PlayersOnChairs()
 	{
-		if (!isChairEmpty('white') && !isChairEmpty('black')) return true;
+		if (!isChairEmpty(WHITE) && !isChairEmpty(BLACK)) return true;
 		else return false;
 	}
 	
-	function isGameInProgress(turn)
+	function isGameInProgress()
 	{
-		if (turn == "wt" || turn == "bt") return true;
+		if ($_SESSION['turn'] == WHITE_TURN || $_SESSION['turn'] == BLACK_TURN) return true;
 		else return false;
 	}
 	
-	function enabling(state, whoseTrun = 'nt')
+	function enabling($state)
 	{
 		//Auto disabling all in cases: notLoggedIn, noTurn, clicked: white/black chair, start, sendMove, standup white/black, giveUp, logOut
 		
-		var whitePlayerBtn = false;
-		var blackPlayerBtn = false;
-		var whiteStandUp = false;
-		var blackStandUp = false;
-		var startBtn = false;
-		var giveUpBtn = false;
-		var pieceFromInput = false;
-		var pieceToInput = false;
-		var sendBtn = false;
+		$whitePlayerBtn = false;
+		$blackPlayerBtn = false;
+		$whiteStandUp = false;
+		$blackStandUp = false;
+		$startBtn = false;
+		$giveUpBtn = false;
+		$pieceFromInput = false;
+		$pieceToInput = false;
+		$sendBtn = false;
 		
-		var logged = <? if (empty($_SESSION['id'])) { echo 'false;';} else {echo 'true;';}; ?>
+		$consoleMsg = 'enabling state = ', $state;
+		debugToConsole($consoleMsg);
 		
-		console.log('enabling state = ', state);
-		if (logged)
+		if (!empty($_SESSION['id']))
 		{
-			switch (state)
+			switch ($state)
 			{
 				case 'loggedIn':
-				if (isChairEmpty('white') && !isLoggedPlayerOnChair('black')) whitePlayerBtn = true;
-				if (isChairEmpty('black') && !isLoggedPlayerOnChair('white')) blackPlayerBtn = true;
-				if (isLoggedPlayerOnChair('white') && whoseTrun == 'nt') whiteStandUp = true;
-				if (isLoggedPlayerOnChair('black') && whoseTrun == 'nt') blackStandUp = true;
+				if (isChairEmpty(WHITE) && !isLoggedPlayerOnChair(BLACK)) $whitePlayerBtn = true;
+				if (isChairEmpty(BLACK) && !isLoggedPlayerOnChair(WHITE)) $blackPlayerBtn = true;
+				if (isLoggedPlayerOnChair(WHITE) && $_SESSION['turn'] == NO_TURN) $whiteStandUp = true;
+				if (isLoggedPlayerOnChair(BLACK) && $_SESSION['turn'] == NO_TURN) $blackStandUp = true;
 				break;
 				
 				case 'whiteEmpty':
-				if (!isLoggedPlayerOnChair('black') && isChairEmpty('white')) whitePlayerBtn = true;
-				if (isChairEmpty('black')) blackPlayerBtn = true;
-				if (isLoggedPlayerOnChair('black')) blackStandUp = true;
+				if (!isLoggedPlayerOnChair(BLACK) && isChairEmpty(WHITE)) $whitePlayerBtn = true;
+				if (isChairEmpty(BLACK)) $blackPlayerBtn = true;
+				if (isLoggedPlayerOnChair(BLACK)) $blackStandUp = true;
 				break;
 				
 				case 'blackEmpty':
-				if (!isLoggedPlayerOnChair('white') && isChairEmpty('black')) blackPlayerBtn = true;
-				if (isChairEmpty('white')) whitePlayerBtn = true;
-				if (isLoggedPlayerOnChair('white')) whiteStandUp = true;
+				if (!isLoggedPlayerOnChair(WHITE) && isChairEmpty(BLACK)) $blackPlayerBtn = true;
+				if (isChairEmpty(WHITE)) $whitePlayerBtn = true;
+				if (isLoggedPlayerOnChair(WHITE)) $whiteStandUp = true;
 				break;
 				
 				case 'newWhite':
-				if (!isLoggedPlayerOnChair('white') && isChairEmpty('black')) blackPlayerBtn = true;
-				if (isLoggedPlayerOnChair('white') && whoseTrun == 'nt') whiteStandUp = true;
-				if (isLoggedPlayerOnChair('black') && whoseTrun == 'nt') blackStandUp = true;
+				if (!isLoggedPlayerOnChair(WHITE) && isChairEmpty(BLACK)) $blackPlayerBtn = true;
+				if (isLoggedPlayerOnChair(WHITE) && $_SESSION['turn'] == NO_TURN) $whiteStandUp = true;
+				if (isLoggedPlayerOnChair(BLACK) && $_SESSION['turn'] == NO_TURN) $blackStandUp = true;
 				if (are2PlayersOnChairs())
 				{
 					if (!isGameInProgress() && isLoggedPlayerOnAnyChair()) 
 					{
-						startBtn = true;
-						debugToGameTextArea("Wciśnij START, aby rozpocząć grę.");
+						$startBtn = true;
+						echo '<script>debugToGameTextArea("Wciśnij START, aby rozpocząć grę.");</script>';
 					}
-					if (isGameInProgress() && isLoggedPlayerOnAnyChair()) giveUpBtn = true;
-					if (isGameInProgress() && ((whoseTrun == 'wt' && isLoggedPlayerOnChair('white')) ||
-					(whoseTrun == 'bt' && isLoggedPlayerOnChair('black'))))
+					if (isGameInProgress() && isLoggedPlayerOnAnyChair()) $giveUpBtn = true;
+					if (isGameInProgress() && (($_SESSION['turn'] == WHITE_TURN && isLoggedPlayerOnChair(WHITE)) ||
+					($_SESSION['turn'] == BLACK_TURN && isLoggedPlayerOnChair(BLACK))))
 					{
-						pieceFromInput = true;
-						pieceToInput = true;
-						sendBtn = true;
+						$pieceFromInput = true;
+						$pieceToInput = true;
+						$sendBtn = true;
 					}
 				}
 				break;
 				
 				case 'newBlack':
-				if (!isLoggedPlayerOnChair('black') && isChairEmpty('white')) whitePlayerBtn = true;
-				if (isLoggedPlayerOnChair('white') && whoseTrun == 'nt') whiteStandUp = true;
-				if (isLoggedPlayerOnChair('black') && whoseTrun == 'nt') blackStandUp = true;
+				if (!isLoggedPlayerOnChair(BLACK) && isChairEmpty(WHITE)) $whitePlayerBtn = true;
+				if (isLoggedPlayerOnChair(WHITE) && $_SESSION['turn'] == NO_TURN) $whiteStandUp = true;
+				if (isLoggedPlayerOnChair(BLACK) && $_SESSION['turn'] == NO_TURN) $blackStandUp = true;
 				if (are2PlayersOnChairs())
 				{
 					if (!isGameInProgress() && isLoggedPlayerOnAnyChair()) 
 					{
-						startBtn = true;
-						debugToGameTextArea("Wciśnij START, aby rozpocząć grę.");
+						$startBtn = true;
+						echo '<script>debugToGameTextArea("Wciśnij START, aby rozpocząć grę.");</script>';
 					}
-					if (isGameInProgress() && isLoggedPlayerOnAnyChair()) giveUpBtn = true;
-					if (isGameInProgress() && ((whoseTrun == 'wt' && isLoggedPlayerOnChair('white')) ||
-					(whoseTrun == 'bt' && isLoggedPlayerOnChair('black'))))
+					if (isGameInProgress() && isLoggedPlayerOnAnyChair()) $giveUpBtn = true;
+					if (isGameInProgress() && (($_SESSION['turn'] == WHITE_TURN && isLoggedPlayerOnChair(WHITE)) ||
+					($_SESSION['turn'] == BLACK_TURN && isLoggedPlayerOnChair(BLACK))))
 					{
-						pieceFromInput = true;
-						pieceToInput = true;
-						sendBtn = true;
+						$pieceFromInput = true;
+						$pieceToInput = true;
+						$sendBtn = true;
 					}
 				}
 				break;
 				
 				case 'newGame':
-				if (isLoggedPlayerOnAnyChair()) giveUpBtn = true;
-				if (isLoggedPlayerOnChair('white')) 
+				if (isLoggedPlayerOnAnyChair()) $giveUpBtn = true;
+				if (isLoggedPlayerOnChair(WHITE)) 
 				{
-					pieceFromInput = true;
-					pieceToInput = true;
-					sendBtn = true;
+					$pieceFromInput = true;
+					$pieceToInput = true;
+					$sendBtn = true;
 				}
 				break;
 				
 				case 'badMove':
 				case 'gameInProgress':
-				if (isLoggedPlayerOnAnyChair()) giveUpBtn = true;
-				if ((whoseTrun == 'wt' && isLoggedPlayerOnChair('white')) ||
-				(whoseTrun == 'bt' && isLoggedPlayerOnChair('black')))
+				if (isLoggedPlayerOnAnyChair()) $giveUpBtn = true;
+				if (($_SESSION['turn'] == WHITE_TURN && isLoggedPlayerOnChair(WHITE)) ||
+				($_SESSION['turn'] == BLACK_TURN && isLoggedPlayerOnChair(BLACK)))
 				{
-					pieceFromInput = true;
-					pieceToInput = true;
-					sendBtn = true;
+					$pieceFromInput = true;
+					$pieceToInput = true;
+					$sendBtn = true;
 				}
 				break;
 				
 				case 'endOfGame':
-				if (isChairEmpty('white') && !isLoggedPlayerOnChair('black')) whitePlayerBtn = true;
-				if (isChairEmpty('black') && !isLoggedPlayerOnChair('white')) blackPlayerBtn = true;
-				if (isLoggedPlayerOnChair('white')) whiteStandUp = true;
-				if (isLoggedPlayerOnChair('black')) blackStandUp = true;
+				if (isChairEmpty(WHITE) && !isLoggedPlayerOnChair(BLACK)) $whitePlayerBtn = true;
+				if (isChairEmpty(BLACK) && !isLoggedPlayerOnChair(WHITE)) $blackPlayerBtn = true;
+				if (isLoggedPlayerOnChair(WHITE)) $whiteStandUp = true;
+				if (isLoggedPlayerOnChair(BLACK)) $blackStandUp = true;
 				if (are2PlayersOnChairs() && isLoggedPlayerOnAnyChair()) 
 				{
-					startBtn = true;
-					debugToGameTextArea("Wciśnij START, aby rozpocząć grę.");
+					$startBtn = true;
+					echo '<script>debugToGameTextArea("Wciśnij START, aby rozpocząć grę.");</script>';
 				}
 				break;
 				
 				case 'resetComplited':
-				if (isChairEmpty('white') && !isLoggedPlayerOnChair('black')) whitePlayerBtn = true;
-				if (isChairEmpty('black') && !isLoggedPlayerOnChair('white')) blackPlayerBtn = true;
-				if (isLoggedPlayerOnChair('white')) whiteStandUp = true;
-				if (isLoggedPlayerOnChair('black')) blackStandUp = true;
-				debugToGameTextArea("Plansza zrestartowana. Oczekiwanie na graczy...");
+				if (isChairEmpty(WHITE) && !isLoggedPlayerOnChair(BLACK)) $whitePlayerBtn = true;
+				if (isChairEmpty(BLACK) && !isLoggedPlayerOnChair(WHITE)) $blackPlayerBtn = true;
+				if (isLoggedPlayerOnChair(WHITE)) $whiteStandUp = true;
+				if (isLoggedPlayerOnChair(BLACK)) $blackStandUp = true;
+				echo '<script>debugToGameTextArea("Plansza zrestartowana. Oczekiwanie na graczy...");</script>';
 				break;
 				 
 				case 'noTurn':
@@ -185,14 +191,15 @@
 				}
 			}
 		
-		document.getElementById("whitePlayer").disabled = !whitePlayerBtn; 
-		document.getElementById("blackPlayer").disabled = !blackPlayerBtn; 
-		document.getElementById("standUpWhite").disabled = !whiteStandUp; 
-		document.getElementById("standUpBlack").disabled = !blackStandUp; 
-		document.getElementById("startGame").disabled = !startBtn; 
-		document.getElementById("openGiveUpDialogButton").disabled = !giveUpBtn; 
-		document.getElementById("pieceFrom").disabled = !pieceFromInput; 
-		document.getElementById("pieceTo").disabled = !pieceToInput; 
-		document.getElementById("movePieceButton").disabled = !sendBtn; 
+		echo '
+		document.getElementById("whitePlayer").disabled = '.!$whitePlayerBtn.'; 
+		document.getElementById("blackPlayer").disabled = '.!$blackPlayerBtn.'; 
+		document.getElementById("standUpWhite").disabled = '.!$whiteStandUp.'; 
+		document.getElementById("standUpBlack").disabled = '.!$blackStandUp.'; 
+		document.getElementById("startGame").disabled = '.!$startBtn.'; 
+		document.getElementById("openGiveUpDialogButton").disabled = '.!$giveUpBtn.'; 
+		document.getElementById("pieceFrom").disabled = '.!$pieceFromInput.'; 
+		document.getElementById("pieceTo").disabled = '.!$pieceToInput.'; 
+		document.getElementById("movePieceButton").disabled = '.!$sendBtn;.';';
 	}
-</script>								
+?>							
