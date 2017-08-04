@@ -1,4 +1,6 @@
 <?
+	if(!isset($_SESSION)) session_start();
+	
 	function isChairEmpty($playerType)
 	{
 		$chair = false;
@@ -9,14 +11,14 @@
 		}
 		else if ($playerType == BLACK) 
 		{
-			if ($_SESSION['black'] = BLACK) $chair = true;
+			if ($_SESSION['black'] == BLACK) $chair = true;
 			else $chair = false;
 		}
-		else 
-		{
-			$consoleMsg = 'ERROR: isChairEmpty(): unknown playerType: ', $playerType;
+		/*else 
+			{
+			$consoleMsg = 'ERROR: isChairEmpty(): unknown playerType: '.$playerType;
 			debugToConsole($consoleMsg);
-		}
+		}*/
 		return $chair;
 	}
 	
@@ -25,25 +27,25 @@
 		$loggedPlayerOnChair = false;
 		if ($playerType == WHITE) 
 		{
-			if ($_SESSION['white'] == $loginUzytkownika) $loggedPlayerOnChair = true;
+			if ($_SESSION['white'] == $_SESSION['login']) $loggedPlayerOnChair = true;
 			else $loggedPlayerOnChair = false;
 		}
 		else if ($playerType == BLACK) 
 		{
-			if ($_SESSION['black'] == $loginUzytkownika) $loggedPlayerOnChair = true;
+			if ($_SESSION['black'] == $_SESSION['login']) $loggedPlayerOnChair = true;
 			else $loggedPlayerOnChair = false;
 		}
-		else
-		{
-			$consoleMsg = 'ERROR: isPlayerOnChair(): unknown playerType: ', $playerType;
+		/*else
+			{
+			$consoleMsg = 'ERROR: isPlayerOnChair(): unknown playerType: '.$playerType;
 			debugToConsole($consoleMsg);
-		}
+		}*/
 		return $loggedPlayerOnChair;
 	}
 	
 	function isLoggedPlayerOnAnyChair()
 	{
-		if (isLoggedPlayerOnChair(WHITE) || isLoggedPlayerOnChair(BLACK)) return true
+		if (isLoggedPlayerOnChair(WHITE) || isLoggedPlayerOnChair(BLACK)) return true;
 		else return false;
 	}
 	
@@ -73,11 +75,14 @@
 		$pieceToInput = false;
 		$sendBtn = false;
 		
-		$consoleMsg = 'enabling state = ', $state;
-		debugToConsole($consoleMsg);
+		$consoleEnabling = '-1';
+		$textboxEnabling = '-1';
 		
 		if (!empty($_SESSION['id']))
 		{
+			$consoleEnabling = 'disabling val = '.$state;
+			$textboxEnabling = '-1';
+			
 			switch ($state)
 			{
 				case 'loggedIn':
@@ -108,7 +113,7 @@
 					if (!isGameInProgress() && isLoggedPlayerOnAnyChair()) 
 					{
 						$startBtn = true;
-						echo '<script>debugToGameTextArea("Wciśnij START, aby rozpocząć grę.");</script>';
+						$textboxEnabling = "Wciśnij START, aby rozpocząć grę.";
 					}
 					if (isGameInProgress() && isLoggedPlayerOnAnyChair()) $giveUpBtn = true;
 					if (isGameInProgress() && (($_SESSION['turn'] == WHITE_TURN && isLoggedPlayerOnChair(WHITE)) ||
@@ -130,7 +135,7 @@
 					if (!isGameInProgress() && isLoggedPlayerOnAnyChair()) 
 					{
 						$startBtn = true;
-						echo '<script>debugToGameTextArea("Wciśnij START, aby rozpocząć grę.");</script>';
+						$textboxEnabling = "Wciśnij START, aby rozpocząć grę.";
 					}
 					if (isGameInProgress() && isLoggedPlayerOnAnyChair()) $giveUpBtn = true;
 					if (isGameInProgress() && (($_SESSION['turn'] == WHITE_TURN && isLoggedPlayerOnChair(WHITE)) ||
@@ -170,11 +175,7 @@
 				if (isChairEmpty(BLACK) && !isLoggedPlayerOnChair(WHITE)) $blackPlayerBtn = true;
 				if (isLoggedPlayerOnChair(WHITE)) $whiteStandUp = true;
 				if (isLoggedPlayerOnChair(BLACK)) $blackStandUp = true;
-				if (are2PlayersOnChairs() && isLoggedPlayerOnAnyChair()) 
-				{
-					$startBtn = true;
-					echo '<script>debugToGameTextArea("Wciśnij START, aby rozpocząć grę.");</script>';
-				}
+				if (are2PlayersOnChairs() && isLoggedPlayerOnAnyChair()) $startBtn = true;
 				break;
 				
 				case 'resetComplited':
@@ -182,24 +183,24 @@
 				if (isChairEmpty(BLACK) && !isLoggedPlayerOnChair(WHITE)) $blackPlayerBtn = true;
 				if (isLoggedPlayerOnChair(WHITE)) $whiteStandUp = true;
 				if (isLoggedPlayerOnChair(BLACK)) $blackStandUp = true;
-				echo '<script>debugToGameTextArea("Plansza zrestartowana. Oczekiwanie na graczy...");</script>';
+				$whatNow;
+				if (are2PlayersOnChairs()) 
+				{
+					$startBtn = true;
+					$whatNow = "\nWciśnij START, aby rozpocząć grę.";
+				}
+				else $whatNow = "Oczekiwanie na graczy...";
+				$textboxEnabling = "Plansza zrestartowana. ".$whatNow;
 				break;
-				 
+				
 				case 'noTurn':
 				case 'clickedBtn':
+				case 'promote':
 				default: break;
-				}
 			}
-		
-		echo '
-		document.getElementById("whitePlayer").disabled = '.!$whitePlayerBtn.'; 
-		document.getElementById("blackPlayer").disabled = '.!$blackPlayerBtn.'; 
-		document.getElementById("standUpWhite").disabled = '.!$whiteStandUp.'; 
-		document.getElementById("standUpBlack").disabled = '.!$blackStandUp.'; 
-		document.getElementById("startGame").disabled = '.!$startBtn.'; 
-		document.getElementById("openGiveUpDialogButton").disabled = '.!$giveUpBtn.'; 
-		document.getElementById("pieceFrom").disabled = '.!$pieceFromInput.'; 
-		document.getElementById("pieceTo").disabled = '.!$pieceToInput.'; 
-		document.getElementById("movePieceButton").disabled = '.!$sendBtn;.';';
+		}
+		else $consoleEnabling ='ERROR: Empty session ID';
+				
+		return array(!$whitePlayerBtn, !$blackPlayerBtn, !$whiteStandUp, !$blackStandUp, !$startBtn, !$giveUpBtn, !$pieceFromInput, !$pieceToInput, !$sendBtn, $consoleEnabling, $textboxEnabling);
 	}
 ?>							

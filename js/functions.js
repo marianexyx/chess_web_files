@@ -4,7 +4,7 @@ function debugToGameTextArea(message)
 	debugTextArea.scrollTop = debugTextArea.scrollHeight;
 }
 
-$("#dialog").dialog(
+$("#promoteDialog").dialog(
 {
 	autoOpen: false, 
 	dialogClass: "no-close",
@@ -35,7 +35,7 @@ $("#dialog").dialog(
 			$(this).dialog("close");
 		}
 	},
-	title: "Promocja",
+	title: "Promuj piona na:",
 	position: 
 	{
 		my: "center",
@@ -44,49 +44,37 @@ $("#dialog").dialog(
 	}
 });
 
-function promoteToWhat()
-{
-	console.log("show promotion buttons window");
-	$("#dialog").dialog('open');
-}
-
-function endOfGame(checkmate, endType)
-{
-	if (endType == "whiteWon")
-	{
-		console.log("endOfGame(): whiteWon");
-		debugToGameTextArea("Koniec gry: Białe wygrały wykonując ruch: " + checkmate);
-	}
-	else if( endType == "blackWon")
-	{
-		console.log("endOfGame(): blackWon");
-		debugToGameTextArea("Koniec gry: Czarne wygrały wykonując ruch: " + checkmate);
-	}
-	else if( endType == "draw")
-	{
-		console.log("endOfGame(): draw");
-		debugToGameTextArea("Koniec gry: Remis");
-		// TODO: co dalej?  na kurniku obu graczy deklalure remis bodajże
-	}
-	else console.log("endOfGame(): ERROR: unknown parameter");
-}
-
 $('#giveUpDialog').dialog({
     autoOpen: false,
+	/*modal: true,
+		draggable: false,
+		resizable: false,
+		position: ['center', 'top'],
+		show: 'blind',
+		hide: 'blind',
+	width: 400,*/
 	buttons: 
 	{
 		'tak': function() 
 		{
-			var request = $.ajax(
+			$.ajax(
 			{
-				url: "giveup.php",
-				type: "GET",			
-				dataType: "html"
-			});
-
-			request.done(function() 
-			{
-				$(this).dialog("close");		
+				url: "php/giveup.php",
+				type: "POST",			
+				dataType: "json",
+				data: { }, 
+				success: function (data) 
+				{ 
+					if(typeof data == 'object') data = $.map(data, function(el) { return el; });
+					console.log('ajax: giveup.php- success: ' + data); 
+					ajaxResponse(data);
+					$(this).dialog("close");
+				},
+				error: function(xhr, status, error) 
+				{
+					var err = eval("(" + xhr.responseText + ")");
+					alert(err.Message);
+				}
 			});
 		}, 
 		'nie': function() 
@@ -94,7 +82,7 @@ $('#giveUpDialog').dialog({
 			$(this).dialog("close");
 		}
 	},
-	title: 'Opuszczanie stołu',
+	title: 'Czy chcesz opuścić grę?',
 	position: 
 	{
 		my: "center",
@@ -115,11 +103,12 @@ function deleteask()
 	{
 		var request = $.ajax(
 		{
-			url: "logout.php",
-			type: "GET",			
-			dataType: "html"
+			url: "php/logout.php",
+			type: "POST",			
+			dataType: "json",
+			data: { } 
 		});
-
+		
 		request.done(function() 
 		{
 			return true;		
@@ -131,4 +120,128 @@ function deleteask()
 		});
 	}
 	else return false;   
+}
+
+function otherOption(othOpt)
+{
+	console.log('otherOption = ' + othOpt);
+	var wsMsg;
+	if (othOpt.substr(0,6) == "wsSend")
+	{
+		wsMsg = othOpt.substr(7);
+		othOpt = "wsSend";
+	}
+	
+	switch (othOpt)
+	{
+		case 'promote':
+		$("#dialog").dialog('open');
+		break;
+		
+		case 'wsSend':
+		websocket.send(wsMsg);
+		break;
+		
+		default:
+		console.log("ERROR: Unknown othOpt val.");
+		break;
+	}
+}
+
+function ajaxResponse(ajaxData)
+{
+	if (ajaxData[0]!='-1') $('#whitePlayer').html(ajaxData[0]);
+	if (ajaxData[1]!='-1') $("#blackPlayer").html(ajaxData[1]);
+	
+	if (ajaxData[2]!='-1') $("#whitePlayer").attr("disabled", ajaxData[2]);
+	if (ajaxData[3]!='-1') $("#blackPlayer").attr("disabled", ajaxData[3]);
+	if (ajaxData[4]!='-1') $("#standUpWhite").attr("disabled", ajaxData[4]);
+	if (ajaxData[5]!='-1') $("#standUpBlack").attr("disabled", ajaxData[5]);
+	if (ajaxData[6]!='-1') $("#startGame").attr("disabled", ajaxData[6]);
+	if (ajaxData[7]!='-1') $("#openGiveUpDialogButton").attr("disabled", ajaxData[7]);
+	if (ajaxData[8]!='-1') $("#pieceFrom").attr("disabled", ajaxData[8]);
+	if (ajaxData[9]!='-1') $("#pieceTo").attr("disabled", ajaxData[9]);
+	if (ajaxData[10]!='-1') $("#movePieceButton").attr("disabled", ajaxData[10]);
+	
+	if (ajaxData[13]!='-1') console.log(ajaxData[13]);
+	if (ajaxData[14]!='-1') debugToGameTextArea(ajaxData[14]);
+	if (ajaxData[15]!='-1') otherOption(ajaxData[15]);
+	
+	if (ajaxData[11]!='-1') console.log(ajaxData[11]);
+	if (ajaxData[12]!='-1') debugToGameTextArea(ajaxData[12]);
+}
+
+function newPlayer(id) 
+{
+	$.ajax(
+	{
+		url: "php/newplayer.php",
+		type: "POST",
+		dataType: "json",
+		data: { type: id }, 
+		success: function (data) 
+		{ 			
+			var arr = $.map(data, function(el) { return el; });
+			console.log('ajax: newplayer.php- success: ' + arr); 
+			ajaxResponse(arr);
+		},
+		error: function(xhr, status, error) 
+		{
+			var err = eval("(" + xhr.responseText + ")");
+			alert(err.Message);
+		}
+	})
+}
+
+function newGame()
+{
+	$.ajax(
+	{
+		url: "php/newgame.php",
+		type: "POST",
+		dataType: "json",
+		data: { }, 
+		success: function (data) 
+		{ 			
+			var arr = $.map(data, function(el) { return el; });
+			console.log('ajax: newgame.php- success: ' + arr); 
+			ajaxResponse(arr);
+		},
+		error: function(xhr, status, error) 
+		{
+			var err = eval("(" + xhr.responseText + ")");
+			alert(err.Message);
+		}
+	})
+}
+
+function movePiece()
+{
+	var from = $("#pieceFrom").val();
+	var to = $("#pieceTo").val();;
+	$("#pieceFrom").val("");
+	$("#pieceTo").val("");
+	
+	$.ajax(
+	{
+		url: "php/move.php",
+		type: "POST",
+		dataType: "json",
+		data: 
+		{ 
+			pieceFrom: from,
+			pieceTo: to
+		}, 
+		success: function (data) 
+		{ 			
+			var arr = $.map(data, function(el) { return el; });
+			console.log('ajax: move.php- success: ' + arr); 
+			ajaxResponse(arr);
+		},
+		error: function(xhr, status, error) 
+		{
+			var err = eval("(" + xhr.responseText + ")");
+			alert(err.Message);
+		}
+	})
 }

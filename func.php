@@ -1,8 +1,8 @@
 <?php     
 	define("WHITE", "Białe");
 	define("BLACK", "Czarne");
-	$_SESSION['white'] = WHITE;
-	$_SESSION['black'] = BLACK;
+	$_SESSION['white'] = 'WHITE';
+	$_SESSION['black'] = 'BLACK';
 	
 	define("NO_TURN", "noTurn");
 	define("WHITE_TURN", "whiteTurn");
@@ -57,26 +57,5 @@
         $output = implode(',', $output);
 
 		echo '<script> console.log( "Debug Objects: '.$output.'"); </script>';
-	}
-	
-	function gameInProgress($move, $turn)
-	{
-		enabling('gameInProgress', $turn);
-		
-		if (turn == WHITE_TURN)
-		{
-			$wiadomoscNaTextArea = 'Czarny wykonał ruch: "'.$move.'". Ruch wykonują Białe.';
-			echo '<script> debugToGameTextArea(wiadomoscNaTextArea); </script>';
-		}
-		else if (turn == BLACK_TURN)
-		{
-			$wiadomoscNaTextArea = 'Biały wykonał ruch: "'.$move.'". Ruch wykonują Czarne.';
-			echo '<script> debugToGameTextArea(wiadomoscNaTextArea); </script>';
-		}
-		else 
-		{
-			$consoleMsg = 'ERROR. Unknown turn value = '.$turn;
-			debugToConsole($consoleMsg);
-		}
 	}
 ?>

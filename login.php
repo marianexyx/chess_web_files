@@ -32,7 +32,7 @@
 ?>
 
 <p>LOGOWANIE</p>
-<form action="index.php?a=login" method="POST"> <!-- formularz typu post-->
+<form action="index.php?a=login" method="POST"> 
 	<table align="center">
 		<tr>
 			<td><b>Login użytkownika:</b></td>

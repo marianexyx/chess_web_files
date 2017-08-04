@@ -20,6 +20,7 @@
 		
 		<script src="http://code.jquery.com/jquery-latest.min.js"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+		<!-- <script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.1.0/prototype.js"></script> -->
 		<script src='https://www.google.com/recaptcha/api.js'></script>
 		<script src="js/swfobject.js"></script>
 		<!-- <script src="js/websocket.js"></script>  // todo: zmyślnie umieścić kod websocketów w zewnętrznym pliku -->
@@ -57,6 +58,9 @@
 						ob_start();
 						session_start(); //mechanizm sesji online (można używać globalnego pojemnika na zmiennie $_SESSION)
 						require_once('include/inc.php');
+						require_once('disabling.php');
+						require_once('incoming_ws_msg.php');
+						require_once('outgoing_ws_msg.php');
 						
 						error_reporting( error_reporting() & ~E_NOTICE ); //wyłącz ostrzeżenie, że niezdefiniowana jest zmienna 'a' i inne tego typu
 						
@@ -91,17 +95,16 @@
 						$user = getUser($_SESSION['id']);
 						/*$_SESSION['table_id'] = 1; //póki co jest tylko jeden stół, więc zmienna zbędna
 						$player = getPlayer($_SESSION['table_id']); //wyciąga z bazy wiersz z danymi stołu !!!TODO: czy nie wywołuje tej samej funkcji kilka razy?*/
-						$loginUzytkownika = $user['login'];  
+						$_SESSION['login'] = $user['login'];  
+						//$loginUzytkownika = $user['login'];  
 						
-						require_once('incoming_ws_msg.php');
-						require_once('outgoing_ws_msg.php');
-						require_once('disabling.php');
+						/*require_once('disabling.php');
+							require_once('incoming_ws_msg.php');
+						require_once('outgoing_ws_msg.php');*/
 					?>
 					
 					<script>
 						//js_loginUzytkownika = <? echo json_encode($loginUzytkownika); ?>; //TODO: kiedy to się zmienia i czy trzeba to kontrolowac?
-						
-						$.getScript("js/functions.js", function(){}); //todo: dlaczego dopiero tutaj?
 						
 						$(function()  //odpala funkcje dopiero po zaladowaniu sie strony 
 						{
@@ -134,7 +137,31 @@
 									setTimeout(function() { initWebSocket(); }, 1000)
 								};
 								
-								websocket.onmessage = function (evt) { onMessage(evt.data) };
+								websocket.onmessage = function (evt) 
+								{ 
+									console.log('msg from core: ' + evt.data);
+									if (evt.data != 'connectionOnline')
+									{
+										$.ajax(
+										{
+											url: "php/on_ws_msg.php",
+											type: "POST",			
+											dataType: "json",
+											data: { wsMsg: evt.data },
+											success: function (data) 
+											{ 
+												if(typeof data == 'object') data = $.map(data, function(el) { return el; });
+												console.log('ajax: on_ws_msg.php- success: ' + data); 
+												ajaxResponse(data);
+											},
+											error: function(xhr, status, error) 
+											{
+												var err = eval("(" + xhr.responseText + ")");
+												alert(err.Message);
+											}
+										});
+									}
+								};
 								
 								websocket.onopen = function (evt) 
 								{ 
@@ -149,22 +176,14 @@
 									}
 									console.log("WebSocket state = " + websocket.readyState + " ( " + stateStr + " )");
 									
-									checkCoreVar('tableData'); 
+									websocket.send("check tableData");
 								}
 							} else alert("WebSockets not supported on your browser.");
 						}
 						
-						function stopWebSocket() 
-						{
-							if (websocket)
-							websocket.close();
-						}
+						function stopWebSocket() { if (websocket) websocket.close(); }
 						
-						setInterval(function()
-						{
-							websocket.send("keepConnected");
-							console.log("maintain websocket connection with core");
-						}, 250000); //[ms]
+						setInterval(function() { websocket.send("keepConnected"); }, 250000); //[ms]
 						
 						initWebSocket(); //połącz z websocketami (ważne to jest tutaj by pobrać startowe wartości strony) 
 					</script> 	
@@ -176,38 +195,44 @@
 						<textarea readonly id="debugTextArea" style="width:400px;height:170px;"></textarea>
 					</p>
 					<p>
-						Przemieść figurę z&nbsp;&nbsp;<input type="text" id="pieceFrom" maxlength="2" size="2" disabled />&nbsp;na&nbsp; 
-						<input type="text" id="pieceTo" maxlength="2" size="2" onkeydown="if(event.keyCode==13)movePiece();" disabled />&nbsp;&nbsp;
-						<button id="movePieceButton" onClick="movePiece();" disabled >Wyślij</button>
+						<!--<form action="php/move.php" method="POST"> -->
+							Przemieść bierkę z&nbsp;&nbsp;
+							<input type="text" id="pieceFrom" name="pieceFrom" maxlength="2" size="2" disabled />&nbsp;na&nbsp; 
+							<input type="text" id="pieceTo"   name="pieceTo"   maxlength="2" size="2" disabled />&nbsp;&nbsp;
+							<button id="movePieceButton" onClick="movePiece();" disabled >Wyślij</button> 
+							<!-- <input type="submit" id="movePieceButton" style="width: 100px" value="Wyślij" disabled="disabled"/> -->
+							
+						<!--</form>-->
 					</p>
 					
-					<div id="dialog" title="Promocja"> <p>Promuj piona na:</p> </div> <!-- bez tego nie chce mi działać dialog-promote-->
+					<div id="promoteDialog"> </div> <!-- bez tego nie chce mi działać dialog-promote-->
 					
 				</td>  
 				<td align="center" valign="top">
 					<table width="100%" cellpadding="15">
 						<td align= "left">
 							<img src="grafiki/white_pawn.jpg" alt="w_pawn" />
-							<input type="button" id="whitePlayer" onClick="newWhiteName()" value="Loading..." disabled />
-							<input type="button" id="standUpWhite" onClick="leaveWhite()" value="Wstań" disabled />
+							<!-- <input type="button" id="whitePlayer" value="Loading..." disabled /> -->
+							<button id="whitePlayer" onClick="newPlayer(this.id)" disabled>Loading...</button> 
+							<button id="standUpWhite" onClick="newPlayer(this.id)" disabled>Wstań</button> 
 						</td> 
 						<td align="right">
 							<img src="grafiki/black_pawn.jpg" alt="b_pawn" />
-							<input type="button" id="blackPlayer" onClick="newBlackName()" value="Loading..." disabled />
-							<input type="button" id="standUpBlack" onClick="leaveBlack()" value="Wstań" disabled />
+							<button id="blackPlayer" onClick="newPlayer(this.id)" disabled>Loading...</button> 
+							<button id="standUpBlack" onClick="newPlayer(this.id)" disabled>Wstań</button> 
 						</td>						
 					</table>
 					<table width="80%" cellpadding="15">
 						<td align="center">
-							<input type="button" id="startGame" value="start" onclick="newGame()" disabled />
+							<button id="startGame" onClick="newGame()" disabled>start</button> 
 							
-							<button id="openGiveUpDialogButton" disabled>rezygnuję</button>
-							<div id="giveUpDialog"><p>Czy chcesz opóścić grę?</p></div>
+							<button id="openGiveUpDialogButton" disabled>rezygnuję</button> 
+							<div id="giveUpDialog"></div>
 						</td>
 					</table> 
 					<!-- chat -->
 					<div id="chatarea" data-style="large"></div>
-					<script type="text/javascript" src="chatfiles/chatfunctions.js"></script>
+					<script src="chatfiles/chatfunctions.js"></script>
 					<!-- /chat -->
 				</td>
 			</tr>
@@ -220,7 +245,7 @@
 			</font>
 		</p>
 		
-		<script> 
+		<script> //todo: zamknąć to i przenieść poza index
 			document.getElementById("pieceFrom").onkeyup = function() {pieceFromOnKeyPress()};
 			document.getElementById("pieceTo").onkeyup = function() {pieceToOnKeyPress()};
 			
@@ -236,6 +261,6 @@
 			}
 		</script>
 		
-		<script> enabling("notLoggedIn"); /*TODO: TO TU DOBRZE?*/ </script>
+		<? enabling("notLoggedIn"); /*TODO: TO TU DOBRZE?*/ ?>
 	</body>
 </html>																							
