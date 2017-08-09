@@ -81,7 +81,6 @@
 		if (!empty($_SESSION['id']))
 		{
 			$consoleEnabling = 'disabling val = '.$state;
-			$textboxEnabling = '-1';
 			
 			switch ($state)
 			{

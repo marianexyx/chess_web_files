@@ -16,10 +16,11 @@
 			}
 		</style>
 		<link rel="stylesheet" type="text/css" href="css/dialogNoClose.css">
-		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"> 
 		
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 		<script src="http://code.jquery.com/jquery-latest.min.js"></script>
-		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script> 
 		<!-- <script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.1.0/prototype.js"></script> -->
 		<script src='https://www.google.com/recaptcha/api.js'></script>
 		<script src="js/swfobject.js"></script>
@@ -69,8 +70,8 @@
 							echo '<center><a href="index.php?a=register">Zarejestruj się</a> | 
 							<a href="index.php?a=login">Zaloguj się</a></center>';
 						} 
-						else echo '<center><a href="index.php?a=game">Info</a> | 
-						<a href="index.php?a=logout" onclick="return deleteask();">Wyloguj się</a></center>'; //else wyświetl stronę gracza zalogowanego
+						else echo '<center><div id="info"><a href="#" onClick="return info();">Kontakt</a> | 
+						<a href="index.php?a=logout" onclick="return deleteask();">Wyloguj się</a></center></div>'; //else wyświetl stronę gracza zalogowanego
 						
 						switch($_GET['a']) //zmienna w pasku ustalająca stronę po ob_end_flush; 'a' pobierane z "a href'ów"
 						{
@@ -195,14 +196,10 @@
 						<textarea readonly id="debugTextArea" style="width:400px;height:170px;"></textarea>
 					</p>
 					<p>
-						<!--<form action="php/move.php" method="POST"> -->
-							Przemieść bierkę z&nbsp;&nbsp;
-							<input type="text" id="pieceFrom" name="pieceFrom" maxlength="2" size="2" disabled />&nbsp;na&nbsp; 
-							<input type="text" id="pieceTo"   name="pieceTo"   maxlength="2" size="2" disabled />&nbsp;&nbsp;
-							<button id="movePieceButton" onClick="movePiece();" disabled >Wyślij</button> 
-							<!-- <input type="submit" id="movePieceButton" style="width: 100px" value="Wyślij" disabled="disabled"/> -->
-							
-						<!--</form>-->
+						Przemieść bierkę z&nbsp;&nbsp;
+						<input type="text" id="pieceFrom" name="pieceFrom" maxlength="2" size="2" disabled />&nbsp;na&nbsp; 
+						<input type="text" id="pieceTo"   name="pieceTo"   maxlength="2" size="2" disabled />&nbsp;&nbsp;
+						<button id="movePieceButton" onClick="movePiece();" disabled >Wyślij</button> 
 					</p>
 					
 					<div id="promoteDialog"> </div> <!-- bez tego nie chce mi działać dialog-promote-->
@@ -212,7 +209,6 @@
 					<table width="100%" cellpadding="15">
 						<td align= "left">
 							<img src="grafiki/white_pawn.jpg" alt="w_pawn" />
-							<!-- <input type="button" id="whitePlayer" value="Loading..." disabled /> -->
 							<button id="whitePlayer" onClick="newPlayer(this.id)" disabled>Loading...</button> 
 							<button id="standUpWhite" onClick="newPlayer(this.id)" disabled>Wstań</button> 
 						</td> 
@@ -224,10 +220,12 @@
 					</table>
 					<table width="80%" cellpadding="15">
 						<td align="center">
+							<div id="whiteTime" style="float:left">30:00</div>
 							<button id="startGame" onClick="newGame()" disabled>start</button> 
 							
-							<button id="openGiveUpDialogButton" disabled>rezygnuję</button> 
-							<div id="giveUpDialog"></div>
+							<div id="giveUpDialog" hidden="hidden">Czy chcesz opuścić grę?</div>
+							<button id="giveUpBtn" onClick="giveUp()" disabled>zrezygnuj</button>
+							<div id="blackTime" style="float:right">30:00</div>
 						</td>
 					</table> 
 					<!-- chat -->
@@ -247,20 +245,20 @@
 		
 		<script> //todo: zamknąć to i przenieść poza index
 			document.getElementById("pieceFrom").onkeyup = function() {pieceFromOnKeyPress()};
-			document.getElementById("pieceTo").onkeyup = function() {pieceToOnKeyPress()};
-			
-			function pieceFromOnKeyPress() 
-			{
-				if (document.getElementById("pieceFrom").value.length >= 2) document.getElementById("pieceTo").focus();
-			}
-			
-			function pieceToOnKeyPress() 
-			{
-				if (document.getElementById("pieceFrom").value.length >= 2 && document.getElementById("pieceTo").value.length >= 2) 
-				document.getElementById("movePieceButton").focus();
-			}
+		document.getElementById("pieceTo").onkeyup = function() {pieceToOnKeyPress()};
+		
+		function pieceFromOnKeyPress() 
+		{
+		if (document.getElementById("pieceFrom").value.length >= 2) document.getElementById("pieceTo").focus();
+		}
+		
+		function pieceToOnKeyPress() 
+		{
+		if (document.getElementById("pieceFrom").value.length >= 2 && document.getElementById("pieceTo").value.length >= 2) 
+		document.getElementById("movePieceButton").focus();
+		}
 		</script>
 		
 		<? enabling("notLoggedIn"); /*TODO: TO TU DOBRZE?*/ ?>
-	</body>
-</html>																							
+		</body>
+		</html>																									

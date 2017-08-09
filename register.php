@@ -2,7 +2,7 @@
 <?php
 	//todo: sprawdzić logowanie i resejtrowanie
 	//todo: akceptuje regulamin
-	//todo: przywróć dane jeżeli wpisałeś coś źle (oprócz tego co źle)  https://youtu.be/fMJw90n8M60?list=PLOYHgt8dIdox81dbm1JWXQbm2geG1V2uh&t=6843  
+	//todo: przywróć dane jeżeli wpisałeś coś źle z tutoriala (oprócz tego co źle)  https://youtu.be/fMJw90n8M60?list=PLOYHgt8dIdox81dbm1JWXQbm2geG1V2uh&t=6843  
 	
 	$kapcza = "6Lf9PygUAAAAAMdD3z1hDGssDbz0obmT8aLJyHTj";
 	$check = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret='.$kapcza.'&response='.$_POST['g-recaptcha-response']);

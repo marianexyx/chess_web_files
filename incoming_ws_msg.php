@@ -14,13 +14,14 @@
 	function newWhite($newWhitePlayerName)
 	{		
 		$consoleAjax;
-		$textboxAjax;
+		$textboxAjax = '-1';
 		$enablingArr = array();
 		
 		if ($newWhitePlayerName == 'WHITE') 
 		{ 
+			//todo: brakuje tu komunikatu dla wszystkich mówiącego, że gracz uciekł, a drugi wygrał
 			$_SESSION['white'] = 'WHITE';
-			$consoleAjax = 'white player = WHITE'; 
+			$consoleAjax = 'white player = WHITE';
 			$enablingArr = enabling('whiteEmpty');
 		}
 		else 
@@ -38,11 +39,12 @@
 	function newBlack($newBlackPlayerName)
 	{		
 		$consoleAjax;
-		$textboxAjax;
+		$textboxAjax = '-1';
 		$enablingArr = array();
 		
 		if ($newBlackPlayerName == 'BLACK') 
 		{ 
+			//todo: brakuje tu komunikatu dla wszystkich mówiącego, że gracz uciekł, a drugi wygrał
 			$_SESSION['black'] = 'BLACK';
 			$consoleAjax = 'black player = BLACK'; 
 			$enablingArr = enabling('blackEmpty');
@@ -61,7 +63,7 @@
 	
 	function newGameStarted()
 	{
-		$textboxAjax;
+		$textboxAjax = '-1';
 		$enablingArr = array();
 		
 		if ($_SESSION['white'] != 'WHITE' && $_SESSION['black'] != 'BLACK')
@@ -95,7 +97,7 @@
 		{
 			$specialOption = 'promote'; 
 			$enablingArr = enabling('promote');
-			$textboxAjax = promoteToWhat();
+			$consoleAjax = $consoleAjax.', show promotion buttons window';
 		}	
 		else if ($gameStatus == "whiteWon" || $gameStatus == "blackWon" || $gameStatus == "draw") 
 		{
@@ -110,7 +112,7 @@
 	
 	function gameInProgress($move, $turn)
 	{
-		$textboxAjax;
+		$textboxAjax = '-1';
 		
 		if ($turn == 'WHITE_TURN') $textboxAjax = 'Czarny wykonał ruch: '.$move.'. Ruch wykonują Białe.';
 		else if ($turn == 'BLACK_TURN') $textboxAjax = 'Biały wykonał ruch: '.$move.'. Ruch wykonują Czarne.';
@@ -119,16 +121,10 @@
 		return $textboxAjax;
 	}
 	
-	function promoteToWhat()
-	{
-		//TODO: ogarnąć zwracanie tego w jsonie jakoś. ma ta funckja odpalać tą samą w js'ie
-		return "show promotion buttons window";
-	}
-	
 	function endOfGame($checkmate, $endType)
 	{
 		$textboxAjax = '-1';
-	
+		
 		if ($endType == "whiteWon") $textboxAjax = "Koniec gry: Białe wygrały wykonując ruch: ".$checkmate;
 		else if($endType == "blackWon") $textboxAjax = "Koniec gry: Czarne wygrały wykonując ruch: ".$checkmate;
 		else if($endType == "draw")	$textboxAjax = "Koniec gry: Remis";	// TODO: co dalej?  na kurniku obu graczy deklalure remis bodajże
@@ -168,7 +164,7 @@
 			
 			if ($_SESSION['turn'] != 'NO_TURN') $enablingArr = enabling('gameInProgress');
 			else $enablingArr = enabling('endOfGame');
-
+			
 			$consoleAjax = 'checked S_turn is = '.$_SESSION['turn'];
 		}
 		else if (substr($whatWasChecked,0,9) == 'TableData')
@@ -183,7 +179,7 @@
 			
 			if ($_SESSION['turn'] != 'NO_TURN') $enablingArr = enabling('gameInProgress');
 			else $enablingArr = enabling('endOfGame');
-
+			
 			$consoleAjax = 'checked S_turn is = '.$_SESSION['turn'];
 		}
 		else $consoleAjax = 'ERROR: unknown checked function parameter = '.$whatWasChecked;
@@ -232,10 +228,21 @@
 		$consoleAjax = 'badMove: '.$coreAnswer;
 		$badMove = substr($coreAnswer,0,4);
 		$_SESSION['turn'] = shortToFullTurnType(substr($coreAnswer,5,2));
-
+		
 		$textboxAjax = "Błędne rządanie ruchu: ".$badMove."! Wpisz inny ruch.";
 		$enablingArr = array();
 		$enablingArr = enabling('badMove');
+		
+		return array('-1','-1',$enablingArr[0],$enablingArr[1],$enablingArr[2],$enablingArr[3],
+		$enablingArr[4],$enablingArr[5],$enablingArr[6],$enablingArr[7],$enablingArr[8],$enablingArr[9],$enablingArr[10],$consoleAjax,$textboxAjax,'-1');
+	}
+	
+	function timeOut($coreAnswer)
+	{
+		$consoleAjax = 'timeOut: '.$coreAnswer;	
+		$textboxAjax = "Koniec czasu gracza ".($coreAnswer == 'White' ?  "białego." : "czarnego.")." Koniec gry. Wygrywa ".($coreAnswer == 'White' ?  "biały." : "czarny.");
+		$enablingArr = array();
+		$enablingArr = enabling('endOfGame');
 		
 		return array('-1','-1',$enablingArr[0],$enablingArr[1],$enablingArr[2],$enablingArr[3],
 		$enablingArr[4],$enablingArr[5],$enablingArr[6],$enablingArr[7],$enablingArr[8],$enablingArr[9],$enablingArr[10],$consoleAjax,$textboxAjax,'-1');

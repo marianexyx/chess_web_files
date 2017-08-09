@@ -1,14 +1,4 @@
 <?
-	/*powinno byæ 5 zmiennych odpowiedzialnych za specjalne informacje i opcje:
-		-consoleEnabling
-		-textboxEnabling
-		-consoleAjax
-		-textboxAjax
-		-specialOption
-		
-	informacje enabling powinny mieæ pierwszeñstwo przed informacjami z ajax
-	ma to zastosowanie dla ka¿dego pliku php odpalanego z ajaxa, który zwraca ci¹g zmiennych $return*/
-	
 	require_once('../disabling.php');
 	require_once('../incoming_ws_msg.php'); //checked/change/...
 	
@@ -29,6 +19,7 @@
 		else if	(substr($evt,0,7) == 'checked') 	{ $return = checked(substr($evt,7)); }
 		else if	(substr($evt,0,8) == 'promoted') 	{ $return = promoted(substr($evt,9)); }
 		else if	(substr($evt,0,7) == 'badMove') 	{ $return = badMove(substr($evt,8)); }
+		else if	(substr($evt,0,7) == 'timeOut') 	{ $return = timeOut(substr($evt,8)); }
 		else $return['consoleAjax'] = 'ERROR. Unknown onMessage value = '.$evt;
 	}
 	else $return['consoleAjax'] = 'ERROR: !isset($_POST["wsMsg"]';

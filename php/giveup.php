@@ -1,43 +1,67 @@
 <?php
 	if(!isset($_SESSION)) session_start();
 	require_once('../disabling.php'); 
+	require_once('../incoming_ws_msg.php');
 	
 	$return = array( 'whiteName'=>'-1', 'blackName'=>'-1',
 	'whiteBtn'=>'-1', 'blackBtn'=>'-1', 'standWhite'=>'-1', 'standBlack'=>'-1', 'start'=>'-1', 'giveup'=>'-1', 'from'=>'-1', 'to'=>'-1', 'send'=>'-1', 'consoleEnabling'=>'-1', 'textboxEnabling'=>'-1',
 	'consoleAjax'=>'-1', 'textboxAjax'=>'-1', 'specialOption'=>'-1' );
 	
-	$enablingArr = array();
-	
-	$enablingArr = enabling('clickedBtn');
-	
-	$return['whiteBtn'] = $enablingArr[0];
-	$return['blackBtn'] = $enablingArr[1];
-	$return['standWhite'] = $enablingArr[2];
-	$return['standBlack'] = $enablingArr[3];
-	$return['start'] = $enablingArr[4];
-	$return['giveup'] = $enablingArr[5];
-	$return['from'] = $enablingArr[6];
-	$return['to'] = $enablingArr[7];
-	$return['send'] = $enablingArr[8];
-	$return['consoleEnabling'] = $enablingArr[9]; 
-	$return['textboxEnabling'] = $enablingArr[10];
+	$tempArr = array();
 	
 	$newName = '-1';
+	
 	if ($_SESSION['white'] == $_SESSION['login'])
 	{
-		$return['whiteName'] = newWhite(WHITE);
+		$tempArr = newWhite(WHITE);
+		
+		$return['whiteName'] = $tempArr[0];
+		$return['blackName'] = $tempArr[1];
+		$return['whiteBtn'] = $tempArr[2];
+		$return['blackBtn'] = $tempArr[3];
+		$return['standWhite'] = $tempArr[4];
+		$return['standBlack'] = $tempArr[5];
+		$return['start'] = $tempArr[6];
+		$return['giveup'] = $tempArr[7];
+		$return['from'] = $tempArr[8];
+		$return['to'] = $tempArr[9];
+		$return['send'] = $tempArr[10];
+		$return['consoleEnabling'] = $tempArr[11];
+		$return['textboxEnabling'] = $tempArr[12];
+		$return['consoleAjax'] = $tempArr[13];
+		$return['textboxAjax'] = $tempArr[14];
+		$return['specialOption'] = $tempArr[15];
+		
+		$return['textboxAjax'] = "Gracz bia≈Çy opu≈õci≈Ç st√≥≈Ç. Wygrywa gracz czarny. Resetowanie planszy...";  //todo: to widzi tylko 1 gracz
+		
 		$return['specialOption'] = "wsSend change whitePlayer ".WHITE;
 	}
 	else if ($_SESSION['black'] == $_SESSION['login']) 
 	{
-		$return['$blackName'] = newBlack(BLACK);
+		$tempArr = newBlack(BLACK);
+		
+		$return['whiteName'] = $tempArr[0];
+		$return['blackName'] = $tempArr[1];
+		$return['whiteBtn'] = $tempArr[2];
+		$return['blackBtn'] = $tempArr[3];
+		$return['standWhite'] = $tempArr[4];
+		$return['standBlack'] = $tempArr[5];
+		$return['start'] = $tempArr[6];
+		$return['giveup'] = $tempArr[7];
+		$return['from'] = $tempArr[8];
+		$return['to'] = $tempArr[9];
+		$return['send'] = $tempArr[10];
+		$return['consoleEnabling'] = $tempArr[11];
+		$return['textboxEnabling'] = $tempArr[12];
+		$return['consoleAjax'] = $tempArr[13];
+		$return['textboxAjax'] = $tempArr[14];
+		$return['specialOption'] = $tempArr[15];
+		
+		$return['textboxAjax'] = "Gracz czarny opu≈õci≈Ç st√≥≈Ç. Wygrywa gracz bia≈Çy. Resetowanie planszy...";
 		$return['specialOption'] = "wsSend change blackPlayer ".BLACK; 
-		//todo: sprawdziÊ te zmienne BLACK vs 'BLACK' ktÛrych bodajøe b≥Ídnie uøy≥em naprzemiennie (white too)
+		//todo: sprawdziƒá te zmienne BLACK vs 'BLACK' kt√≥rych bodaj≈ºe b≈Çƒôdnie u≈ºy≈Çem naprzemiennie (white too)
 	}
 	else $return['specialOption'] = 'ERROR: player != logged';
-	
-	$return['textboxAjax'] = 'Gracz $X opuúci≥ stÛ≥. Wygrywa $Y. Resetowanie planszy...'; //todo: <----------- x/y
-	//todo: w core jeøeli wyzeruje siÍ gracz, to niech plansza siÍ zresetuje 
 	
 	$return['consoleAjax'] = $return['specialOption'];
 	

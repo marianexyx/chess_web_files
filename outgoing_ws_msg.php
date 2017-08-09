@@ -1,4 +1,4 @@
-<?		//todo: ogarn¹æ ostatni¹ funkcjê st¹d i j¹ wyrzuciæ
+<?		//todo: ogarnÄ…Ä‡ ostatniÄ… funkcjÄ™ stÄ…d i jÄ… wyrzuciÄ‡
 	function checkCoreVar($coreVar) 
 	{
 		echo '<script>websocket.send("check "'.$coreVar.');</script>';
