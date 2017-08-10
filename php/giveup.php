@@ -32,7 +32,7 @@
 		$return['textboxAjax'] = $tempArr[14];
 		$return['specialOption'] = $tempArr[15];
 		
-		$return['textboxAjax'] = "Gracz biały opuścił stół. Wygrywa gracz czarny. Resetowanie planszy...";  //todo: to widzi tylko 1 gracz
+		$return['textboxAjax'] = "Gracz biały opuścił stół. Wygrywa gracz czarny.";  //todo: to widzi tylko 1 gracz
 		
 		$return['specialOption'] = "wsSend change whitePlayer ".WHITE;
 	}
@@ -57,7 +57,7 @@
 		$return['textboxAjax'] = $tempArr[14];
 		$return['specialOption'] = $tempArr[15];
 		
-		$return['textboxAjax'] = "Gracz czarny opuścił stół. Wygrywa gracz biały. Resetowanie planszy...";
+		$return['textboxAjax'] = "Gracz czarny opuścił stół. Wygrywa gracz biały.";
 		$return['specialOption'] = "wsSend change blackPlayer ".BLACK; 
 		//todo: sprawdzić te zmienne BLACK vs 'BLACK' których bodajże błędnie użyłem naprzemiennie (white too)
 	}

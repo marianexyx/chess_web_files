@@ -14,12 +14,12 @@
 		else if (substr($evt,0,8) == 'newBlack') 	{ $return = newBlack(substr($evt,9)); }
 		else if	($evt == 'newOk') 					{ $return = newGameStarted(); }
 		else if	(substr($evt,0,6) == 'moveOk') 		{ $return = moveRespond(substr($evt,7)); }
-		else if ($evt == 'reseting')				{ $return['textboxAjax'] = "Resetownie planszy..."; }
+		else if ($evt == 'reseting')				{ $return['textboxAjax'] = "Resetowanie planszy..."; }
 		else if	($evt == 'ready') 					{ $return = coreIsReady(); }
 		else if	(substr($evt,0,7) == 'checked') 	{ $return = checked(substr($evt,7)); }
 		else if	(substr($evt,0,8) == 'promoted') 	{ $return = promoted(substr($evt,9)); }
 		else if	(substr($evt,0,7) == 'badMove') 	{ $return = badMove(substr($evt,8)); }
-		else if	(substr($evt,0,7) == 'timeOut') 	{ $return = timeOut(substr($evt,8)); }
+		else if	(substr($evt,0,7) == 'timeOut') 	{ $return = timeOut(substr($evt,7)); }
 		else $return['consoleAjax'] = 'ERROR. Unknown onMessage value = '.$evt;
 	}
 	else $return['consoleAjax'] = 'ERROR: !isset($_POST["wsMsg"]';

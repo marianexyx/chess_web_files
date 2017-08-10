@@ -27,7 +27,13 @@ function ajaxResponse(ajaxData)
 	if (ajaxData[11]!='-1') console.log(ajaxData[11]);
 	if (ajaxData[12]!='-1') debugToGameTextArea(ajaxData[12]);
 	
-	if (ajaxData[14].substr(0,3) == 'Bia' || ajaxData[14].substr(0,8) == "Nowa gra") player = "black";
+	if (ajaxData[14].substr(0,8) == 'Nowa gra') 
+	{
+		resetPlayersTimers();
+		player = "white";
+		if (!timer) timer = setInterval(function(){ updatePlayersTime() }, 1000);
+	}
+	if (ajaxData[14].substr(0,3) == 'Bia') player = "black";
 	else if (ajaxData[14].substr(0,3) == 'Cza') player = "white";
 	if (ajaxData[14].substr(0,10) == 'Koniec gry'  || ajaxData[14].substr(0,12) == "Koniec czasu" ||
 	ajaxData[13] == 'white player = WHITE' || ajaxData[13] == 'black player = BLACK') 
@@ -209,9 +215,10 @@ var blackTotalSeconds;
 var timer = null;
 function resetPlayersTimers()
 {
-	console.log('resetPlayersTimers();');
 	whiteTotalSeconds = 30*60;
 	blackTotalSeconds = 30*60;
+	$("#whiteTime").html("30:00");
+	$("#blackTime").html("30:00");
 	if (timer) 
 	{
 		clearInterval(timer);
@@ -232,10 +239,6 @@ function newGame()
 			var arr = $.map(data, function(el) { return el; });
 			console.log('ajax: newgame.php- success: ' + arr); 
 			ajaxResponse(arr);
-			
-			resetPlayersTimers();
-			player = "white";
-			if (!timer) timer = setInterval(function(){ updatePlayersTime() }, 1000);
 		},
 		error: function(xhr, status, error) 
 		{
@@ -307,7 +310,7 @@ function updatePlayersTime()
 		var secsPrefix = (secs > 9 ? "" : "0");
 		var minsPrefix = (mins > 9 ? "" : "0");
 		
-		$("#whiteTime").html(minsPrefix + mins + ":" + secsPrefix + secs);
+		$("#blackTime").html(minsPrefix + mins + ":" + secsPrefix + secs);
 	}
 	else console.log("ERROR: function updatePlayersTime(player): unknown player = " + player);
 }			

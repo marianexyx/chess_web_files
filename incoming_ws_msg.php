@@ -240,7 +240,7 @@
 	function timeOut($coreAnswer)
 	{
 		$consoleAjax = 'timeOut: '.$coreAnswer;	
-		$textboxAjax = "Koniec czasu gracza ".($coreAnswer == 'White' ?  "białego." : "czarnego.")." Koniec gry. Wygrywa ".($coreAnswer == 'White' ?  "biały." : "czarny.");
+		$textboxAjax = "Koniec gry. Upłynął czas gracza ".($coreAnswer == 'White' ?  "białego" : "czarnego").". Wygrywa ".($coreAnswer == 'Black' ?  "biały." : "czarny.");
 		$enablingArr = array();
 		$enablingArr = enabling('endOfGame');
 		
