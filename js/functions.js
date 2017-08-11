@@ -1,42 +1,54 @@
-function debugToGameTextArea(message) 
+function debugToGameTextArea(message) //todo: zmienić to "debug" na to czym to jest, czyli np, "add text" or smtg
 {
 	debugTextArea.value += message + "\n";
 	debugTextArea.scrollTop = debugTextArea.scrollHeight;
 }
 
+function updateQueueTextArea(msg)
+{
+	queueTextArea.value = msg;
+	queueTextArea.scrollTop = queueTextArea.scrollHeight;
+}
+		
 var player;
 function ajaxResponse(ajaxData)
 {
-	if (ajaxData[0]!='-1') $('#whitePlayer').html(ajaxData[0]);
-	if (ajaxData[1]!='-1') $("#blackPlayer").html(ajaxData[1]);
+	if (ajaxData[0] !='-1') $('#whitePlayer').html(ajaxData[0]);
+	if (ajaxData[1] !='-1') $("#blackPlayer").html(ajaxData[1]);
 	
-	if (ajaxData[2]!='-1') $("#whitePlayer").attr("disabled", ajaxData[2]);
-	if (ajaxData[3]!='-1') $("#blackPlayer").attr("disabled", ajaxData[3]);
-	if (ajaxData[4]!='-1') $("#standUpWhite").attr("disabled", ajaxData[4]);
-	if (ajaxData[5]!='-1') $("#standUpBlack").attr("disabled", ajaxData[5]);
-	if (ajaxData[6]!='-1') $("#startGame").attr("disabled", ajaxData[6]);
-	if (ajaxData[7]!='-1') $("#giveUpBtn").attr("disabled", ajaxData[7]);
-	if (ajaxData[8]!='-1') $("#pieceFrom").attr("disabled", ajaxData[8]);
-	if (ajaxData[9]!='-1') $("#pieceTo").attr("disabled", ajaxData[9]);
-	if (ajaxData[10]!='-1') $("#movePieceButton").attr("disabled", ajaxData[10]);
+	if (ajaxData[2] !='-1') console.log(ajaxData[2]);
+	if (ajaxData[3] !='-1') debugToGameTextArea(ajaxData[3]);
+	if (ajaxData[4] !='-1') otherOption(ajaxData[4]);
 	
-	if (ajaxData[13]!='-1') console.log(ajaxData[13]);
-	if (ajaxData[14]!='-1') debugToGameTextArea(ajaxData[14]);
-	if (ajaxData[15]!='-1') otherOption(ajaxData[15]);
+	if (ajaxData[5] !='-1') console.log(ajaxData[5]);
+	if (ajaxData[6] !='-1') debugToGameTextArea(ajaxData[6]);
 	
-	if (ajaxData[11]!='-1') console.log(ajaxData[11]);
-	if (ajaxData[12]!='-1') debugToGameTextArea(ajaxData[12]);
+	if (ajaxData[7] !='-1') $("#whitePlayer").attr("disabled", ajaxData[7]);
+	if (ajaxData[8] !='-1') $("#blackPlayer").attr("disabled", ajaxData[8]);
+	if (ajaxData[9] !='-1') $("#standUpWhite").attr("disabled", ajaxData[9]);
+	if (ajaxData[10] !='-1') $("#standUpBlack").attr("disabled", ajaxData[10]);
+	if (ajaxData[11] !='-1') $("#startGame").attr("disabled", ajaxData[11]);
+	if (ajaxData[12] !='-1') $("#giveUpBtn").attr("disabled", ajaxData[12]);
+	if (ajaxData[13] !='-1') $("#pieceFrom").attr("disabled", ajaxData[13]);
+	if (ajaxData[14] !='-1') $("#pieceTo").attr("disabled", ajaxData[14]);
+	if (ajaxData[15] !='-1') $("#movePieceButton").attr("disabled", ajaxData[15]);
+	if (ajaxData[16] !='-1') $("#queuePlayer").attr("disabled", ajaxData[16]);
+	if (ajaxData[17] !='-1') $("#leaveQueue").attr("disabled", ajaxData[17]);
 	
-	if (ajaxData[14].substr(0,8) == 'Nowa gra') 
+	if (ajaxData[18]!='-1') $("#queueMsg").html(ajaxData[18]);
+	if (ajaxData[19]!='-1') updateQueueTextArea(ajaxData[19]);
+	
+	//todo: niezaładne te poniższe warunki na substringach
+	if (ajaxData[3].substr(0,8) == 'Nowa gra') 
 	{
 		resetPlayersTimers();
 		player = "white";
 		if (!timer) timer = setInterval(function(){ updatePlayersTime() }, 1000);
 	}
-	if (ajaxData[14].substr(0,3) == 'Bia') player = "black";
-	else if (ajaxData[14].substr(0,3) == 'Cza') player = "white";
-	if (ajaxData[14].substr(0,10) == 'Koniec gry'  || ajaxData[14].substr(0,12) == "Koniec czasu" ||
-	ajaxData[13] == 'white player = WHITE' || ajaxData[13] == 'black player = BLACK') 
+	if (ajaxData[3].substr(0,3) == 'Bia') player = "black";
+	else if (ajaxData[3].substr(0,3) == 'Cza') player = "white";
+	if (ajaxData[3].substr(0,10) == 'Koniec gry'  || ajaxData[3].substr(0,12) == "Koniec czasu" ||
+	ajaxData[2] == 'white player = WHITE' || ajaxData[2] == 'black player = BLACK') 
 	{
 		resetPlayersTimers();
 	}

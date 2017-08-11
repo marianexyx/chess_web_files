@@ -65,18 +65,19 @@
 	{
 		//Auto disabling all in cases: notLoggedIn, noTurn, clicked: white/black chair, start, sendMove, standup white/black, giveUp, logOut
 		
-		$whitePlayerBtn = false;
-		$blackPlayerBtn = false;
-		$whiteStandUp = false;
-		$blackStandUp = false;
-		$startBtn = false;
-		$giveUpBtn = false;
-		$pieceFromInput = false;
-		$pieceToInput = false;
-		$sendBtn = false;
-		
-		$consoleEnabling = '-1';
-		$textboxEnabling = '-1';
+		$consoleEnabling = '-1'; //return[5], enabling[0]
+		$textboxEnabling = '-1'; //return[6], enabling[1]
+		$whitePlayerBtn = false; //return[7], enabling[2]
+		$blackPlayerBtn = false; //return[8], enabling[3]
+		$whiteStandUp = false; //return[9], enabling[4]
+		$blackStandUp = false; //return[10], enabling[5]
+		$startBtn = false; //return[11], enabling[6]
+		$giveUpBtn = false; //return[12], enabling[7]
+		$pieceFromInput = false; //return[13], enabling[8]
+		$pieceToInput = false; //return[14], enabling[9]
+		$sendBtn = false; //return[15], enabling[10]
+		$queuePlayer = false; //return[16], enabling[11]
+		$leaveQueue = false; //return[17], enabling[12]
 		
 		if (!empty($_SESSION['id']))
 		{
@@ -199,7 +200,7 @@
 			}
 		}
 		else $consoleEnabling ='ERROR: Empty session ID';
-				
-		return array(!$whitePlayerBtn, !$blackPlayerBtn, !$whiteStandUp, !$blackStandUp, !$startBtn, !$giveUpBtn, !$pieceFromInput, !$pieceToInput, !$sendBtn, $consoleEnabling, $textboxEnabling);
+		
+		return array( $consoleEnabling, $textboxEnabling, !$whitePlayerBtn, !$blackPlayerBtn, !$whiteStandUp, !$blackStandUp, !$startBtn, !$giveUpBtn, !$pieceFromInput, !$pieceToInput, !$sendBtn, !$queuePlayer, !$leaveQueue);
 	}
 ?>							

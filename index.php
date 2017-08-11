@@ -53,15 +53,13 @@
 	<body>	
 		<table  align="center"  cellspacing="5" cellpadding="5" width="900" border="1">
 			<tr align="center">
-				<td colspan="2">
+				<td colspan="3">
 					<?
 						//todo: turę trzymać w globalnej zmiennej. stan gry też? 
 						ob_start();
 						session_start(); //mechanizm sesji online (można używać globalnego pojemnika na zmiennie $_SESSION)
 						require_once('include/inc.php');
 						require_once('disabling.php');
-						require_once('incoming_ws_msg.php');
-						require_once('outgoing_ws_msg.php');
 						
 						error_reporting( error_reporting() & ~E_NOTICE ); //wyłącz ostrzeżenie, że niezdefiniowana jest zmienna 'a' i inne tego typu
 						
@@ -91,25 +89,19 @@
 				</td>
 			</tr>
 			<tr>
-				<td align="center" valign="top">
+				<td align="center" valign="top"> <!-- todo: dlaczego wogle ten cały kod php/js poniżej jest w tagach <td>? -->
 					<? 
 						$user = getUser($_SESSION['id']);
 						/*$_SESSION['table_id'] = 1; //póki co jest tylko jeden stół, więc zmienna zbędna
 						$player = getPlayer($_SESSION['table_id']); //wyciąga z bazy wiersz z danymi stołu !!!TODO: czy nie wywołuje tej samej funkcji kilka razy?*/
-						$_SESSION['login'] = $user['login'];  
-						//$loginUzytkownika = $user['login'];  
-						
-						/*require_once('disabling.php');
-							require_once('incoming_ws_msg.php');
-						require_once('outgoing_ws_msg.php');*/
+						$_SESSION['login'] = $user['login'];   
 					?>
 					
-					<script>
-						//js_loginUzytkownika = <? echo json_encode($loginUzytkownika); ?>; //TODO: kiedy to się zmienia i czy trzeba to kontrolowac?
-						
+					<script> 
 						$(function()  //odpala funkcje dopiero po zaladowaniu sie strony 
 						{
-							var debugTextArea = document.getElementById("debugTextArea"); //konsola powiadomień
+							var debugTextArea = document.getElementById("debugTextArea");
+							var queueTextArea = document.getElementById("updateQueueTextArea");
 						});
 						
 						var wsUri = "ws://89.66.209.51:1234"; //parametry połączenia 
@@ -233,6 +225,15 @@
 					<script src="chatfiles/chatfunctions.js"></script>
 					<!-- /chat -->
 				</td>
+				<td align="center" valign="top">
+					<p align="center" valign="top"><b>Kolejka graczy</b></p> 
+					<button id="queuePlayer" onClick="queuePlayerBtn()" disabled>Zakolejkuj</button>
+					<button id="leaveQueue" onClick="leaveQueueBtn()" disabled>Opuść</button>
+					<div id="queueMsg">Kolejkowanie wyłączone: puste miejsca przy stole gry</div>
+					<p align="center" valign="bottom"> 
+						<textarea readonly id="queueTextArea" style="width:150px;height:570px;"></textarea> 
+					</p>
+				</td>
 			</tr>
 		</table>  
 		
@@ -245,20 +246,20 @@
 		
 		<script> //todo: zamknąć to i przenieść poza index
 			document.getElementById("pieceFrom").onkeyup = function() {pieceFromOnKeyPress()};
-		document.getElementById("pieceTo").onkeyup = function() {pieceToOnKeyPress()};
-		
-		function pieceFromOnKeyPress() 
-		{
-		if (document.getElementById("pieceFrom").value.length >= 2) document.getElementById("pieceTo").focus();
-		}
-		
-		function pieceToOnKeyPress() 
-		{
-		if (document.getElementById("pieceFrom").value.length >= 2 && document.getElementById("pieceTo").value.length >= 2) 
-		document.getElementById("movePieceButton").focus();
-		}
+			document.getElementById("pieceTo").onkeyup = function() {pieceToOnKeyPress()};
+			
+			function pieceFromOnKeyPress() 
+			{
+				if (document.getElementById("pieceFrom").value.length >= 2) document.getElementById("pieceTo").focus();
+			}
+			
+			function pieceToOnKeyPress() 
+			{
+				if (document.getElementById("pieceFrom").value.length >= 2 && document.getElementById("pieceTo").value.length >= 2) 
+				document.getElementById("movePieceButton").focus();
+			}
 		</script>
 		
 		<? enabling("notLoggedIn"); /*TODO: TO TU DOBRZE?*/ ?>
-		</body>
-		</html>																									
+	</body>
+</html>																									
