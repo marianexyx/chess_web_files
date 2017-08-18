@@ -4,12 +4,108 @@ function debugToGameTextArea(message) //todo: zmienić to "debug" na to czym to 
 	debugTextArea.scrollTop = debugTextArea.scrollHeight;
 }
 
-function updateQueueTextArea(msg)
+var startLeftTime;
+var timerStart = null;
+var startInfo = "Wciśnij start, by rozpocząć grę. Pozostały czas: ";
+function showStartDialog(isStart, whiteName, blackName)
 {
-	queueTextArea.value = msg;
-	queueTextArea.scrollTop = queueTextArea.scrollHeight;
-}
+	if (isStart && whiteName != "WHITE" && blackName != "BLACK" && whiteName != "-1" && blackName != "-1")
+	{
+		$("#startGameDialog").dialog(startGameVar).dialog("open"); 
+		startInfo = "Wciśnij start, by rozpocząć grę. Pozostały czas: ";
 		
+		startLeftTime = 120;
+		if (!timerStart) timerStart = setInterval(function() 
+		{ 
+			$("#startGameDialog").html(startInfo + startLeftTime);
+			startLeftTime = startLeftTime - 1;
+			if (startLeftTime <= 0)
+			{
+				if (timerStart)
+				{
+					clearInterval(timerStart);
+					timerStart = null;
+				}
+				if ($("#startGameDialog").dialog('isOpen')) $("#startGameDialog").dialog(startGameVar).dialog("close"); 
+			}
+		}, 1000); 
+	}
+}
+
+function newPlayer(id) 
+{
+	$.ajax(
+	{
+		url: "php/newplayer.php",
+		type: "POST",
+		dataType: "json",
+		data: { type: id }, 
+		success: function (data) 
+		{ 			
+			var arr = $.map(data, function(el) { return el; });
+			console.log('ajax: newplayer.php- success: ' + arr); 
+			ajaxResponse(arr);
+		},
+		error: function(xhr, status, error) 
+		{
+			var err = eval("(" + xhr.responseText + ")");
+			alert(err.Message);
+		}
+	})
+}
+
+var timerGame2ndP = null;
+var startGameVar = 
+{ 
+	autoOpen: false, 
+	dialogClass: "no-close",
+	title: "Start gry",
+	closeOnEscape: true,	
+	close: function (event, ui) 
+	{
+		if (event.originalEvent) 
+			$(this).dialog("open");
+	},
+	buttons: 
+	{
+		'start': function() 
+		{
+			websocket.send("newGame"); 
+			console.log('clicked: start');
+			
+			startInfo = "Oczekiwanie aż drugi gracz wciśnie start: ";
+			$(this).dialog("option", "buttons", {});
+		}, 
+		'wstań': function() 
+		{
+			console.log('clicked: standUp');
+			if (!$("#standUpWhite").is(":disabled")) newPlayer("standUpWhite");
+			else if (!$("#standUpBlack").is(":disabled")) newPlayer("standUpBlack");
+			
+			if ($(this).dialog('isOpen')) $(this).dialog("close");
+		}
+	}
+};
+
+function updateQueueTextArea(queueList)
+{
+	if (queueList != "queueEmpty") 
+	{
+		var queueListArr = queueList.split(",");
+		var index;
+		var queueListPlainText = "";
+		for (index = 0; index < queueListArr.length; ++index) 
+		{
+			console.log(queueListArr[index]);
+			var indexPlainText = index + 1;
+			queueListPlainText += indexPlainText + ". " + queueListArr[index] + "\n";
+		}
+		queueTextArea.value = queueListPlainText;
+		queueTextArea.scrollTop = queueTextArea.scrollHeight;
+	}
+	else queueTextArea.value = "";
+}
+
 var player;
 function ajaxResponse(ajaxData)
 {
@@ -27,7 +123,7 @@ function ajaxResponse(ajaxData)
 	if (ajaxData[8] !='-1') $("#blackPlayer").attr("disabled", ajaxData[8]);
 	if (ajaxData[9] !='-1') $("#standUpWhite").attr("disabled", ajaxData[9]);
 	if (ajaxData[10] !='-1') $("#standUpBlack").attr("disabled", ajaxData[10]);
-	if (ajaxData[11] !='-1') $("#startGame").attr("disabled", ajaxData[11]);
+	if (ajaxData[11] !='-1') showStartDialog(!ajaxData[11], ajaxData[0], ajaxData[1]); 	
 	if (ajaxData[12] !='-1') $("#giveUpBtn").attr("disabled", ajaxData[12]);
 	if (ajaxData[13] !='-1') $("#pieceFrom").attr("disabled", ajaxData[13]);
 	if (ajaxData[14] !='-1') $("#pieceTo").attr("disabled", ajaxData[14]);
@@ -43,7 +139,8 @@ function ajaxResponse(ajaxData)
 	{
 		resetPlayersTimers();
 		player = "white";
-		if (!timer) timer = setInterval(function(){ updatePlayersTime() }, 1000);
+		if (!timerGame) timerGame = setInterval(function(){ updatePlayersTime() }, 1000);
+		if ($("#startGameDialog").dialog('isOpen')) $("#startGameDialog").dialog(startGameVar).dialog("close"); 
 	}
 	if (ajaxData[3].substr(0,3) == 'Bia') player = "black";
 	else if (ajaxData[3].substr(0,3) == 'Cza') player = "white";
@@ -80,12 +177,22 @@ function otherOption(othOpt)
 	}
 }
 
-
 var promoteVar = 
 { //todo: sprawdzić co się stanie podczas wszystkich rodzajów wyjść z gry podczas obsługi promocji
 	autoOpen: false, 
 	dialogClass: "no-close",
 	title: "Promuj piona na:",
+	closeOnEscape: true,	
+	close: function (event, ui) 
+	{	
+		if (event.originalEvent) 
+		{
+			websocket.send("promoteTo: q"); // auto promote queen
+			console.log('auto promote: promoteTo: q');
+			debugToGameTextArea("Pion promowany na: hetman.");
+			if ($(this).dialog('isOpen')) $(this).dialog("close");
+		}
+	},
 	buttons: 
 	{
 		'\u265B': function() //todo: mogę się kiedyś pokusić o zrobienie podziału koloru znaków na białe/czarne. białe: U+2655, U+2657, U+2658, U+2656.
@@ -93,28 +200,28 @@ var promoteVar =
 			websocket.send("promoteTo: q"); //queen
 			console.log('clicked: promoteTo: q');
 			debugToGameTextArea("Pion promowany na: hetman.");
-			$(this).dialog("close");
+			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}, 
 		'\u265D': function() 
 		{
 			websocket.send("promoteTo: b"); //bishop
 			console.log('clicked: promoteTo: b');
 			debugToGameTextArea("Pion promowany na: goniec.");
-			$(this).dialog("close");
+			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}, 
 		'\u265E': function() 
 		{
 			websocket.send("promoteTo: k"); //knight
 			console.log('clicked: promoteTo: k');
 			debugToGameTextArea("Pion promowany na: skoczek.");
-			$(this).dialog("close");
+			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}, 
 		'\u265C': function() 
 		{
 			websocket.send("promoteTo: r"); //rook
 			console.log('clicked: promoteTo: r');
 			debugToGameTextArea("Pion promowany na: wieża.");
-			$(this).dialog("close");
+			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}
 	}
 };
@@ -148,11 +255,11 @@ var giveUpVar =
 					alert(err.Message);
 				}
 			});
-			$(this).dialog("close");
+			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}, 
 		'nie': function() 
 		{
-			$(this).dialog("close");
+			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}
 	}
 };
@@ -200,41 +307,19 @@ function deleteask()
 	else return false;   
 }
 
-function newPlayer(id) 
-{
-	$.ajax(
-	{
-		url: "php/newplayer.php",
-		type: "POST",
-		dataType: "json",
-		data: { type: id }, 
-		success: function (data) 
-		{ 			
-			var arr = $.map(data, function(el) { return el; });
-			console.log('ajax: newplayer.php- success: ' + arr); 
-			ajaxResponse(arr);
-		},
-		error: function(xhr, status, error) 
-		{
-			var err = eval("(" + xhr.responseText + ")");
-			alert(err.Message);
-		}
-	})
-}
-
 var whiteTotalSeconds;
 var blackTotalSeconds;
-var timer = null;
+var timerGame = null;
 function resetPlayersTimers()
 {
 	whiteTotalSeconds = 30*60;
 	blackTotalSeconds = 30*60;
 	$("#whiteTime").html("30:00");
 	$("#blackTime").html("30:00");
-	if (timer) 
+	if (timerGame) 
 	{
-		clearInterval(timer);
-		timer = null;
+		clearInterval(timerGame);
+		timerGame = null;
 	}
 }
 
@@ -251,6 +336,8 @@ function newGame()
 			var arr = $.map(data, function(el) { return el; });
 			console.log('ajax: newgame.php- success: ' + arr); 
 			ajaxResponse(arr);
+			
+			//todo: wyłącz okno startu, tylko że zrób to w dialogu, a nie tu
 		},
 		error: function(xhr, status, error) 
 		{
@@ -325,4 +412,4 @@ function updatePlayersTime()
 		$("#blackTime").html(minsPrefix + mins + ":" + secsPrefix + secs);
 	}
 	else console.log("ERROR: function updatePlayersTime(player): unknown player = " + player);
-}			
+}				

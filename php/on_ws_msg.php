@@ -163,12 +163,20 @@
 			else if (substr($wsMsgVal,0,9) == 'TableData')
 			{
 				$tableData = explode(" ",$wsMsgVal);
-				$_SESSION['white'] = $tableData[1];	
-				$_SESSION['black'] = $tableData[2];
-				$_SESSION['turn'] = shortToFullTurnType($tableData[3]);
-				if ($_SESSION['turn'] != 'NO_TURN') $enablingArr = enabling('gameInProgress');
-				else $enablingArr = enabling('endOfGame');
-				$consoleAjax = 'checked S_turn is = '.$_SESSION['turn'];
+				$arrElements = count($tableData);
+				if ($arrElements == 5)
+				{
+					$_SESSION['white'] = $tableData[1];	
+					$_SESSION['black'] = $tableData[2];
+					$_SESSION['turn'] = shortToFullTurnType($tableData[3]);
+					$_SESSION['queue'] = $tableData[4]; 
+					$queueList = $_SESSION['queue'];
+					if ($queueList != "queueEmpty") $queueMsg = " ";
+					if ($_SESSION['turn'] != 'NO_TURN') $enablingArr = enabling('gameInProgress');
+					else $enablingArr = enabling('endOfGame');
+					$consoleAjax = 'checked S_turn is = '.$_SESSION['turn'];
+				}
+				else $consoleAjax = 'ERROR: wrong number of array elements: '.$arrElements;
 			}
 			else $consoleAjax = 'ERROR: unknown checked function parameter = '.$wsMsgVal;
 			break;

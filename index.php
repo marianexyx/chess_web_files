@@ -101,6 +101,7 @@
 						$(function()  //odpala funkcje dopiero po zaladowaniu sie strony 
 						{
 							var debugTextArea = document.getElementById("debugTextArea");
+							debugTextArea.value = "";
 							var queueTextArea = document.getElementById("updateQueueTextArea");
 						});
 						
@@ -195,6 +196,7 @@
 					</p>
 					
 					<div id="promoteDialog"> </div> <!-- bez tego nie chce mi działać dialog-promote-->
+					<div id="startGameDialog" hidden="hidden">Wciśnij start, by rozpocząć grę. Pozostały czas: 120</div> 
 					
 				</td>  
 				<td align="center" valign="top">
@@ -213,7 +215,6 @@
 					<table width="80%" cellpadding="15">
 						<td align="center">
 							<div id="whiteTime" style="float:left">30:00</div>
-							<button id="startGame" onClick="newGame()" disabled>start</button> 
 							
 							<div id="giveUpDialog" hidden="hidden">Czy chcesz opuścić grę?</div>
 							<button id="giveUpBtn" onClick="giveUp()" disabled>zrezygnuj</button>
