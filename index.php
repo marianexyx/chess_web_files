@@ -170,7 +170,8 @@
 									}
 									console.log("WebSocket state = " + websocket.readyState + " ( " + stateStr + " )");
 									
-									websocket.send("check tableData");
+									<? if(isset($_SESSION['login']) && !empty($_SESSION['login'])) echo 'websocket.send("im '.$_SESSION['login'].'");';
+									else echo 'websocket.send("check tableData");'; ?>
 								}
 							} else alert("WebSockets not supported on your browser.");
 						}

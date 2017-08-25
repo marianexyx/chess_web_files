@@ -11,6 +11,7 @@ function showStartDialog(isStart, whiteName, blackName)
 {
 	if (isStart && whiteName != "WHITE" && blackName != "BLACK" && whiteName != "-1" && blackName != "-1")
 	{
+		console.log("open startGameDialog");
 		$("#startGameDialog").dialog(startGameVar).dialog("open"); 
 		startInfo = "Wciśnij start, by rozpocząć grę. Pozostały czas: ";
 		
@@ -26,7 +27,11 @@ function showStartDialog(isStart, whiteName, blackName)
 					clearInterval(timerStart);
 					timerStart = null;
 				}
-				if ($("#startGameDialog").dialog('isOpen')) $("#startGameDialog").dialog(startGameVar).dialog("close"); 
+				if ($("#startGameDialog").dialog('isOpen')) 
+				{
+					console.log("startGameDialog is open. close it");
+					$("#startGameDialog").dialog(startGameVar).dialog("close"); 
+				}
 			}
 		}, 1000); 
 	}
@@ -140,13 +145,28 @@ function ajaxResponse(ajaxData)
 		resetPlayersTimers();
 		player = "white";
 		if (!timerGame) timerGame = setInterval(function(){ updatePlayersTime() }, 1000);
-		if ($("#startGameDialog").dialog('isOpen')) $("#startGameDialog").dialog(startGameVar).dialog("close"); 
+		if ($("#startGameDialog").dialog('isOpen')) 
+		{
+			console.log("startGameDialog is open. close it");
+			$("#startGameDialog").dialog(startGameVar).dialog("close"); 
+		}
 	}
 	if (ajaxData[3].substr(0,3) == 'Bia') player = "black";
 	else if (ajaxData[3].substr(0,3) == 'Cza') player = "white";
 	if (ajaxData[3].substr(0,10) == 'Koniec gry'  || ajaxData[3].substr(0,12) == "Koniec czasu" ||
 	ajaxData[2] == 'white player = WHITE' || ajaxData[2] == 'black player = BLACK') 
 	{
+		if (timerStart) //todo: zapakować w funkcję, bo już 2gi raz używam tego w kodzie
+		{
+			clearInterval(timerStart);
+			timerStart = null;
+		}
+		if ($("#startGameDialog").dialog('isOpen')) 
+		{
+			console.log("startGameDialog is open. close it");
+			$("#startGameDialog").dialog(startGameVar).dialog("close"); 
+		}
+		
 		resetPlayersTimers();
 	}
 }
@@ -267,6 +287,17 @@ var giveUpVar =
 function giveUp() 
 {
 	$("#giveUpDialog").dialog(giveUpVar).dialog("open");
+}
+
+function queuePlayerBtn()
+{
+	websocket.send("queueMe"); 
+	console.log('clicked: queuePlayerBtn');
+}
+function leaveQueueBtn()
+{
+	websocket.send("leaveQueue"); 
+	console.log('clicked: leaveQueueBtn');
 }
 
 function deleteask()

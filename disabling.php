@@ -61,6 +61,14 @@
 		else return false;
 	}
 	
+	function isClientInQueue()
+	{
+		$queueTempArr = explode(",", $_SESSION['queue']);
+		if (in_array($_SESSION['login'], $queueTempArr)) 
+			return true; 
+		else return false;
+	}
+	
 	function enabling($state)
 	{
 		//Auto disabling all in cases: notLoggedIn, noTurn, clicked: white/black chair, start, sendMove, standup white/black, giveUp, logOut
@@ -82,6 +90,9 @@
 		if (!empty($_SESSION['id']))
 		{
 			$consoleEnabling = 'disabling val = '.$state;
+			
+			if (are2PlayersOnChairs() && !isLoggedPlayerOnAnyChair() && !isClientInQueue()) $queuePlayer = true;
+			else if (isClientInQueue()) $leaveQueue = true;
 			
 			switch ($state)
 			{
@@ -191,6 +202,25 @@
 				}
 				else $whatNow = "Oczekiwanie na graczy...";
 				$textboxEnabling = "Plansza zrestartowana. ".$whatNow;
+				break;
+				
+				//w zasadzie te warunki to wypisanie po prostu wszystkich możliwości, bo ten przypadek
+				//powinien działać tylko na 2 przyciski nie ruszając w ogóle reszty. powinno to być
+				//raczej w oddzielnym pliku php
+				case 'queueEmpty':
+				case 'queueNotEmpty':
+				if (isChairEmpty(WHITE) && !isLoggedPlayerOnChair(BLACK)) $whitePlayerBtn = true;
+				if (isChairEmpty(BLACK) && !isLoggedPlayerOnChair(WHITE)) $blackPlayerBtn = true;
+				if (isLoggedPlayerOnChair(WHITE)) $whiteStandUp = true;
+				if (isLoggedPlayerOnChair(BLACK)) $blackStandUp = true;
+				if (isGameInProgress() && isLoggedPlayerOnAnyChair()) $giveUpBtn = true;
+				if (isGameInProgress() && (($_SESSION['turn'] == WHITE_TURN && isLoggedPlayerOnChair(WHITE)) ||
+					($_SESSION['turn'] == BLACK_TURN && isLoggedPlayerOnChair(BLACK))))
+					{
+						$pieceFromInput = true;
+						$pieceToInput = true;
+						$sendBtn = true;
+					}
 				break;
 				
 				case 'noTurn':

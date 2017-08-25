@@ -171,7 +171,7 @@
 					$_SESSION['turn'] = shortToFullTurnType($tableData[3]);
 					$_SESSION['queue'] = $tableData[4]; 
 					$queueList = $_SESSION['queue'];
-					if ($queueList != "queueEmpty") $queueMsg = " ";
+					if ($_SESSION['queue'] != "queueEmpty") $queueMsg = " ";
 					if ($_SESSION['turn'] != 'NO_TURN') $enablingArr = enabling('gameInProgress');
 					else $enablingArr = enabling('endOfGame');
 					$consoleAjax = 'checked S_turn is = '.$_SESSION['turn'];
@@ -222,6 +222,15 @@
 			$enablingArr = enabling('endOfGame');
 			break;
 			
+			case 'updateQueue':
+			$_SESSION['queue'] = $wsMsgVal; 
+			$queueList = $_SESSION['queue'];
+			if ( $_SESSION['white'] != WHITE && $_SESSION['black'] != BLACK) $queueMsg = "Zajęte miejsca przy stole gry. Zakolejkuj się by grać";
+			else $queueMsg = "Kolejkowanie wyłączone: puste miejsca przy stole gry";
+			if ($_SESSION['queue'] == "queueEmpty") $enablingArr = enabling('queueEmpty');
+			else $enablingArr = enabling('queueNotEmpty');
+			break;
+			
 			default: break; //todo
 		}	
 		
@@ -236,16 +245,17 @@
 		$coreOption = '';
 		$coreAnswer = '';
 		
-		if 		(substr($rawWsg,0,8) == 'newWhite')	{ $return = onWsMsg("newWhite", substr($rawWsg,9)); }
-		else if (substr($rawWsg,0,8) == 'newBlack') { $return = onWsMsg("newBlack", substr($rawWsg,9)); }
-		else if	($rawWsg == 'newOk') 				{ $return = onWsMsg("newGameStarted", ''); }
-		else if	(substr($rawWsg,0,6) == 'moveOk') 	{ $return = onWsMsg("moveRespond", substr($rawWsg,7)); }
-		else if ($rawWsg == 'reseting')				{ $return = onWsMsg("reseting", ''); }
-		else if	($rawWsg == 'ready') 				{ $return = onWsMsg("coreIsReady", ''); }
-		else if	(substr($rawWsg,0,7) == 'checked') 	{ $return = onWsMsg("checked", substr($rawWsg,7)); }
-		else if	(substr($rawWsg,0,8) == 'promoted') { $return = onWsMsg("promoted", substr($rawWsg,9)); }
-		else if	(substr($rawWsg,0,7) == 'badMove') 	{ $return = onWsMsg("badMove", substr($rawWsg,8)); }
-		else if	(substr($rawWsg,0,7) == 'timeOut') 	{ $return = onWsMsg("timeOut", substr($rawWsg,7)); }
+		if 		(substr($rawWsg,0,8) == 'newWhite')		{ $return = onWsMsg("newWhite", substr($rawWsg,9)); }
+		else if (substr($rawWsg,0,8) == 'newBlack') 	{ $return = onWsMsg("newBlack", substr($rawWsg,9)); }
+		else if	($rawWsg == 'newOk') 					{ $return = onWsMsg("newGameStarted", ''); }
+		else if	(substr($rawWsg,0,6) == 'moveOk') 		{ $return = onWsMsg("moveRespond", substr($rawWsg,7)); }
+		else if ($rawWsg == 'reseting')					{ $return = onWsMsg("reseting", ''); }
+		else if	($rawWsg == 'ready') 					{ $return = onWsMsg("coreIsReady", ''); }
+		else if	(substr($rawWsg,0,7) == 'checked') 		{ $return = onWsMsg("checked", substr($rawWsg,7)); }
+		else if	(substr($rawWsg,0,8) == 'promoted') 	{ $return = onWsMsg("promoted", substr($rawWsg,9)); }
+		else if	(substr($rawWsg,0,7) == 'badMove') 		{ $return = onWsMsg("badMove", substr($rawWsg,8)); }
+		else if	(substr($rawWsg,0,7) == 'timeOut') 		{ $return = onWsMsg("timeOut", substr($rawWsg,7)); }
+		else if (substr($rawWsg,0,11) == 'updateQueue') { $return = onWsMsg("updateQueue", substr($rawWsg,12)); }
 		else $return['consoleAjax'] = 'ERROR. Unknown ws::onMessage value = '.$rawWsg; 
 	}
 	
