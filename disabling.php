@@ -103,62 +103,6 @@
 				if (isLoggedPlayerOnChair(BLACK) && $_SESSION['turn'] == NO_TURN) $blackStandUp = true;
 				break;
 				
-				case 'whiteEmpty':
-				if (!isLoggedPlayerOnChair(BLACK) && isChairEmpty(WHITE)) $whitePlayerBtn = true;
-				if (isChairEmpty(BLACK)) $blackPlayerBtn = true;
-				if (isLoggedPlayerOnChair(BLACK)) $blackStandUp = true;
-				break;
-				
-				case 'blackEmpty':
-				if (!isLoggedPlayerOnChair(WHITE) && isChairEmpty(BLACK)) $blackPlayerBtn = true;
-				if (isChairEmpty(WHITE)) $whitePlayerBtn = true;
-				if (isLoggedPlayerOnChair(WHITE)) $whiteStandUp = true;
-				break;
-				
-				case 'newWhite':
-				if (!isLoggedPlayerOnChair(WHITE) && isChairEmpty(BLACK)) $blackPlayerBtn = true;
-				if (isLoggedPlayerOnChair(WHITE) && $_SESSION['turn'] == NO_TURN) $whiteStandUp = true;
-				if (isLoggedPlayerOnChair(BLACK) && $_SESSION['turn'] == NO_TURN) $blackStandUp = true;
-				if (are2PlayersOnChairs())
-				{
-					if (!isGameInProgress() && isLoggedPlayerOnAnyChair()) 
-					{
-						$startBtn = true;
-						$textboxEnabling = "Wciśnij START, aby rozpocząć grę.";
-					}
-					if (isGameInProgress() && isLoggedPlayerOnAnyChair()) $giveUpBtn = true;
-					if (isGameInProgress() && (($_SESSION['turn'] == WHITE_TURN && isLoggedPlayerOnChair(WHITE)) ||
-					($_SESSION['turn'] == BLACK_TURN && isLoggedPlayerOnChair(BLACK))))
-					{
-						$pieceFromInput = true;
-						$pieceToInput = true;
-						$sendBtn = true;
-					}
-				}
-				break;
-				
-				case 'newBlack':
-				if (!isLoggedPlayerOnChair(BLACK) && isChairEmpty(WHITE)) $whitePlayerBtn = true;
-				if (isLoggedPlayerOnChair(WHITE) && $_SESSION['turn'] == NO_TURN) $whiteStandUp = true;
-				if (isLoggedPlayerOnChair(BLACK) && $_SESSION['turn'] == NO_TURN) $blackStandUp = true;
-				if (are2PlayersOnChairs())
-				{
-					if (!isGameInProgress() && isLoggedPlayerOnAnyChair()) 
-					{
-						$startBtn = true;
-						$textboxEnabling = "Wciśnij START, aby rozpocząć grę.";
-					}
-					if (isGameInProgress() && isLoggedPlayerOnAnyChair()) $giveUpBtn = true;
-					if (isGameInProgress() && (($_SESSION['turn'] == WHITE_TURN && isLoggedPlayerOnChair(WHITE)) ||
-					($_SESSION['turn'] == BLACK_TURN && isLoggedPlayerOnChair(BLACK))))
-					{
-						$pieceFromInput = true;
-						$pieceToInput = true;
-						$sendBtn = true;
-					}
-				}
-				break;
-				
 				case 'newGame':
 				if (isLoggedPlayerOnAnyChair()) $giveUpBtn = true;
 				if (isLoggedPlayerOnChair(WHITE)) 
@@ -204,9 +148,6 @@
 				$textboxEnabling = "Plansza zrestartowana. ".$whatNow;
 				break;
 				
-				//w zasadzie te warunki to wypisanie po prostu wszystkich możliwości, bo ten przypadek
-				//powinien działać tylko na 2 przyciski nie ruszając w ogóle reszty. powinno to być
-				//raczej w oddzielnym pliku php
 				case 'queueEmpty':
 				case 'queueNotEmpty':
 				if (isChairEmpty(WHITE) && !isLoggedPlayerOnChair(BLACK)) $whitePlayerBtn = true;
@@ -216,14 +157,14 @@
 				if (isGameInProgress() && isLoggedPlayerOnAnyChair()) $giveUpBtn = true;
 				if (isGameInProgress() && (($_SESSION['turn'] == WHITE_TURN && isLoggedPlayerOnChair(WHITE)) ||
 					($_SESSION['turn'] == BLACK_TURN && isLoggedPlayerOnChair(BLACK))))
-					{
-						$pieceFromInput = true;
-						$pieceToInput = true;
-						$sendBtn = true;
-					}
+				{
+					$pieceFromInput = true;
+					$pieceToInput = true;
+					$sendBtn = true;
+				}
 				break;
 				
-				case 'noTurn':
+				//case 'noTurn':
 				case 'clickedBtn':
 				case 'promote':
 				default: break;

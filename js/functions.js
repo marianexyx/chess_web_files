@@ -300,41 +300,10 @@ function leaveQueueBtn()
 	console.log('clicked: leaveQueueBtn');
 }
 
-function deleteask()
-{
-	if (confirm("Czy na pewno chcesz się wylogować?")) 
-	{
-		//websocket.send("logoutMe"); //todo: obsłużyć w core
-		return true;
-		/*var request = $.ajax(
-			{
-			url: "php/giveup.php",
-			type: "POST",			
-			dataType: "json",
-			data: { }, 
-			success: function (data) 
-			{ 
-			if(typeof data == 'object') data = $.map(data, function(el) { return el; });
-			console.log('ajax: giveup.php- success: ' + data); 
-			ajaxResponse(data);
-			},
-			error: function(xhr, status, error) 
-			{
-			var err = eval("(" + xhr.responseText + ")");
-			alert(err.Message);
-			}
-			});
-			
-			request.done(function() 
-			{
-			return true;		
-			});
-			
-			request.fail(function() 
-			{
-			return false;		
-		});*/
-	}
+function confirmLogout() 
+{	
+	var logoutMsg = "Czy na pewno chcesz się wylogować?";
+	if (confirm(logoutMsg)) return true;
 	else return false;   
 }
 

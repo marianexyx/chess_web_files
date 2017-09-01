@@ -69,7 +69,7 @@
 							<a href="index.php?a=login">Zaloguj się</a></center>';
 						} 
 						else echo '<center><div id="info"><a href="#" onClick="return info();">Kontakt</a> | 
-						<a href="index.php?a=logout" onclick="return deleteask();">Wyloguj się</a></center></div>'; //else wyświetl stronę gracza zalogowanego
+						<a href="index.php?a=logout" onclick="return confirmLogout();">Wyloguj się</a></center></div>'; //else wyświetl stronę gracza zalogowanego
 						
 						switch($_GET['a']) //zmienna w pasku ustalająca stronę po ob_end_flush; 'a' pobierane z "a href'ów"
 						{
@@ -171,7 +171,7 @@
 									console.log("WebSocket state = " + websocket.readyState + " ( " + stateStr + " )");
 									
 									<? if(isset($_SESSION['login']) && !empty($_SESSION['login'])) echo 'websocket.send("im '.$_SESSION['login'].'");';
-									else echo 'websocket.send("check tableData");'; ?>
+									else echo 'websocket.send("getTableData");'; ?>
 								}
 							} else alert("WebSockets not supported on your browser.");
 						}

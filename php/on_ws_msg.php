@@ -3,15 +3,15 @@
 	require_once('../disabling.php');
 	
 	/*$return = array( 'whiteName'=>'-1', 'blackName'=>'-1', 'consoleAjax'=>'-1', 'textboxAjax'=>'-1', 'specialOption'=>'-1',
-	'consoleEnabling'=>'-1', 'textboxEnabling'=>'-1', 'whiteBtn'=>'-1', 'blackBtn'=>'-1', 'standWhite'=>'-1', 'standBlack'=>'-1', 'start'=>'-1', 'giveup'=>'-1', 'from'=>'-1', 'to'=>'-1', 'send'=>'-1', 'queuePlayer'=>'-1', 'leaveQueue'=>'-1',
+		'consoleEnabling'=>'-1', 'textboxEnabling'=>'-1', 'whiteBtn'=>'-1', 'blackBtn'=>'-1', 'standWhite'=>'-1', 'standBlack'=>'-1', 'start'=>'-1', 'giveup'=>'-1', 'from'=>'-1', 'to'=>'-1', 'send'=>'-1', 'queuePlayer'=>'-1', 'leaveQueue'=>'-1',
 	'queueMsg'=>'-1', 'queueList'=>'-1' );*/
 	
 	function shortToFullTurnType($shortTurn)
 	{
 		$fullTurn;
-		if ($shortTurn == 'nt') $fullTurn = 'NO_TURN'; 
-		else if($shortTurn == 'wt') $fullTurn = 'WHITE_TURN';
-		else if($shortTurn == 'bt') $fullTurn = 'BLACK_TURN';
+		if ($shortTurn == 'nt') $fullTurn = NO_TURN; 
+		else if($shortTurn == 'wt') $fullTurn = WHITE_TURN;
+		else if($shortTurn == 'bt') $fullTurn = BLACK_TURN;
 		else $consoleAjax = 'ERROR: unknown turn type = '.$shortTurn;
 		return $fullTurn;
 	} 
@@ -66,42 +66,9 @@
 		$enablingArr = array();
 		
 		switch ($wsMsgType)
-		{
-			case 'newWhite':
-			if ($wsMsgVal == 'WHITE') 
-			{ 
-				//todo: brakuje tu komunikatu dla WSZYSKITCH mówiącego, że gracz uciekł, a drugi wygrał
-				$_SESSION['white'] = 'WHITE';
-				$consoleAjax = 'white player = WHITE';
-				$enablingArr = enabling('whiteEmpty');
-			}
-			else 
-			{ 
-				$_SESSION['white'] = $wsMsgVal;
-				$consoleAjax = 'white player = '.$_SESSION['white'];
-				$textboxAjax = 'Gracz figur białych: '.$_SESSION['white'];	
-				$enablingArr = enabling('newWhite');
-			}
-			break;
-			
-			case 'newBlack':
-			if ($wsMsgVal == 'BLACK') 
-			{ 
-				//todo: brakuje tu komunikatu dla WSZYSKITCH mówiącego, że gracz uciekł, a drugi wygrał
-				$_SESSION['black'] = 'BLACK';
-				$consoleAjax = 'black player = BLACK'; 
-				$enablingArr = enabling('blackEmpty');
-			}
-			else 
-			{ 
-				$_SESSION['black'] = $wsMsgVal; 
-				$consoleAjax = 'black player = '.$_SESSION['black']; 
-				$textboxAjax = 'Gracz figur czarnych: '.$_SESSION['black']; 
-				$enablingArr = enabling('newBlack');
-			}
-			break;
-			
+		{		
 			case 'newGameStarted':
+			$_SESSION['turn'] = WHITE_TURN;
 			if ($_SESSION['white'] != 'WHITE' && $_SESSION['black'] != 'BLACK')
 			{
 				$textboxAjax = "Nowa gra rozpoczęta. Białe wykonują ruch."; 
@@ -113,7 +80,10 @@
 			case 'moveRespond':
 			$moveOk = substr($wsMsgVal,0,4); 
 			$_SESSION['turn'] = shortToFullTurnType(substr($wsMsgVal,5,2));
+			
 			$gameStatus = substr($wsMsgVal,8);
+			if (strstr($gameStatus, " ")) $gameStatus = strstr($wsMsgVal, " ");
+			
 			$consoleAjax = 'moveOk = '. $moveOk .', S_turn = '.$_SESSION['turn'].', gameStatus = '.$gameStatus;
 			if ($gameStatus == "continue") 
 			{
@@ -126,59 +96,68 @@
 				$enablingArr = enabling('promote');
 				$consoleAjax = $consoleAjax.', show promotion buttons window';
 			}	
-			else if ($gameStatus == "whiteWon" || $gameStatus == "blackWon" || $gameStatus == "draw") 
-			{
-				$enablingArr = enabling('endOfGame');
+			else if (substr($gameStatus) == "whiteWon" || substr($gameStatus) == "blackWon" || substr($gameStatus) == "draw") 
+			{				
+				if (strpos($restOfMsg, "TABLE_DATA") !== false) 
+				{
+					$tableDataPos = strpos($tableData, "TABLE_DATA");
+					$tableDataStart = strpos($tableDataPos, "{");
+					$tableDataStop = strpos($tableDataPos, "}");
+					$tableDataJSON = substr($tableDataPos, $tableDataStart-1, $tableDataStop+1);
+					$tableDataArr = json_decode($tableDataJSON, true);
+
+					if (array_key_exists("wplr", $tableDataArr)) $_SESSION['white'] = $tableDataArr["wplr"];
+					if (array_key_exists("bplr", $tableDataArr)) $_SESSION['black'] = $tableDataArr["bplr"];
+					if (array_key_exists("turn", $tableDataArr)) $_SESSION['turn'] = shortToFullTurnType($tableDataArr["turn"]);
+					if (array_key_exists("wtime", $tableDataArr)) $_SESSION['wtime'] = $tableDataArr["wtime"];
+					if (array_key_exists("btime", $tableDataArr)) $_SESSION['btime'] = $tableDataArr["btime"];
+					if (array_key_exists("queue", $tableDataArr)) $_SESSION['queue'] = $tableDataArr["queue"];
+					
+					$queueList = $_SESSION['queue'];
+					if ($_SESSION['queue'] != "queueEmpty") $queueMsg = " ";
+					$enablingArr = enabling('endOfGame');
+				}
+				
 				$textboxAjax = endOfGame($moveOk, $gameStatus);
 			}
 			else $textboxAjax = 'ERROR: moveRespond(): unknown gameStatus value = '.$gameStatus;
 			break;
 			
 			case 'reseting': //todo: nie ma tu enabling?
+			$_SESSION['turn'] = NO_TURN;
 			$textboxAjax = "Resetowanie planszy...";
 			break;
 			
 			case 'coreIsReady':
+			$_SESSION['turn'] = NO_TURN;
 			$enablingArr = enabling('resetComplited');
 			break;
 			
-			case 'checked':
-			if (substr($wsMsgVal,0,5) == 'WHITE')
-			{ 
-				$_SESSION['white'] = substr($wsMsgVal,6);
-				$enablingArr = enabling('newWhite');
-			}							
-			else if (substr($wsMsgVal,0,5) == 'BLACK')
-			{ 
-				$_SESSION['black'] = substr($wsMsgVal,6);
-				$enablingArr = enabling('newBlack');			
-			}
-			else if (substr($wsMsgVal,0,4) == 'Turn')
-			{ 
-				$_SESSION['turn'] = shortToFullTurnType(substr($wsMsgVal,5));
-				if ($_SESSION['turn'] != 'NO_TURN') $enablingArr = enabling('gameInProgress');
-				else $enablingArr = enabling('endOfGame');
-				$consoleAjax = 'checked S_turn is = '.$_SESSION['turn'];
-			}
-			else if (substr($wsMsgVal,0,9) == 'TableData')
+			case 'TABLE_DATA':		
+			$tableDataPos = strpos($rawWsg, "TABLE_DATA");
+			$tableDataStart = strpos($tableDataPos, "{");
+			$tableDataStop = strpos($tableDataPos, "}");
+			$tableDataJSON = substr($tableDataPos, $tableDataStart-1, $tableDataStop+1);
+			$tableDataArr = json_decode($tableDataJSON, true);
+			$consoleAjax = "php array = " . print_r($tableDataArr, true);// todo: jak to odczytać????
+			
+			if (array_key_exists("wplr", $tableDataArr))
 			{
-				$tableData = explode(" ",$wsMsgVal);
-				$arrElements = count($tableData);
-				if ($arrElements == 5)
-				{
-					$_SESSION['white'] = $tableData[1];	
-					$_SESSION['black'] = $tableData[2];
-					$_SESSION['turn'] = shortToFullTurnType($tableData[3]);
-					$_SESSION['queue'] = $tableData[4]; 
-					$queueList = $_SESSION['queue'];
-					if ($_SESSION['queue'] != "queueEmpty") $queueMsg = " ";
-					if ($_SESSION['turn'] != 'NO_TURN') $enablingArr = enabling('gameInProgress');
-					else $enablingArr = enabling('endOfGame');
-					$consoleAjax = 'checked S_turn is = '.$_SESSION['turn'];
-				}
-				else $consoleAjax = 'ERROR: wrong number of array elements: '.$arrElements;
+				$_SESSION['white'] = $tableDataArr["wplr"];
+				$textboxAjax = "tableDataArr[wplr] = " . $tableDataArr["wplr"];
 			}
-			else $consoleAjax = 'ERROR: unknown checked function parameter = '.$wsMsgVal;
+			//else $consoleAjax = "php array = " . print_r($tableDataArr);
+			if (array_key_exists("bplr", $tableDataArr)) $_SESSION['black'] = $tableDataArr["bplr"];
+			if (array_key_exists("turn", $tableDataArr)) $_SESSION['turn'] = shortToFullTurnType($tableDataArr["turn"]);
+			if (array_key_exists("wtime", $tableDataArr)) $_SESSION['wtime'] = $tableDataArr["wtime"];
+			if (array_key_exists("btime", $tableDataArr)) $_SESSION['btime'] = $tableDataArr["btime"];
+			if (array_key_exists("queue", $tableDataArr)) $_SESSION['queue'] = $tableDataArr["queue"];
+			
+			$queueList = $_SESSION['queue'];
+			if ($_SESSION['queue'] != "queueEmpty") $queueMsg = " ";
+			if ($_SESSION['turn'] != NO_TURN) $enablingArr = enabling('gameInProgress');
+			else $enablingArr = enabling('endOfGame');
+			//$consoleAjax = "s_white = " . $_SESSION['white'];			
 			break;
 			
 			case 'promoted': //todo: nie ma tu enabling?
@@ -207,60 +186,50 @@
 			$textboxAjax = ($promoteTurn == "bt" ?  "Biały." : "Czarny.").' wykonał promocję piona ruchem)'
 			.$promotingMove.' na '.$promoteType.'. '.$gameState;
 			break;
-			
-			case 'badMove':
-			$consoleAjax = 'badMove: '.$wsMsgVal;
-			$badMove = substr($wsMsgVal,0,4);
-			$_SESSION['turn'] = shortToFullTurnType(substr($wsMsgVal,5,2));
-			$textboxAjax = "Błędne rządanie ruchu: ".$badMove."! Wpisz inny ruch.";
-			$enablingArr = enabling('badMove');
-			break;
-			
-			case 'timeOut':
-			$consoleAjax = 'timeOut: '.$wsMsgVal;	
-			$textboxAjax = "Koniec gry. Upłynął czas gracza ".($wsMsgVal == 'White' ?  "białego" : "czarnego").". Wygrywa ".($wsMsgVal == 'Black' ?  "biały." : "czarny.");
-			$enablingArr = enabling('endOfGame');
-			break;
-			
-			case 'updateQueue':
-			$_SESSION['queue'] = $wsMsgVal; 
-			$queueList = $_SESSION['queue'];
-			if ( $_SESSION['white'] != WHITE && $_SESSION['black'] != BLACK) $queueMsg = "Zajęte miejsca przy stole gry. Zakolejkuj się by grać";
-			else $queueMsg = "Kolejkowanie wyłączone: puste miejsca przy stole gry";
-			if ($_SESSION['queue'] == "queueEmpty") $enablingArr = enabling('queueEmpty');
-			else $enablingArr = enabling('queueNotEmpty');
-			break;
-			
-			default: break; //todo
-		}	
 		
-		return array( $_SESSION['white'], $_SESSION['black'], $consoleAjax, $textboxAjax, $specialOption, 
-		$enablingArr[0], $enablingArr[1], $enablingArr[2], $enablingArr[3], $enablingArr[4], $enablingArr[5], $enablingArr[6], $enablingArr[7], $enablingArr[8], $enablingArr[9], $enablingArr[10], $enablingArr[11], $enablingArr[12],
-		$queueMsg, $queueList );
-	}
-	
-	if(isset($_POST['wsMsg']))
-	{
-		$rawWsg = $_POST['wsMsg'];
-		$coreOption = '';
-		$coreAnswer = '';
+		case 'badMove':
+		$consoleAjax = 'badMove: '.$wsMsgVal;
+		$badMove = substr($wsMsgVal,0,4);
+		$_SESSION['turn'] = shortToFullTurnType(substr($wsMsgVal,5,2));
+		$textboxAjax = "Błędne rządanie ruchu: ".$badMove."! Wpisz inny ruch.";
+		$enablingArr = enabling('badMove');
+		break;
 		
-		if 		(substr($rawWsg,0,8) == 'newWhite')		{ $return = onWsMsg("newWhite", substr($rawWsg,9)); }
-		else if (substr($rawWsg,0,8) == 'newBlack') 	{ $return = onWsMsg("newBlack", substr($rawWsg,9)); }
-		else if	($rawWsg == 'newOk') 					{ $return = onWsMsg("newGameStarted", ''); }
-		else if	(substr($rawWsg,0,6) == 'moveOk') 		{ $return = onWsMsg("moveRespond", substr($rawWsg,7)); }
-		else if ($rawWsg == 'reseting')					{ $return = onWsMsg("reseting", ''); }
-		else if	($rawWsg == 'ready') 					{ $return = onWsMsg("coreIsReady", ''); }
-		else if	(substr($rawWsg,0,7) == 'checked') 		{ $return = onWsMsg("checked", substr($rawWsg,7)); }
-		else if	(substr($rawWsg,0,8) == 'promoted') 	{ $return = onWsMsg("promoted", substr($rawWsg,9)); }
-		else if	(substr($rawWsg,0,7) == 'badMove') 		{ $return = onWsMsg("badMove", substr($rawWsg,8)); }
-		else if	(substr($rawWsg,0,7) == 'timeOut') 		{ $return = onWsMsg("timeOut", substr($rawWsg,7)); }
-		else if (substr($rawWsg,0,11) == 'updateQueue') { $return = onWsMsg("updateQueue", substr($rawWsg,12)); }
-		else $return['consoleAjax'] = 'ERROR. Unknown ws::onMessage value = '.$rawWsg; 
-	}
+		case 'updateQueue':
+		$_SESSION['queue'] = $wsMsgVal; 
+		$queueList = $_SESSION['queue'];
+		if ( $_SESSION['white'] != WHITE && $_SESSION['black'] != BLACK) $queueMsg = "Zajęte miejsca przy stole gry. Zakolejkuj się by grać";
+		else $queueMsg = "Kolejkowanie wyłączone: puste miejsca przy stole gry";
+		if ($_SESSION['queue'] == "queueEmpty") $enablingArr = enabling('queueEmpty');
+		else $enablingArr = enabling('queueNotEmpty');
+		break;
+		
+		default: break; //todo
+	}	
 	
-	foreach($return as &$value) { if (is_null($value)) { $value = '-1'; }} unset($value);
+	return array( $_SESSION['white'], $_SESSION['black'], $consoleAjax, $textboxAjax, $specialOption, 
+	$enablingArr[0], $enablingArr[1], $enablingArr[2], $enablingArr[3], $enablingArr[4], $enablingArr[5], $enablingArr[6], $enablingArr[7], $enablingArr[8], $enablingArr[9], $enablingArr[10], $enablingArr[11], $enablingArr[12],
+	$queueMsg, $queueList );
+}
+
+if(isset($_POST['wsMsg']))
+{
+	$rawWsg = $_POST['wsMsg'];
+	$coreOption = '';
+	$coreAnswer = '';
 	
-	header('Content-type: application/json; charset=utf-8"');
-	echo json_encode($return); //, JSON_UNESCAPED_UNICODE); - polskie znaki?
+	if	($rawWsg == 'newOk') 						{ $return = onWsMsg("newGameStarted", ''); }
+	else if	(substr($rawWsg,0,6) == 'moveOk') 		{ $return = onWsMsg("moveRespond", substr($rawWsg,7)); }
+	else if ($rawWsg == 'reseting')					{ $return = onWsMsg("reseting", ''); }
+	else if	($rawWsg == 'ready') 					{ $return = onWsMsg("coreIsReady", ''); }
+	else if	(substr($rawWsg,0,10) == 'TABLE_DATA') 	{ $return = onWsMsg("TABLE_DATA", substr($rawWsg,10)); } 
+	else if	(substr($rawWsg,0,8) == 'promoted') 	{ $return = onWsMsg("promoted", substr($rawWsg,9)); }
+	else if	(substr($rawWsg,0,7) == 'badMove') 		{ $return = onWsMsg("badMove", substr($rawWsg,8)); }
+	else $return['consoleAjax'] = 'ERROR. Unknown ws::onMessage value = '.$rawWsg; 
+}
+
+foreach($return as &$value) { if (is_null($value)) { $value = '-1'; }} unset($value);
+
+header('Content-type: application/json; charset=utf-8"');
+echo json_encode($return); //, JSON_UNESCAPED_UNICODE); //todo:- polskie znaki?
 ?>
