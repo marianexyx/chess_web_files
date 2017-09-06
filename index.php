@@ -231,7 +231,7 @@
 					<p align="center" valign="top"><b>Kolejka graczy</b></p> 
 					<button id="queuePlayer" onClick="queuePlayerBtn()" disabled>Zakolejkuj</button>
 					<button id="leaveQueue" onClick="leaveQueueBtn()" disabled>Opuść</button>
-					<div id="queueMsg">Kolejkowanie wyłączone: puste miejsca przy stole gry</div>
+					<div id="queueMsg"></div>
 					<p align="center" valign="bottom"> 
 						<textarea readonly id="queueTextArea" style="width:150px;height:570px;"></textarea> 
 					</p>

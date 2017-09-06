@@ -7,6 +7,9 @@
 	$specialOption = '-1';
 	$queueMsg = '-1'; 
 	$queueList = '-1';
+	$_SESSION['wtime'] = -1;
+	$_SESSION['btime'] = -1;
+	$_SESSION['turn'] = -1;
 	
 	if (!empty($_POST) && !empty($_POST['pieceFrom']) && !empty($_POST['pieceTo']))
 	{
@@ -31,7 +34,7 @@
 	
 	$return = array( '-1', '-1', $consoleAjax, $textboxAjax, $specialOption, 
 	$enablingArr[0], $enablingArr[1], $enablingArr[2], $enablingArr[3], $enablingArr[4], $enablingArr[5], $enablingArr[6], $enablingArr[7], $enablingArr[8], $enablingArr[9], $enablingArr[10], $enablingArr[11], $enablingArr[12],
-	$queueMsg, $queueList );
+	$queueMsg, $queueList, $_SESSION['wtime'], $_SESSION['btime'], $_SESSION['turn'] );
 	
 	foreach($return as &$value) { if (is_null($value)) { $value = '-1'; }} unset($value);
 	

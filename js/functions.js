@@ -4,37 +4,54 @@ function debugToGameTextArea(message) //todo: zmienić to "debug" na to czym to 
 	debugTextArea.scrollTop = debugTextArea.scrollHeight;
 }
 
-var startLeftTime;
 var timerStart = null;
+function turnOffStartTimerIfItsOn()
+{
+	if (timerStart)
+	{
+		console.log("turnOffStartTimerIfItsOn()");
+		clearInterval(timerStart);
+		timerStart = null;
+	}
+}
+
+function closeStartGameDialogIfOpened()
+{
+	console.log("closeStartGameDialogIfOpened(): try to close startGameDialog");
+	if ($("#startGameDialog").dialog(startGameVar).dialog('isOpen')) 
+	{
+		console.log("startGameDialog is open. close it");
+		$("#startGameDialog").dialog(startGameVar).dialog("close"); 
+	}
+}
+
+var startLeftTime;
 var startInfo = "Wciśnij start, by rozpocząć grę. Pozostały czas: ";
 function showStartDialog(isStart, whiteName, blackName)
 {
-	if (isStart && whiteName != "WHITE" && blackName != "BLACK" && whiteName != "-1" && blackName != "-1")
-	{
+	if (isStart && whiteName != "WHITE" && blackName != "BLACK" && whiteName != "-1" && blackName != "-1" && !$("#startGameDialog").dialog(startGameVar).dialog('isOpen'))
+	{ //todo: trochę oszukałem z warunkiem na startGameDialog. okno by się odświerzało z timerem wraz z każdą zmianą w kolecje (nowym TABLE_DATA)
+		turnOffStartTimerIfItsOn();
+		closeStartGameDialogIfOpened();
+
+		startLeftTime = 120;
 		console.log("open startGameDialog");
 		$("#startGameDialog").dialog(startGameVar).dialog("open"); 
 		startInfo = "Wciśnij start, by rozpocząć grę. Pozostały czas: ";
 		
-		startLeftTime = 120;
 		if (!timerStart) timerStart = setInterval(function() 
 		{ 
 			$("#startGameDialog").html(startInfo + startLeftTime);
 			startLeftTime = startLeftTime - 1;
 			if (startLeftTime <= 0)
 			{
-				if (timerStart)
-				{
-					clearInterval(timerStart);
-					timerStart = null;
-				}
-				if ($("#startGameDialog").dialog('isOpen')) 
-				{
-					console.log("startGameDialog is open. close it");
-					$("#startGameDialog").dialog(startGameVar).dialog("close"); 
-				}
+				turnOffStartTimerIfItsOn();
+				closeStartGameDialogIfOpened();
 			}
 		}, 1000); 
+		else "ERROR: timerStart = true";
 	}
+	else $("#startGameDialog").dialog(startGameVar).dialog("option", "buttons", {}); //todo: to jest test
 }
 
 function newPlayer(id) 
@@ -111,7 +128,20 @@ function updateQueueTextArea(queueList)
 	else queueTextArea.value = "";
 }
 
-var player;
+var timerGame = null;
+function startWhiteTimerIfFirstTurn(whiteTimeLeft, blackTimeLeft)
+{
+	if (whiteTimeLeft == 30*60 && blackTimeLeft == 30*60)
+	{
+		resetPlayersTimers();
+		if (!timerGame) timerGame = setInterval(function(){ updatePlayersTime() }, 1000);
+		closeStartGameDialogIfOpened();
+	}
+}
+
+var whiteTotalSeconds = "-1";
+var blackTotalSeconds = "-1";
+var whoseTurn = "-1";
 function ajaxResponse(ajaxData)
 {
 	if (ajaxData[0] !='-1') $('#whitePlayer').html(ajaxData[0]);
@@ -139,35 +169,25 @@ function ajaxResponse(ajaxData)
 	if (ajaxData[18]!='-1') $("#queueMsg").html(ajaxData[18]);
 	if (ajaxData[19]!='-1') updateQueueTextArea(ajaxData[19]);
 	
-	//todo: niezaładne te poniższe warunki na substringach
-	if (ajaxData[3].substr(0,8) == 'Nowa gra') 
+	if (ajaxData[20] !='-1') whiteTotalSeconds = ajaxData[20]; 
+	if (ajaxData[21] !='-1') blackTotalSeconds = ajaxData[21];
+	if (ajaxData[22] !='-1') whoseTurn = ajaxData[22];
+	
+	if (whoseTurn != "-1" && whoseTurn != "NO_TURN") startWhiteTimerIfFirstTurn(whiteTotalSeconds, blackTotalSeconds);
+	
+	if (whiteTotalSeconds != "-1" || blackTotalSeconds != "-1") //todo: zapakować w funkcję
 	{
-		resetPlayersTimers();
-		player = "white";
-		if (!timerGame) timerGame = setInterval(function(){ updatePlayersTime() }, 1000);
-		if ($("#startGameDialog").dialog('isOpen')) 
-		{
-			console.log("startGameDialog is open. close it");
-			$("#startGameDialog").dialog(startGameVar).dialog("close"); 
-		}
-	}
-	if (ajaxData[3].substr(0,3) == 'Bia') player = "black";
-	else if (ajaxData[3].substr(0,3) == 'Cza') player = "white";
-	if (ajaxData[3].substr(0,10) == 'Koniec gry'  || ajaxData[3].substr(0,12) == "Koniec czasu" ||
-	ajaxData[2] == 'white player = WHITE' || ajaxData[2] == 'black player = BLACK') 
-	{
-		if (timerStart) //todo: zapakować w funkcję, bo już 2gi raz używam tego w kodzie
-		{
-			clearInterval(timerStart);
-			timerStart = null;
-		}
-		if ($("#startGameDialog").dialog('isOpen')) 
-		{
-			console.log("startGameDialog is open. close it");
-			$("#startGameDialog").dialog(startGameVar).dialog("close"); 
-		}
+		if (whiteTotalSeconds != "-1") 
+			$("#whiteTime").html(secondsToMinutesAndSeconds(whiteTotalSeconds));
+		if (blackTotalSeconds != "-1") 
+			$("#blackTime").html(secondsToMinutesAndSeconds(blackTotalSeconds));
 		
-		resetPlayersTimers();
+		if (timerGame)
+		{
+			clearInterval(timerGame);
+			timerGame = null;
+		}
+		timerGame = setInterval(function(){ updatePlayersTime() }, 1000);
 	}
 }
 
@@ -307,20 +327,12 @@ function confirmLogout()
 	else return false;   
 }
 
-var whiteTotalSeconds;
-var blackTotalSeconds;
-var timerGame = null;
 function resetPlayersTimers()
 {
 	whiteTotalSeconds = 30*60;
 	blackTotalSeconds = 30*60;
 	$("#whiteTime").html("30:00");
 	$("#blackTime").html("30:00");
-	if (timerGame) 
-	{
-		clearInterval(timerGame);
-		timerGame = null;
-	}
 }
 
 function newGame()
@@ -383,33 +395,36 @@ function info()
 	$("#info").html('mariusz.pak.89@gmail.com | <a href="index.php?a=logout" onclick="return deleteask();">Wyloguj się</a></center>');
 }
 
+function secondsToMinutesAndSeconds(time)
+{
+	if  (time < 0) time = 0;
+	secs = time % 60;
+	mins = parseInt(time / 60);
+	
+	var secsPrefix = (secs > 9 ? "" : "0");
+	var minsPrefix = (mins > 9 ? "" : "0");
+	
+	var minsAndSecs = minsPrefix + mins + ":" + secsPrefix + secs;
+	return minsAndSecs;
+}
+
 function updatePlayersTime()
 {
 	var secs;
 	var mins;
-	if (player == "white")
+	if (whoseTurn == "WHITE_TURN")
 	{
 		whiteTotalSeconds--;
-		if  (whiteTotalSeconds < 0) whiteTotalSeconds = 0;
-		secs = whiteTotalSeconds % 60;
-		mins = parseInt(whiteTotalSeconds / 60);
-		
-		var secsPrefix = (secs > 9 ? "" : "0");
-		var minsPrefix = (mins > 9 ? "" : "0");
-		
-		$("#whiteTime").html(minsPrefix + mins + ":" + secsPrefix + secs);
+		$("#whiteTime").html(secondsToMinutesAndSeconds(whiteTotalSeconds));
 	}
-	else if (player == "black")
+	else if (whoseTurn == "BLACK_TURN")
 	{
-		blackTotalSeconds--;
-		if  (blackTotalSeconds < 0) blackTotalSeconds = 0;
-		secs = blackTotalSeconds % 60;
-		mins = parseInt(blackTotalSeconds / 60);
-		
-		var secsPrefix = (secs > 9 ? "" : "0");
-		var minsPrefix = (mins > 9 ? "" : "0");
-		
-		$("#blackTime").html(minsPrefix + mins + ":" + secsPrefix + secs);
+		blackTotalSeconds--;		
+		$("#blackTime").html(secondsToMinutesAndSeconds(blackTotalSeconds));
 	}
-	else console.log("ERROR: function updatePlayersTime(player): unknown player = " + player);
+	else if (whoseTurn == "NO_TURN")
+	{
+		resetPlayersTimers();
+	}
+	else console.log("ERROR: updatePlayersTime(): unknown turn = " + whoseTurn);
 }				

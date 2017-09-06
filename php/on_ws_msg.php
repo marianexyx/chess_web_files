@@ -61,6 +61,13 @@
 		//$leaveQueue = '-1'; //17, enabling[12]
 		$queueMsg = '-1'; //18
 		$queueList = '-1'; //19
+		//$_SESSION['wtime']; //20 //todo: te ostatnie zienne są troche niepokolei w stosunku do pierwszych pięciu...
+		//$_SESSION['btime']; //21 //...tak, to zrobiłem bo nie trzeba będzie aż tak doku zmieniać
+		//$_SESSION['turn']; //22
+		
+		$_SESSION['wtime'] = -1;
+		$_SESSION['btime'] = -1;
+		$_SESSION['turn'] = -1;
 		
 		$consoleAjax = 'wsMsgType val = '.$wsMsgType;
 		$enablingArr = array();
@@ -69,12 +76,14 @@
 		{		
 			case 'newGameStarted':
 			$_SESSION['turn'] = WHITE_TURN;
-			if ($_SESSION['white'] != 'WHITE' && $_SESSION['black'] != 'BLACK')
+			if ($_SESSION['white'] != 'WHITE' && $_SESSION['black'] != 'BLACK') //todo: defined
 			{
 				$textboxAjax = "Nowa gra rozpoczęta. Białe wykonują ruch."; 
 				$enablingArr = enabling('newGame');
 			}
 			else $textboxAjax = "ERROR: game started when players aren't on chairs"; 
+			$_SESSION['wtime'] = 30*60;
+			$_SESSION['btime'] = 30*60;
 			break;
 			
 			case 'moveRespond':
@@ -109,8 +118,8 @@
 					if (array_key_exists("wplr", $tableDataArr)) $_SESSION['white'] = $tableDataArr["wplr"];
 					if (array_key_exists("bplr", $tableDataArr)) $_SESSION['black'] = $tableDataArr["bplr"];
 					if (array_key_exists("turn", $tableDataArr)) $_SESSION['turn'] = shortToFullTurnType($tableDataArr["turn"]);
-					if (array_key_exists("wtime", $tableDataArr)) $_SESSION['wtime'] = $tableDataArr["wtime"];
-					if (array_key_exists("btime", $tableDataArr)) $_SESSION['btime'] = $tableDataArr["btime"];
+					if (array_key_exists("wtime", $tableDataArr)) $_SESSION['wtime'] = floor($tableDataArr["wtime"]/1000);
+					if (array_key_exists("btime", $tableDataArr)) $_SESSION['btime'] = floor($tableDataArr["btime"]/1000);
 					if (array_key_exists("queue", $tableDataArr)) $_SESSION['queue'] = $tableDataArr["queue"];
 					
 					$queueList = $_SESSION['queue'];
@@ -134,30 +143,24 @@
 			break;
 			
 			case 'TABLE_DATA':		
-			$tableDataPos = strpos($rawWsg, "TABLE_DATA");
-			$tableDataStart = strpos($tableDataPos, "{");
-			$tableDataStop = strpos($tableDataPos, "}");
-			$tableDataJSON = substr($tableDataPos, $tableDataStart-1, $tableDataStop+1);
+			//$tableDataPos = strpos($wsMsgVal, "TABLE_DATA");
+			$tableDataStart = strpos($wsMsgVal, "{");
+			$tableDataStop = strpos($wsMsgVal, "}");
+			$tableDataJSON = substr($wsMsgVal, $tableDataStart, $tableDataStop+1);
 			$tableDataArr = json_decode($tableDataJSON, true);
-			$consoleAjax = "php array = " . print_r($tableDataArr, true);// todo: jak to odczytać????
+			//$consoleAjax = "consoleAjax. data = " . $tableDataJSON; //var_dump($tableDataArr); //testy- podgląd
 			
-			if (array_key_exists("wplr", $tableDataArr))
-			{
-				$_SESSION['white'] = $tableDataArr["wplr"];
-				$textboxAjax = "tableDataArr[wplr] = " . $tableDataArr["wplr"];
-			}
-			//else $consoleAjax = "php array = " . print_r($tableDataArr);
+			if (array_key_exists("wplr", $tableDataArr)) $_SESSION['white'] = $tableDataArr["wplr"];
 			if (array_key_exists("bplr", $tableDataArr)) $_SESSION['black'] = $tableDataArr["bplr"];
 			if (array_key_exists("turn", $tableDataArr)) $_SESSION['turn'] = shortToFullTurnType($tableDataArr["turn"]);
-			if (array_key_exists("wtime", $tableDataArr)) $_SESSION['wtime'] = $tableDataArr["wtime"];
-			if (array_key_exists("btime", $tableDataArr)) $_SESSION['btime'] = $tableDataArr["btime"];
+			if (array_key_exists("wtime", $tableDataArr)) $_SESSION['wtime'] = floor($tableDataArr["wtime"]/1000);
+			if (array_key_exists("btime", $tableDataArr)) $_SESSION['btime'] = floor($tableDataArr["btime"]/1000);
 			if (array_key_exists("queue", $tableDataArr)) $_SESSION['queue'] = $tableDataArr["queue"];
 			
 			$queueList = $_SESSION['queue'];
 			if ($_SESSION['queue'] != "queueEmpty") $queueMsg = " ";
 			if ($_SESSION['turn'] != NO_TURN) $enablingArr = enabling('gameInProgress');
-			else $enablingArr = enabling('endOfGame');
-			//$consoleAjax = "s_white = " . $_SESSION['white'];			
+			else $enablingArr = enabling('endOfGame');	
 			break;
 			
 			case 'promoted': //todo: nie ma tu enabling?
@@ -209,7 +212,7 @@
 	
 	return array( $_SESSION['white'], $_SESSION['black'], $consoleAjax, $textboxAjax, $specialOption, 
 	$enablingArr[0], $enablingArr[1], $enablingArr[2], $enablingArr[3], $enablingArr[4], $enablingArr[5], $enablingArr[6], $enablingArr[7], $enablingArr[8], $enablingArr[9], $enablingArr[10], $enablingArr[11], $enablingArr[12],
-	$queueMsg, $queueList );
+	$queueMsg, $queueList, $_SESSION['wtime'], $_SESSION['btime'], $_SESSION['turn'] );
 }
 
 if(isset($_POST['wsMsg']))
