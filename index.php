@@ -100,8 +100,8 @@
 					<script> 
 						$(function()  //odpala funkcje dopiero po zaladowaniu sie strony 
 						{
-							var debugTextArea = document.getElementById("debugTextArea");
-							debugTextArea.value = "";
+							var clientPlainTextWindow = document.getElementById("clientPlainTextWindow");
+							clientPlainTextWindow.value = "";
 							var queueTextArea = document.getElementById("updateQueueTextArea");
 						});
 						
@@ -120,12 +120,12 @@
 								
 								websocket.onerror = function (evt) 
 								{
-									debugToGameTextArea('WEBSCKT ERROR: ' + evt.data);
+									addMsgToClientPlainTextWindow('WEBSCKT ERROR: ' + evt.data);
 								};
 								
 								websocket.onclose = function (evt) 
 								{
-									debugToGameTextArea("DISCONNECTED");
+									addMsgToClientPlainTextWindow("DISCONNECTED");
 									console.log('Socket is closed. Reconnect will be attempted in 1 second.', evt.reason);
 									websocket = null;
 									setTimeout(function() { initWebSocket(); }, 1000)
@@ -187,7 +187,7 @@
 						<p><a href="http://www.adobe.com/go/getflashplayer">Get Adobe Flash player</a></p><br/>
 					</div>
 					<p>
-						<textarea readonly id="debugTextArea" style="width:400px;height:170px;"></textarea>
+						<textarea readonly id="clientPlainTextWindow" style="width:400px;height:170px;"></textarea>
 					</p>
 					<p>
 						Przemieść bierkę z&nbsp;&nbsp;
@@ -204,13 +204,14 @@
 					<table width="100%" cellpadding="15">
 						<td align= "left">
 							<img src="grafiki/white_pawn.jpg" alt="w_pawn" />
-							<button id="whitePlayer" onClick="newPlayer(this.id)" disabled>Loading...</button> 
-							<button id="standUpWhite" onClick="newPlayer(this.id)" disabled>Wstań</button> 
+							<!-- todo: czy nie wystarczy wysyłać prosto do core info "im white" i tutaj tylko odpalać disableAll()? -->
+							<button id="whitePlayer" onClick="clickedBtn('sitOnWhite')" disabled>Loading...</button> 
+							<button id="standUpWhite" onClick="clickedBtn('standUp')" disabled>Wstań</button> 
 						</td> 
 						<td align="right">
 							<img src="grafiki/black_pawn.jpg" alt="b_pawn" />
-							<button id="blackPlayer" onClick="newPlayer(this.id)" disabled>Loading...</button> 
-							<button id="standUpBlack" onClick="newPlayer(this.id)" disabled>Wstań</button> 
+							<button id="blackPlayer" onClick="clickedBtn('sitOnBlack')" disabled>Loading...</button> 
+							<button id="standUpBlack" onClick="clickedBtn('standUp')" disabled>Wstań</button> 
 						</td>						
 					</table>
 					<table width="80%" cellpadding="15">
@@ -229,8 +230,8 @@
 				</td>
 				<td align="center" valign="top">
 					<p align="center" valign="top"><b>Kolejka graczy</b></p> 
-					<button id="queuePlayer" onClick="queuePlayerBtn()" disabled>Zakolejkuj</button>
-					<button id="leaveQueue" onClick="leaveQueueBtn()" disabled>Opuść</button>
+					<button id="queuePlayer" onClick="clickedBtn('queueMe')" disabled>Zakolejkuj</button>
+					<button id="leaveQueue" onClick="clickedBtn('leaveQueue')" disabled>Opuść</button>
 					<div id="queueMsg"></div>
 					<p align="center" valign="bottom"> 
 						<textarea readonly id="queueTextArea" style="width:150px;height:570px;"></textarea> 

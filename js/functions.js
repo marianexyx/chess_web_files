@@ -1,7 +1,21 @@
-function debugToGameTextArea(message) //todo: zmienić to "debug" na to czym to jest, czyli np, "add text" or smtg
+function disableAll()
 {
-	debugTextArea.value += message + "\n";
-	debugTextArea.scrollTop = debugTextArea.scrollHeight;
+	$("#whitePlayer").attr("disabled", true);
+	$("#blackPlayer").attr("disabled", true);
+	$("#standUpWhite").attr("disabled", true);
+	$("#standUpBlack").attr("disabled", true);
+	$("#giveUpBtn").attr("disabled", true);
+	$("#pieceFrom").attr("disabled", true);
+	$("#pieceTo").attr("disabled", true);
+	$("#movePieceButton").attr("disabled", true);
+	$("#queuePlayer").attr("disabled", true);
+	$("#leaveQueue").attr("disabled", true);
+}
+
+function addMsgToClientPlainTextWindow(message) 
+{
+	clientPlainTextWindow.value += message + "\n";
+	clientPlainTextWindow.scrollTop = clientPlainTextWindow.scrollHeight;
 }
 
 var timerStart = null;
@@ -17,6 +31,7 @@ function turnOffStartTimerIfItsOn()
 
 function closeStartGameDialogIfOpened()
 {
+	clickedStart = false;
 	console.log("closeStartGameDialogIfOpened(): try to close startGameDialog");
 	if ($("#startGameDialog").dialog(startGameVar).dialog('isOpen')) 
 	{
@@ -27,6 +42,7 @@ function closeStartGameDialogIfOpened()
 
 var startLeftTime;
 var startInfo = "Wciśnij start, by rozpocząć grę. Pozostały czas: ";
+var clickedStart = false;
 function showStartDialog(isStart, whiteName, blackName)
 {
 	if (isStart && whiteName != "WHITE" && blackName != "BLACK" && whiteName != "-1" && blackName != "-1" && !$("#startGameDialog").dialog(startGameVar).dialog('isOpen'))
@@ -37,6 +53,7 @@ function showStartDialog(isStart, whiteName, blackName)
 		startLeftTime = 120;
 		console.log("open startGameDialog");
 		$("#startGameDialog").dialog(startGameVar).dialog("open"); 
+		clickedStart = false;
 		startInfo = "Wciśnij start, by rozpocząć grę. Pozostały czas: ";
 		
 		if (!timerStart) timerStart = setInterval(function() 
@@ -51,29 +68,9 @@ function showStartDialog(isStart, whiteName, blackName)
 		}, 1000); 
 		else "ERROR: timerStart = true";
 	}
-	else $("#startGameDialog").dialog(startGameVar).dialog("option", "buttons", {}); //todo: to jest test
-}
-
-function newPlayer(id) 
-{
-	$.ajax(
-	{
-		url: "php/newplayer.php",
-		type: "POST",
-		dataType: "json",
-		data: { type: id }, 
-		success: function (data) 
-		{ 			
-			var arr = $.map(data, function(el) { return el; });
-			console.log('ajax: newplayer.php- success: ' + arr); 
-			ajaxResponse(arr);
-		},
-		error: function(xhr, status, error) 
-		{
-			var err = eval("(" + xhr.responseText + ")");
-			alert(err.Message);
-		}
-	})
+	
+	if (clickedStart) 
+		$("#startGameDialog").dialog(startGameVar).dialog("option", "buttons", {}); //todo: to jest test
 }
 
 var timerGame2ndP = null;
@@ -92,6 +89,7 @@ var startGameVar =
 	{
 		'start': function() 
 		{
+			clickedStart = true;
 			websocket.send("newGame"); 
 			console.log('clicked: start');
 			
@@ -148,11 +146,11 @@ function ajaxResponse(ajaxData)
 	if (ajaxData[1] !='-1') $("#blackPlayer").html(ajaxData[1]);
 	
 	if (ajaxData[2] !='-1') console.log(ajaxData[2]);
-	if (ajaxData[3] !='-1') debugToGameTextArea(ajaxData[3]);
+	if (ajaxData[3] !='-1') addMsgToClientPlainTextWindow(ajaxData[3]);
 	if (ajaxData[4] !='-1') otherOption(ajaxData[4]);
 	
 	if (ajaxData[5] !='-1') console.log(ajaxData[5]);
-	if (ajaxData[6] !='-1') debugToGameTextArea(ajaxData[6]);
+	if (ajaxData[6] !='-1') addMsgToClientPlainTextWindow(ajaxData[6]);
 	
 	if (ajaxData[7] !='-1') $("#whitePlayer").attr("disabled", ajaxData[7]);
 	if (ajaxData[8] !='-1') $("#blackPlayer").attr("disabled", ajaxData[8]);
@@ -229,7 +227,7 @@ var promoteVar =
 		{
 			websocket.send("promoteTo: q"); // auto promote queen
 			console.log('auto promote: promoteTo: q');
-			debugToGameTextArea("Pion promowany na: hetman.");
+			addMsgToClientPlainTextWindow("Pion promowany na: hetman.");
 			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}
 	},
@@ -239,28 +237,28 @@ var promoteVar =
 		{
 			websocket.send("promoteTo: q"); //queen
 			console.log('clicked: promoteTo: q');
-			debugToGameTextArea("Pion promowany na: hetman.");
+			addMsgToClientPlainTextWindow("Pion promowany na: hetman.");
 			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}, 
 		'\u265D': function() 
 		{
 			websocket.send("promoteTo: b"); //bishop
 			console.log('clicked: promoteTo: b');
-			debugToGameTextArea("Pion promowany na: goniec.");
+			addMsgToClientPlainTextWindow("Pion promowany na: goniec.");
 			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}, 
 		'\u265E': function() 
 		{
 			websocket.send("promoteTo: k"); //knight
 			console.log('clicked: promoteTo: k');
-			debugToGameTextArea("Pion promowany na: skoczek.");
+			addMsgToClientPlainTextWindow("Pion promowany na: skoczek.");
 			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}, 
 		'\u265C': function() 
 		{
 			websocket.send("promoteTo: r"); //rook
 			console.log('clicked: promoteTo: r');
-			debugToGameTextArea("Pion promowany na: wieża.");
+			addMsgToClientPlainTextWindow("Pion promowany na: wieża.");
 			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}
 	}
@@ -309,15 +307,23 @@ function giveUp()
 	$("#giveUpDialog").dialog(giveUpVar).dialog("open");
 }
 
-function queuePlayerBtn()
+function clickedBtn(buttonType)
 {
-	websocket.send("queueMe"); 
-	console.log('clicked: queuePlayerBtn');
-}
-function leaveQueueBtn()
-{
-	websocket.send("leaveQueue"); 
-	console.log('clicked: leaveQueueBtn');
+	disableAll();
+	var msgForCore;
+	switch(buttonType)
+	{
+		//todo: uda mi się to zamknąć w 1 linijce?
+		case "sitOnWhite": msgForCore = "sitOnWhite"; break; 
+		case "sitOnBlack": msgForCore = "sitOnBlack"; break; 
+		case "standUp": msgForCore = "standUp"; break;
+		//case giveUp: msgForCore = "giveUp"; break; - openDialog //todo: przekierowanie później z poszczególnych buttonów w dialogu tutaj robić?
+		case "queueMe": msgForCore = "queueMe"; break; 
+		case "leaveQueue": msgForCore = "leaveQueue"; break; 
+		default: console.log("ERROR: unknown buttonType type"); break;
+	}
+	console.log("clicked btn: " + msgForCore);
+	if (msgForCore) websocket.send(msgForCore); 
 }
 
 function confirmLogout() 
