@@ -1,3 +1,30 @@
+var reactBeep = new Audio('chatex/beep1.wav');
+alertWindow = (function () 
+{
+	//todo: nie umiem zmienić koloru na migający niebieski
+	console.log("alertWindow() and play beep"); 
+	
+    var oldTitle = document.title;
+    var msg = "Oczewikanie na gracza!";
+    var timeoutId;
+    var blink = function() { document.title = document.title == msg ? ' ' : msg; };
+    var clear = function() 
+	{
+        clearInterval(timeoutId);
+        document.title = oldTitle;
+        window.onmousemove = null;
+        timeoutId = null;
+    };
+    return function () 
+	{
+        if (!timeoutId) 
+		{
+            timeoutId = setInterval(blink, 1000);
+            window.onmousemove = clear;
+        }
+    };
+}());
+
 function disableAll()
 {
 	$("#whitePlayer").attr("disabled", true);
@@ -31,7 +58,6 @@ function turnOffStartTimerIfItsOn()
 
 function closeStartGameDialogIfOpened()
 {
-	clickedStart = false;
 	console.log("closeStartGameDialogIfOpened(): try to close startGameDialog");
 	if ($("#startGameDialog").dialog(startGameVar).dialog('isOpen')) 
 	{
@@ -40,37 +66,48 @@ function closeStartGameDialogIfOpened()
 	}
 }
 
-var startLeftTime;
-var startInfo = "Wciśnij start, by rozpocząć grę. Pozostały czas: ";
-var clickedStart = false;
-function showStartDialog(isStart, whiteName, blackName)
+var startInfo;
+function showStartDialog(wClickedStart, bClickedStart, sTime)
 {
-	if (isStart && whiteName != "WHITE" && blackName != "BLACK" && whiteName != "-1" && blackName != "-1" && !$("#startGameDialog").dialog(startGameVar).dialog('isOpen'))
-	{ //todo: trochę oszukałem z warunkiem na startGameDialog. okno by się odświerzało z timerem wraz z każdą zmianą w kolecje (nowym TABLE_DATA)
-		turnOffStartTimerIfItsOn();
-		closeStartGameDialogIfOpened();
-
-		startLeftTime = 120;
-		console.log("open startGameDialog");
-		$("#startGameDialog").dialog(startGameVar).dialog("open"); 
-		clickedStart = false;
+	turnOffStartTimerIfItsOn();
+	closeStartGameDialogIfOpened();
+	console.log("open startGameDialog");
+	$("#startGameDialog").dialog(startGameVar).dialog("open"); 
+	var whitePlr = $("#whitePlayer").text();
+	var blackPlr = $("#blackPlayer").text();
+	console.log("js_login = " + js_login + ", whitePlr = " + whitePlr + ", blackPlr = " + blackPlr);
+	if ((wClickedStart == "x" && js_login == whitePlr) || (bClickedStart == "x" && js_login == blackPlr))
+	{
+		alertWindow();
+		reactBeep.play();
 		startInfo = "Wciśnij start, by rozpocząć grę. Pozostały czas: ";
-		
-		if (!timerStart) timerStart = setInterval(function() 
+	}
+	else if ((wClickedStart == "w" && js_login == whitePlr) || (bClickedStart == "b" && js_login == blackPlr))
+	{
+		startInfo = "Oczekiwanie aż drugi gracz wciśnie start: ";
+		$("#startGameDialog").dialog(startGameVar).dialog("option", "buttons", {});
+	}
+	else
+	{
+		startInfo = "Oczekiwanie aż gracze wcisną start: ";
+		$("#startGameDialog").dialog(startGameVar).dialog("option", "buttons", {});
+	}
+	
+	if (!timerStart) 
+	{
+		console.log("timerStart = true");
+		timerStart = setInterval(function() 
 		{ 
-			$("#startGameDialog").html(startInfo + startLeftTime);
-			startLeftTime = startLeftTime - 1;
-			if (startLeftTime <= 0)
+			$("#startGameDialog").html(startInfo + sTime);
+			sTime = sTime - 1;
+			if (sTime <= 0)
 			{
 				turnOffStartTimerIfItsOn();
 				closeStartGameDialogIfOpened();
 			}
 		}, 1000); 
-		else "ERROR: timerStart = true";
 	}
-	
-	if (clickedStart) 
-		$("#startGameDialog").dialog(startGameVar).dialog("option", "buttons", {}); //todo: to jest test
+	else console.log("ERROR: timerStart = true");
 }
 
 var timerGame2ndP = null;
@@ -80,31 +117,29 @@ var startGameVar =
 	dialogClass: "no-close",
 	title: "Start gry",
 	closeOnEscape: true,	
-	close: function (event, ui) 
+close: function (event, ui) 
+{
+	if (event.originalEvent) 
+	$(this).dialog("open");
+},
+buttons: 
+{
+	'start': function() 
 	{
-		if (event.originalEvent) 
-			$(this).dialog("open");
-	},
-	buttons: 
+		console.log('clicked: start');
+		disableAll();
+		websocket.send("newGame"); 
+		
+		startInfo = "Oczekiwanie aż drugi gracz wciśnie start: ";
+		$(this).dialog("option", "buttons", {});
+	}, 
+	'wstań': function() 
 	{
-		'start': function() 
-		{
-			clickedStart = true;
-			websocket.send("newGame"); 
-			console.log('clicked: start');
-			
-			startInfo = "Oczekiwanie aż drugi gracz wciśnie start: ";
-			$(this).dialog("option", "buttons", {});
-		}, 
-		'wstań': function() 
-		{
-			console.log('clicked: standUp');
-			if (!$("#standUpWhite").is(":disabled")) newPlayer("standUpWhite");
-			else if (!$("#standUpBlack").is(":disabled")) newPlayer("standUpBlack");
-			
-			if ($(this).dialog('isOpen')) $(this).dialog("close");
-		}
+		console.log('clicked: standUp');
+		clickedBtn('standUp');		
+		if ($(this).dialog('isOpen')) $(this).dialog("close");
 	}
+}
 };
 
 function updateQueueTextArea(queueList)
@@ -156,29 +191,32 @@ function ajaxResponse(ajaxData)
 	if (ajaxData[8] !='-1') $("#blackPlayer").attr("disabled", ajaxData[8]);
 	if (ajaxData[9] !='-1') $("#standUpWhite").attr("disabled", ajaxData[9]);
 	if (ajaxData[10] !='-1') $("#standUpBlack").attr("disabled", ajaxData[10]);
-	if (ajaxData[11] !='-1') showStartDialog(!ajaxData[11], ajaxData[0], ajaxData[1]); 	
+	if (ajaxData[11] == '1') console.log("start dialog should appear"); 
 	if (ajaxData[12] !='-1') $("#giveUpBtn").attr("disabled", ajaxData[12]);
-	if (ajaxData[13] !='-1') $("#pieceFrom").attr("disabled", ajaxData[13]);
+	if (ajaxData[13] !='-1') $("#pieceFrom").attr("disabled", ajaxData[13]); 
 	if (ajaxData[14] !='-1') $("#pieceTo").attr("disabled", ajaxData[14]);
 	if (ajaxData[15] !='-1') $("#movePieceButton").attr("disabled", ajaxData[15]);
 	if (ajaxData[16] !='-1') $("#queuePlayer").attr("disabled", ajaxData[16]);
 	if (ajaxData[17] !='-1') $("#leaveQueue").attr("disabled", ajaxData[17]);
 	
-	if (ajaxData[18]!='-1') $("#queueMsg").html(ajaxData[18]);
-	if (ajaxData[19]!='-1') updateQueueTextArea(ajaxData[19]);
+	if (ajaxData[18]!='-1') updateQueueTextArea(ajaxData[18]);
 	
-	if (ajaxData[20] !='-1') whiteTotalSeconds = ajaxData[20]; 
-	if (ajaxData[21] !='-1') blackTotalSeconds = ajaxData[21];
-	if (ajaxData[22] !='-1') whoseTurn = ajaxData[22];
+	if (ajaxData[19] !='-1') whiteTotalSeconds = ajaxData[19]; 
+	if (ajaxData[20] !='-1') blackTotalSeconds = ajaxData[20];
+	if (ajaxData[21] !='-1') whoseTurn = ajaxData[21];
+	
+	if (ajaxData[22] !='-1' && ajaxData[23] !='-1' && ajaxData[24] !='-1' && !$("#startGameDialog").dialog(startGameVar).dialog('isOpen')) 
+	showStartDialog(ajaxData[22], ajaxData[23], ajaxData[24]); 
+	else closeStartGameDialogIfOpened();
 	
 	if (whoseTurn != "-1" && whoseTurn != "NO_TURN") startWhiteTimerIfFirstTurn(whiteTotalSeconds, blackTotalSeconds);
 	
 	if (whiteTotalSeconds != "-1" || blackTotalSeconds != "-1") //todo: zapakować w funkcję
 	{
 		if (whiteTotalSeconds != "-1") 
-			$("#whiteTime").html(secondsToMinutesAndSeconds(whiteTotalSeconds));
+		$("#whiteTime").html(secondsToMinutesAndSeconds(whiteTotalSeconds));
 		if (blackTotalSeconds != "-1") 
-			$("#blackTime").html(secondsToMinutesAndSeconds(blackTotalSeconds));
+		$("#blackTime").html(secondsToMinutesAndSeconds(blackTotalSeconds));
 		
 		if (timerGame)
 		{
@@ -275,24 +313,9 @@ var giveUpVar =
 	{
 		'tak': function() 
 		{
-			$.ajax(
-			{
-				url: "php/giveup.php",
-				type: "POST",			
-				dataType: "json",
-				data: { }, 
-				success: function (data) 
-				{ 
-					if(typeof data == 'object') data = $.map(data, function(el) { return el; });
-					console.log('ajax: giveup.php- success: ' + data); 
-					ajaxResponse(data);
-				},
-				error: function(xhr, status, error) 
-				{
-					var err = eval("(" + xhr.responseText + ")");
-					alert(err.Message);
-				}
-			});
+			disableAll();
+			addMsgToClientPlainTextWindow("Opuszczanie stołu..."); 
+			websocket.send("giveUp"); 
 			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}, 
 		'nie': function() 
@@ -341,59 +364,20 @@ function resetPlayersTimers()
 	$("#blackTime").html("30:00");
 }
 
-function newGame()
-{
-	$.ajax(
-	{
-		url: "php/newgame.php",
-		type: "POST",
-		dataType: "json",
-		data: { }, 
-		success: function (data) 
-		{ 			
-			var arr = $.map(data, function(el) { return el; });
-			console.log('ajax: newgame.php- success: ' + arr); 
-			ajaxResponse(arr);
-			
-			//todo: wyłącz okno startu, tylko że zrób to w dialogu, a nie tu
-		},
-		error: function(xhr, status, error) 
-		{
-			var err = eval("(" + xhr.responseText + ")");
-			alert(err.Message);
-		}
-	})
-}
-
 function movePiece()
 {
-	var from = $("#pieceFrom").val();
-	var to = $("#pieceTo").val();;
+	var pieceFrom = $("#pieceFrom").val();
+	var pieceTo = $("#pieceTo").val();;
 	$("#pieceFrom").val("");
 	$("#pieceTo").val("");
 	
-	$.ajax(
+	var squareLetters = ['a','b','c','d','e','f','g','h','A','B','C','D','E','F','G','H'];
+	if (pieceFrom.length == 2 && pieceTo.length == 2 && pieceFrom.charAt(1) <= 8 && pieceTo.charAt(1) <= 8 && pieceFrom.charAt(1) >= 1 && pieceTo.charAt(1) >= 1 && jQuery.inArray(pieceFrom.charAt(0), squareLetters) != '-1' && jQuery.inArray(pieceTo.charAt(0), squareLetters) != '-1')
 	{
-		url: "php/move.php",
-		type: "POST",
-		dataType: "json",
-		data: 
-		{ 
-			pieceFrom: from,
-			pieceTo: to
-		}, 
-		success: function (data) 
-		{ 			
-			var arr = $.map(data, function(el) { return el; });
-			console.log('ajax: move.php- success: ' + arr); 
-			ajaxResponse(arr);
-		},
-		error: function(xhr, status, error) 
-		{
-			var err = eval("(" + xhr.responseText + ")");
-			alert(err.Message);
-		}
-	})
+		disableAll();
+		websocket.send("move " + pieceFrom + pieceTo);
+	}
+	else console.log("Błędnie wprowadzone zapytanie o ruch.");
 }
 
 function info()

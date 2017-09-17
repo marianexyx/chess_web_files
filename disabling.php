@@ -1,4 +1,6 @@
 <?
+	//todo: funkcje mozna by ładniej poupychać- większośc zapytań wywołuje większośc tych samych wyników
+	
 	if(!isset($_SESSION)) session_start();
 	
 	function isChairEmpty($playerType)
@@ -164,7 +166,7 @@
 				}
 				break;
 				
-				//case 'noTurn':
+				case 'noTurn':
 				case 'clickedBtn':
 				case 'promote':
 				default: break;

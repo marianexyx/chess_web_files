@@ -7,8 +7,7 @@ echo '
 <table align="center">
 	<tr>
 		<td><b>Witaj:</b></td>
-		<td style="padding: 10px">
-		'.$user['login'].' &nbsp;&nbsp;
+		<td style="padding: 10px">'.$user['login'].'&nbsp;&nbsp;
 		</td>
 	</tr>
 </table>';

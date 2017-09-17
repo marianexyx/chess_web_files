@@ -21,11 +21,10 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 		<script src="http://code.jquery.com/jquery-latest.min.js"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script> 
-		<!-- <script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.1.0/prototype.js"></script> -->
 		<script src='https://www.google.com/recaptcha/api.js'></script>
-		<script src="js/swfobject.js"></script>
+		<script src="swfobject.js"></script>
 		<!-- <script src="js/websocket.js"></script>  // todo: zmyślnie umieścić kod websocketów w zewnętrznym pliku -->
-		<script src="js/functions.js"></script>
+		<script src="functions.js"></script>
 		<script> //stream  params //todo: do zewnętrznego pliku dać
 			var flashvars = {};
 			
@@ -55,21 +54,20 @@
 			<tr align="center">
 				<td colspan="3">
 					<?
-						//todo: turę trzymać w globalnej zmiennej. stan gry też? 
 						ob_start();
-						session_start(); //mechanizm sesji online (można używać globalnego pojemnika na zmiennie $_SESSION)
+						session_start(); 
 						require_once('include/inc.php');
 						require_once('disabling.php');
 						
 						error_reporting( error_reporting() & ~E_NOTICE ); //wyłącz ostrzeżenie, że niezdefiniowana jest zmienna 'a' i inne tego typu
 						
-						if(empty($_SESSION['id'])) //jeżeli id jest puste (gracz nie jest zalogowany, id=null) wyświetl pasek z rejestracją i loginem
+						if(empty($_SESSION['id'])) 
 						{
 							echo '<center><a href="index.php?a=register">Zarejestruj się</a> | 
 							<a href="index.php?a=login">Zaloguj się</a></center>';
 						} 
 						else echo '<center><div id="info"><a href="#" onClick="return info();">Kontakt</a> | 
-						<a href="index.php?a=logout" onclick="return confirmLogout();">Wyloguj się</a></center></div>'; //else wyświetl stronę gracza zalogowanego
+						<a href="index.php?a=logout" onclick="return confirmLogout();">Wyloguj się</a></center></div>'; 
 						
 						switch($_GET['a']) //zmienna w pasku ustalająca stronę po ob_end_flush; 'a' pobierane z "a href'ów"
 						{
@@ -78,7 +76,7 @@
 							case 'register': require_once('register.php'); break;
 							case 'game': require_once('game.php'); break;
 							case 'logout':
-							$_SESSION = array(); // czyszczenie sesji pustą tablicą
+							$_SESSION = array(); // czyszczenie sesji
 							session_destroy(); // niszczenie sesji. resetuje się na nowe //todo: czy msie rozni od session_unset?
 							header("Location: index.php"); //header przenosi na stronę główną
 							break;
@@ -92,9 +90,9 @@
 				<td align="center" valign="top"> <!-- todo: dlaczego wogle ten cały kod php/js poniżej jest w tagach <td>? -->
 					<? 
 						$user = getUser($_SESSION['id']);
-						/*$_SESSION['table_id'] = 1; //póki co jest tylko jeden stół, więc zmienna zbędna
-						$player = getPlayer($_SESSION['table_id']); //wyciąga z bazy wiersz z danymi stołu !!!TODO: czy nie wywołuje tej samej funkcji kilka razy?*/
+						/*$_SESSION['table_id'] = 1; //póki co jest tylko jeden stół, więc zmienna zbędna*/
 						$_SESSION['login'] = $user['login'];   
+						echo '<script> var js_login = "'.$_SESSION['login'].'";</script>';
 					?>
 					
 					<script> 
@@ -105,12 +103,12 @@
 							var queueTextArea = document.getElementById("updateQueueTextArea");
 						});
 						
-						var wsUri = "ws://89.66.209.51:1234"; //parametry połączenia 
+						var wsUri = "ws://89.66.209.51:1234"; 
 						var websocket = null; //osobne połączenia
 						
 						function initWebSocket() 
 						{
-							if ("WebSocket" in window) //jeżeli przeglądarka obsługuje websockety
+							if ("WebSocket" in window) 
 							{
 								if (websocket == null) 
 								{
@@ -138,7 +136,7 @@
 									{
 										$.ajax(
 										{
-											url: "php/on_ws_msg.php",
+											url: "on_ws_msg.php",
 											type: "POST",			
 											dataType: "json",
 											data: { wsMsg: evt.data },
@@ -204,7 +202,6 @@
 					<table width="100%" cellpadding="15">
 						<td align= "left">
 							<img src="grafiki/white_pawn.jpg" alt="w_pawn" />
-							<!-- todo: czy nie wystarczy wysyłać prosto do core info "im white" i tutaj tylko odpalać disableAll()? -->
 							<button id="whitePlayer" onClick="clickedBtn('sitOnWhite')" disabled>Loading...</button> 
 							<button id="standUpWhite" onClick="clickedBtn('standUp')" disabled>Wstań</button> 
 						</td> 
@@ -232,7 +229,6 @@
 					<p align="center" valign="top"><b>Kolejka graczy</b></p> 
 					<button id="queuePlayer" onClick="clickedBtn('queueMe')" disabled>Zakolejkuj</button>
 					<button id="leaveQueue" onClick="clickedBtn('leaveQueue')" disabled>Opuść</button>
-					<div id="queueMsg"></div>
 					<p align="center" valign="bottom"> 
 						<textarea readonly id="queueTextArea" style="width:150px;height:570px;"></textarea> 
 					</p>
