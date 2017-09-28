@@ -132,7 +132,7 @@
 								websocket.onmessage = function (evt) 
 								{ 
 									console.log('msg from core: ' + evt.data);
-									if (evt.data != 'connectionOnline')
+									if (evt.data != 'connectionOnline' && evt.data != 'logout:doubleLogin')
 									{
 										$.ajax(
 										{
@@ -152,6 +152,14 @@
 												alert(err.Message);
 											}
 										});
+									}
+									else if (evt.data == 'logout:doubleLogin')
+									{
+										disableAll();
+										stopWebSocket();
+										setTimeout(function() { window.location.href = 'index.php?a=logout'; }, 5000) //todo: przetestować
+										alert("Wylogowywanie: podwójny login");
+										window.location.href = 'index.php?a=logout';
 									}
 								};
 								
