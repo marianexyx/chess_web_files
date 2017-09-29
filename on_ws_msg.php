@@ -54,6 +54,7 @@
 			$_SESSION['bstart'] = substr($tableDataArr["start"], 1, 1); //b or x
 			$_SESSION['stime'] = floor(substr($tableDataArr["start"], 2)/1000); //int
 		}
+		if (array_key_exists("history", $tableDataArr)) $_SESSION['history'] = $tableDataArr["history"];
 		//$consoleAjax = "consoleAjax. data = " . $tableDataJSON; //var_dump($tableDataArr); //testy- podgląd
 		//$consoleAjax = print_r($tableDataArr, true);
 		//$textboxAjax = $consoleAjax;
@@ -93,6 +94,7 @@
 		$_SESSION['wstart'] = -1;
 		$_SESSION['bstart'] = -1;
 		$_SESSION['stime'] = -1;
+		$_SESSION['history'] = -1;
 		
 		$consoleAjax = 'wsMsgType val = '.$wsMsgType;
 		$enablingArr = array();
@@ -211,6 +213,10 @@
 			$enablingArr = enabling('endOfGame');
 			break;
 			
+			case 'history':
+			$_SESSION['history'] = $wsMsgVal;
+			break;
+			
 			default: 
 			$consoleAjax = "ERROR: undefined msg type from core: ".$wsMsgType;
 			break; 
@@ -219,7 +225,7 @@
 		//todo: naprawić zwracanie tablicy- niech zwraca tylko te wartości, które są (i mogą) być zwracane. trzeba przywrócić key arraye. js powinien wyłapywać tylko te zmienne które przyjdą.
 		return array( $_SESSION['white'], $_SESSION['black'], $consoleAjax, $textboxAjax, $specialOption, 
 		$enablingArr[0], $enablingArr[1], $enablingArr[2], $enablingArr[3], $enablingArr[4], $enablingArr[5], $enablingArr[6], $enablingArr[7], $enablingArr[8], $enablingArr[9], $enablingArr[10], $enablingArr[11], $enablingArr[12],
-		$_SESSION['queue'], $_SESSION['wtime'], $_SESSION['btime'], $_SESSION['turn'], $_SESSION['wstart'], $_SESSION['bstart'], $_SESSION['stime'] );
+		$_SESSION['queue'], $_SESSION['wtime'], $_SESSION['btime'], $_SESSION['turn'], $_SESSION['wstart'], $_SESSION['bstart'], $_SESSION['stime'], $_SESSION['history'] );
 	}
 	
 	if(isset($_POST['wsMsg']))
@@ -236,6 +242,7 @@
 		else if	(substr($rawWsg,0,8) == 'promoted') 		{ $return = onWsMsg("promoted", substr($rawWsg,9)); }
 		else if	(substr($rawWsg,0,7) == 'badMove') 			{ $return = onWsMsg("badMove", substr($rawWsg,8)); }
 		else if	(substr($rawWsg,0,7) == 'givedUp') 			{ $return = onWsMsg("givedUp", substr($rawWsg,7)); }
+		else if	(substr($rawWsg,0,7) == 'history') 			{ $return = onWsMsg("history", substr($rawWsg,8)); }
 		else $return['consoleAjax'] = 'ERROR. Unknown ws::onMessage value = '.$rawWsg; 
 	}
 	

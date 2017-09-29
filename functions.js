@@ -39,10 +39,70 @@ function disableAll()
 	$("#leaveQueue").attr("disabled", true);
 }
 
+var infoPTEval = "";
+var historyPTEval = "";
+var PTEtype = "infoPTE";
 function addMsgToClientPlainTextWindow(message) 
 {
-	clientPlainTextWindow.value += message + "\n";
+	if (PTEtype == "infoPTE")
+	{
+		infoPTEval += message + "\n";
+		clientPlainTextWindow.value = infoPTEval;
+	}
+	else if (PTEtype == "historyPTE")
+		clientPlainTextWindow.value = historyPTEval;
+	else console.log("ERROR: unknown addMsgToClientPlainTextWindow arg = " + message);
+	
 	clientPlainTextWindow.scrollTop = clientPlainTextWindow.scrollHeight;
+}
+
+function changePTEsource(PTEsource)
+{
+	PTEtype = PTEsource;
+	
+	switch (PTEsource)
+	{
+		case "infoPTE": 
+		clientPlainTextWindow.value = infoPTEval;
+		clientPlainTextWindow.scrollTop = clientPlainTextWindow.scrollHeight;
+		$("#infoPTE").attr("disabled", true);
+		$("#historyPTE").attr("disabled", false);
+		break;
+		
+		case "historyPTE": 
+		clientPlainTextWindow.value = historyPTEval;
+		clientPlainTextWindow.scrollTop = clientPlainTextWindow.scrollHeight;
+		$("#infoPTE").attr("disabled", false);
+		$("#historyPTE").attr("disabled", true);
+		break;
+		
+		default: console.log("ERROR: unknown changePTEsource type"); break;
+	}
+	console.log("clicked btn: " + PTEsource);
+}
+
+function historyInOneLineToHistoryPTE(historyInOneLine)
+{
+	historyInOneLine = historyInOneLine.trim(); //remove whitespaces from both sides of a string
+	console.log("inside historyInOneLineToHistoryPTE. historyInOneLine = " + historyInOneLine);
+	console.log("inside historyInOneLineToHistoryPTE");
+	var historyPTETemp = "";
+	var historyArray = historyInOneLine.split(" ");
+	console.log("historyInOneLineToHistoryPTE: historyArray = " + historyArray);
+	if (historyArray.length > 0)
+	{
+		console.log("historyInOneLineToHistoryPTE: historyArray.length > 0 = " + historyArray.length);
+		for (i = 1; i < historyArray.length + 1; i++)
+		{
+			console.log("historyInOneLineToHistoryPTE: inside loop. i = " + i);
+			if (i/2 != Math.ceil(i/2)) historyPTETemp += Math.ceil(i/2) + ". ";
+			historyPTETemp += historyArray[i-1];
+			if (i/2 != Math.ceil(i/2)) historyPTETemp += "\t";
+			else historyPTETemp += "\n";
+		}
+	}
+
+	return historyPTETemp;
 }
 
 var timerStart = null;
@@ -206,8 +266,14 @@ function ajaxResponse(ajaxData)
 	if (ajaxData[21] !='-1') whoseTurn = ajaxData[21];
 	
 	if (ajaxData[22] !='-1' && ajaxData[23] !='-1' && ajaxData[24] !='-1' && !$("#startGameDialog").dialog(startGameVar).dialog('isOpen')) 
-	showStartDialog(ajaxData[22], ajaxData[23], ajaxData[24]); 
+		showStartDialog(ajaxData[22], ajaxData[23], ajaxData[24]); 
 	else closeStartGameDialogIfOpened();
+	
+	if (ajaxData[25] !='-1') 
+	{
+		historyPTEval = historyInOneLineToHistoryPTE(ajaxData[25]);
+		addMsgToClientPlainTextWindow(""); //todo: dziwnie to wygląda
+	}
 	
 	if (whoseTurn != "-1" && whoseTurn != "NO_TURN") startWhiteTimerIfFirstTurn(whiteTotalSeconds, blackTotalSeconds);
 	

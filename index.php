@@ -194,14 +194,11 @@
 					</div>
 					<p>
 						<textarea readonly id="clientPlainTextWindow" style="width:400px;height:170px;"></textarea>
-					</p>
+					</p>		
 					<p>
-						Przemieść bierkę z&nbsp;&nbsp;
-						<input type="text" id="pieceFrom" name="pieceFrom" maxlength="2" size="2" disabled />&nbsp;na&nbsp; 
-						<input type="text" id="pieceTo"   name="pieceTo"   maxlength="2" size="2" disabled />&nbsp;&nbsp;
-						<button id="movePieceButton" onClick="movePiece();" disabled >Wyślij</button> 
+						<button id="infoPTE" onClick="changePTEsource('infoPTE')" disabled>informacje</button> 
+						<button id="historyPTE" onClick="changePTEsource('historyPTE')">historia</button> 
 					</p>
-					
 					<div id="promoteDialog"> </div> <!-- bez tego nie chce mi działać dialog-promote-->
 					<div id="startGameDialog" hidden="hidden">Wciśnij start, by rozpocząć grę. Pozostały czas: 120</div> 
 					
@@ -228,6 +225,12 @@
 							<div id="blackTime" style="float:right">30:00</div>
 						</td>
 					</table> 
+					<p>
+						Przemieść bierkę z&nbsp;&nbsp;
+						<input type="text" id="pieceFrom" name="pieceFrom" maxlength="2" size="2" disabled />&nbsp;na&nbsp; 
+						<input type="text" id="pieceTo"   name="pieceTo"   maxlength="2" size="2" disabled />&nbsp;&nbsp;
+						<button id="movePieceButton" onClick="movePiece();" disabled >Wyślij</button> 
+					</p>
 					<!-- chat -->
 					<div id="chatarea" data-style="large"></div>
 					<script src="chatfiles/chatfunctions.js"></script>
