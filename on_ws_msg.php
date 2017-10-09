@@ -87,6 +87,7 @@
 		//$_SESSION['wstart']; //22
 		//$_SESSION['bstart']; //23
 		//$_SESSION['stime']; //24
+		//$_SESSION['history']; //25
 		
 		$_SESSION['wtime'] = -1;
 		$_SESSION['btime'] = -1;

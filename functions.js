@@ -42,36 +42,44 @@ function disableAll()
 var infoPTEval = "";
 var historyPTEval = "";
 var PTEtype = "infoPTE";
-function addMsgToClientPlainTextWindow(message) 
+
+function refreshActualClientPlainTextWindowValue()
 {
 	if (PTEtype == "infoPTE")
 	{
-		infoPTEval += message + "\n";
 		clientPlainTextWindow.value = infoPTEval;
+		clientPlainTextWindow.scrollTop = clientPlainTextWindow.scrollHeight;
 	}
 	else if (PTEtype == "historyPTE")
+	{
 		clientPlainTextWindow.value = historyPTEval;
-	else console.log("ERROR: unknown addMsgToClientPlainTextWindow arg = " + message);
+		clientPlainTextWindow.scrollTop = clientPlainTextWindow.scrollHeight;
+	}
+	else console.log("ERROR: refreshActualClientPlainTextWindowValue(): unknown PTEtype val = " + PTEtype);
+}
+
+function addMsgToClientPlainTextWindow(message, type)
+{
+	if (type == "info") infoPTEval += message + "\n";
+	else if (type == "history") historyPTEval = historyInOneLineToHistoryPTE(message);
+	else console.log("ERROR: unknown type val in addMsgToClientPlainTextWindow");
 	
-	clientPlainTextWindow.scrollTop = clientPlainTextWindow.scrollHeight;
+	refreshActualClientPlainTextWindowValue();
 }
 
 function changePTEsource(PTEsource)
 {
 	PTEtype = PTEsource;
+	refreshActualClientPlainTextWindowValue();
 	
 	switch (PTEsource)
 	{
 		case "infoPTE": 
-		clientPlainTextWindow.value = infoPTEval;
-		clientPlainTextWindow.scrollTop = clientPlainTextWindow.scrollHeight;
 		$("#infoPTE").attr("disabled", true);
 		$("#historyPTE").attr("disabled", false);
 		break;
 		
 		case "historyPTE": 
-		clientPlainTextWindow.value = historyPTEval;
-		clientPlainTextWindow.scrollTop = clientPlainTextWindow.scrollHeight;
 		$("#infoPTE").attr("disabled", false);
 		$("#historyPTE").attr("disabled", true);
 		break;
@@ -84,17 +92,12 @@ function changePTEsource(PTEsource)
 function historyInOneLineToHistoryPTE(historyInOneLine)
 {
 	historyInOneLine = historyInOneLine.trim(); //remove whitespaces from both sides of a string
-	console.log("inside historyInOneLineToHistoryPTE. historyInOneLine = " + historyInOneLine);
-	console.log("inside historyInOneLineToHistoryPTE");
 	var historyPTETemp = "";
 	var historyArray = historyInOneLine.split(" ");
-	console.log("historyInOneLineToHistoryPTE: historyArray = " + historyArray);
 	if (historyArray.length > 0)
 	{
-		console.log("historyInOneLineToHistoryPTE: historyArray.length > 0 = " + historyArray.length);
 		for (i = 1; i < historyArray.length + 1; i++)
 		{
-			console.log("historyInOneLineToHistoryPTE: inside loop. i = " + i);
 			if (i/2 != Math.ceil(i/2)) historyPTETemp += Math.ceil(i/2) + ". ";
 			historyPTETemp += historyArray[i-1];
 			if (i/2 != Math.ceil(i/2)) historyPTETemp += "\t";
@@ -241,11 +244,11 @@ function ajaxResponse(ajaxData)
 	if (ajaxData[1] !='-1') $("#blackPlayer").html(ajaxData[1]);
 	
 	if (ajaxData[2] !='-1') console.log(ajaxData[2]);
-	if (ajaxData[3] !='-1') addMsgToClientPlainTextWindow(ajaxData[3]);
+	if (ajaxData[3] !='-1') addMsgToClientPlainTextWindow(ajaxData[3], "info");
 	if (ajaxData[4] !='-1') otherOption(ajaxData[4]);
 	
 	if (ajaxData[5] !='-1') console.log(ajaxData[5]);
-	if (ajaxData[6] !='-1') addMsgToClientPlainTextWindow(ajaxData[6]);
+	if (ajaxData[6] !='-1') addMsgToClientPlainTextWindow(ajaxData[6], "info");
 	
 	if (ajaxData[7] !='-1') $("#whitePlayer").attr("disabled", ajaxData[7]);
 	if (ajaxData[8] !='-1') $("#blackPlayer").attr("disabled", ajaxData[8]);
@@ -269,11 +272,9 @@ function ajaxResponse(ajaxData)
 		showStartDialog(ajaxData[22], ajaxData[23], ajaxData[24]); 
 	else closeStartGameDialogIfOpened();
 	
-	if (ajaxData[25] !='-1') 
-	{
-		historyPTEval = historyInOneLineToHistoryPTE(ajaxData[25]);
-		addMsgToClientPlainTextWindow(""); //todo: dziwnie to wygląda
-	}
+	if (ajaxData[25] !='-1') addMsgToClientPlainTextWindow(ajaxData[25], "history");
+	
+	
 	
 	if (whoseTurn != "-1" && whoseTurn != "NO_TURN") startWhiteTimerIfFirstTurn(whiteTotalSeconds, blackTotalSeconds);
 	
@@ -331,7 +332,7 @@ var promoteVar =
 		{
 			websocket.send("promoteTo: q"); // auto promote queen
 			console.log('auto promote: promoteTo: q');
-			addMsgToClientPlainTextWindow("Pion promowany na: hetman.");
+			addMsgToClientPlainTextWindow("Pion promowany na: hetman.", "info");
 			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}
 	},
@@ -341,28 +342,28 @@ var promoteVar =
 		{
 			websocket.send("promoteTo: q"); //queen
 			console.log('clicked: promoteTo: q');
-			addMsgToClientPlainTextWindow("Pion promowany na: hetman.");
+			addMsgToClientPlainTextWindow("Pion promowany na: hetman.", "info");
 			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}, 
 		'\u265D': function() 
 		{
 			websocket.send("promoteTo: b"); //bishop
 			console.log('clicked: promoteTo: b');
-			addMsgToClientPlainTextWindow("Pion promowany na: goniec.");
+			addMsgToClientPlainTextWindow("Pion promowany na: goniec.", "info");
 			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}, 
 		'\u265E': function() 
 		{
 			websocket.send("promoteTo: k"); //knight
 			console.log('clicked: promoteTo: k');
-			addMsgToClientPlainTextWindow("Pion promowany na: skoczek.");
+			addMsgToClientPlainTextWindow("Pion promowany na: skoczek.", "info");
 			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}, 
 		'\u265C': function() 
 		{
 			websocket.send("promoteTo: r"); //rook
 			console.log('clicked: promoteTo: r');
-			addMsgToClientPlainTextWindow("Pion promowany na: wieża.");
+			addMsgToClientPlainTextWindow("Pion promowany na: wieża.", "info");
 			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}
 	}
@@ -380,7 +381,7 @@ var giveUpVar =
 		'tak': function() 
 		{
 			disableAll();
-			addMsgToClientPlainTextWindow("Opuszczanie stołu..."); 
+			addMsgToClientPlainTextWindow("Opuszczanie stołu...", "info"); 
 			websocket.send("giveUp"); 
 			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}, 
@@ -432,13 +433,17 @@ function resetPlayersTimers()
 
 function movePiece()
 {
-	var pieceFrom = $("#pieceFrom").val();
-	var pieceTo = $("#pieceTo").val();;
+	var pieceFrom = $("#pieceFrom").val().toLowerCase();
+	var pieceTo = $("#pieceTo").val().toLowerCase();
 	$("#pieceFrom").val("");
 	$("#pieceTo").val("");
+	var pieceFromLetter = pieceFrom.charAt(0);
+	var pieceFromDigit = pieceFrom.charAt(1);
+	var pieceToLetter = pieceTo.charAt(0);
+	var pieceToDigit = pieceTo.charAt(1);
 	
-	var squareLetters = ['a','b','c','d','e','f','g','h','A','B','C','D','E','F','G','H'];
-	if (pieceFrom.length == 2 && pieceTo.length == 2 && pieceFrom.charAt(1) <= 8 && pieceTo.charAt(1) <= 8 && pieceFrom.charAt(1) >= 1 && pieceTo.charAt(1) >= 1 && jQuery.inArray(pieceFrom.charAt(0), squareLetters) != '-1' && jQuery.inArray(pieceTo.charAt(0), squareLetters) != '-1')
+	var squareLetters = ['a','b','c','d','e','f','g','h'];
+	if (pieceFrom.length == 2 && pieceTo.length == 2 && pieceFromDigit <= 8 && pieceToDigit <= 8 && pieceFromDigit >= 1 && pieceToDigit >= 1 && jQuery.inArray(pieceFromLetter, squareLetters) != '-1' && jQuery.inArray(pieceToLetter, squareLetters) != '-1')
 	{
 		disableAll();
 		websocket.send("move " + pieceFrom + pieceTo);

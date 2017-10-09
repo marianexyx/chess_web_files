@@ -103,7 +103,7 @@
 							var queueTextArea = document.getElementById("updateQueueTextArea");
 						});
 						
-						var wsUri = "ws://89.66.209.51:1234"; 
+						var wsUri = "ws://89.65.112.206:1234"; 
 						var websocket = null; //osobne połączenia
 						
 						function initWebSocket() 
@@ -118,12 +118,12 @@
 								
 								websocket.onerror = function (evt) 
 								{
-									addMsgToClientPlainTextWindow('WEBSCKT ERROR: ' + evt.data);
+									addMsgToClientPlainTextWindow('WEBSCKT ERROR: ' + evt.data, "info");
 								};
 								
 								websocket.onclose = function (evt) 
 								{
-									addMsgToClientPlainTextWindow("DISCONNECTED");
+									addMsgToClientPlainTextWindow("DISCONNECTED", "info");
 									console.log('Socket is closed. Reconnect will be attempted in 1 second.', evt.reason);
 									websocket = null;
 									setTimeout(function() { initWebSocket(); }, 1000)
