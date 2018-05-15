@@ -1,8 +1,11 @@
 <?
 	//todo: funkcje mozna by ładniej poupychać- większośc zapytań wywołuje większośc tych samych wyników
 	
-	if(!isset($_SESSION)) session_start();
+	define("WHITE", "White");
+	define("BLACK", "Black");
 	
+	if(!isset($_SESSION)) session_start();
+		
 	function isChairEmpty($playerType)
 	{
 		$chair = false;
@@ -16,11 +19,8 @@
 			if ($_SESSION['black'] == BLACK) $chair = true;
 			else $chair = false;
 		}
-		/*else 
-			{
-			$consoleMsg = 'ERROR: isChairEmpty(): unknown playerType: '.$playerType;
-			debugToConsole($consoleMsg);
-		}*/
+		//else 'ERROR: function isChairEmpty(): unknown playerType: '.$playerType;
+		
 		return $chair;
 	}
 	
@@ -37,11 +37,8 @@
 			if ($_SESSION['black'] == $_SESSION['login']) $loggedPlayerOnChair = true;
 			else $loggedPlayerOnChair = false;
 		}
-		/*else
-			{
-			$consoleMsg = 'ERROR: isPlayerOnChair(): unknown playerType: '.$playerType;
-			debugToConsole($consoleMsg);
-		}*/
+		//else 'ERROR: function isLoggedPlayerOnChair(): unknown playerType: '.$playerType;
+		
 		return $loggedPlayerOnChair;
 	}
 	
@@ -128,6 +125,31 @@
 				break;
 				
 				case 'endOfGame':
+
+				$whiteChairEmpty = '-1';
+				$blackChairEmpty = '-1';
+				$whiteLoggedPlayerOnChair = '-1';
+				$blackLoggedPlayerOnChair = '-1';
+				if (isChairEmpty(WHITE)) $whiteChairEmpty = '1'; else $whiteChairEmpty = '0';
+				if (isChairEmpty(BLACK)) $blackChairEmpty = '1'; else $blackChairEmpty = '0';
+				if (isLoggedPlayerOnChair(WHITE)) $whiteLoggedPlayerOnChair = '1'; else $whiteLoggedPlayerOnChair = '0';
+				if (isLoggedPlayerOnChair(BLACK)) $blackLoggedPlayerOnChair = '1'; else $blackLoggedPlayerOnChair = '0';
+				$consoleEnabling = 'isChairEmpty(WHITE)='.$whiteChairEmpty.', isChairEmpty(BLACK)='.$blackChairEmpty.
+				', isLoggedPlayerOnChair(WHITE)='.$whiteLoggedPlayerOnChair.', isLoggedPlayerOnChair(BLACK)='.$blackLoggedPlayerOnChair.
+				', WHITE ='.WHITE.', BLACK ='.BLACK.', $_SESSION["white"]='.$_SESSION['white'].', $_SESSION["black"]='.$_SESSION['black'];
+				
+						if ($playerType == WHITE) 
+						{
+							if ($_SESSION['white'] == WHITE) $chair = true;
+							else $chair = false;
+						}
+						else if ($playerType == BLACK) 
+						{
+							if ($_SESSION['black'] == BLACK) $chair = true;
+							else $chair = false;
+						}
+						//else 'ERROR: function isChairEmpty(): unknown playerType: '.$playerType;
+				
 				if (isChairEmpty(WHITE) && !isLoggedPlayerOnChair(BLACK)) $whitePlayerBtn = true;
 				if (isChairEmpty(BLACK) && !isLoggedPlayerOnChair(WHITE)) $blackPlayerBtn = true;
 				if (isLoggedPlayerOnChair(WHITE)) $whiteStandUp = true;
@@ -174,6 +196,6 @@
 		}
 		else $consoleEnabling ='ERROR: Empty session ID';
 		
-		return array( $consoleEnabling, $textboxEnabling, !$whitePlayerBtn, !$blackPlayerBtn, !$whiteStandUp, !$blackStandUp, !$startBtn, !$giveUpBtn, !$pieceFromInput, !$pieceToInput, !$sendBtn, !$queuePlayer, !$leaveQueue);
+		return array($consoleEnabling, $textboxEnabling, !$whitePlayerBtn, !$blackPlayerBtn, !$whiteStandUp, !$blackStandUp, !$startBtn, !$giveUpBtn, !$pieceFromInput, !$pieceToInput, !$sendBtn, !$queuePlayer, !$leaveQueue);
 	}
 ?>							

@@ -5,7 +5,7 @@ alertWindow = (function ()
 	console.log("alertWindow() and play beep"); 
 	
     var oldTitle = document.title;
-    var msg = "Oczewikanie na gracza!";
+    var msg = "Oczekiwanie na gracza!";
     var timeoutId;
     var blink = function() { document.title = document.title == msg ? ' ' : msg; };
     var clear = function() 
@@ -230,7 +230,11 @@ function startWhiteTimerIfFirstTurn(whiteTimeLeft, blackTimeLeft)
 	if (whiteTimeLeft == 30*60 && blackTimeLeft == 30*60)
 	{
 		resetPlayersTimers();
-		if (!timerGame) timerGame = setInterval(function(){ updatePlayersTime() }, 1000);
+		if (!timerGame) 
+		{
+			ajaxResponse(ajaxData); //dlaczego tu wcześniej była deklaracja funkcji ajaxResponse?: "function "
+			timerGame = setInterval(function(){ updatePlayersTime() }, 1000);
+		}
 		closeStartGameDialogIfOpened();
 	}
 }
@@ -290,6 +294,7 @@ function ajaxResponse(ajaxData)
 			clearInterval(timerGame);
 			timerGame = null;
 		}
+		
 		timerGame = setInterval(function(){ updatePlayersTime() }, 1000);
 	}
 }
@@ -330,8 +335,8 @@ var promoteVar =
 	{	
 		if (event.originalEvent) 
 		{
-			websocket.send("promoteTo: q"); // auto promote queen
-			console.log('auto promote: promoteTo: q');
+			websocket.send("promoteTo:q"); // auto promote queen
+			console.log('auto promote: promoteTo:q');
 			addMsgToClientPlainTextWindow("Pion promowany na: hetman.", "info");
 			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}
@@ -340,29 +345,29 @@ var promoteVar =
 	{
 		'\u265B': function() //todo: mogę się kiedyś pokusić o zrobienie podziału koloru znaków na białe/czarne. białe: U+2655, U+2657, U+2658, U+2656.
 		{
-			websocket.send("promoteTo: q"); //queen
-			console.log('clicked: promoteTo: q');
+			websocket.send("promoteTo:q"); //queen
+			console.log('clicked: promoteTo:q');
 			addMsgToClientPlainTextWindow("Pion promowany na: hetman.", "info");
 			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}, 
 		'\u265D': function() 
 		{
-			websocket.send("promoteTo: b"); //bishop
-			console.log('clicked: promoteTo: b');
+			websocket.send("promoteTo:b"); //bishop
+			console.log('clicked: promoteTo:b');
 			addMsgToClientPlainTextWindow("Pion promowany na: goniec.", "info");
 			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}, 
 		'\u265E': function() 
 		{
-			websocket.send("promoteTo: k"); //knight
-			console.log('clicked: promoteTo: k');
+			websocket.send("promoteTo:k"); //knight
+			console.log('clicked: promoteTo:k');
 			addMsgToClientPlainTextWindow("Pion promowany na: skoczek.", "info");
 			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}, 
 		'\u265C': function() 
 		{
-			websocket.send("promoteTo: r"); //rook
-			console.log('clicked: promoteTo: r');
+			websocket.send("promoteTo:r"); //rook
+			console.log('clicked: promoteTo:r');
 			addMsgToClientPlainTextWindow("Pion promowany na: wieża.", "info");
 			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}
@@ -403,9 +408,9 @@ function clickedBtn(buttonType)
 	var msgForCore;
 	switch(buttonType)
 	{
-		//todo: uda mi się to zamknąć w 1 linijce?
-		case "sitOnWhite": msgForCore = "sitOnWhite"; break; 
-		case "sitOnBlack": msgForCore = "sitOnBlack"; break; 
+		//todo: uda mi się tą funkcję zamknąć w 1 linijce?
+		case "sitOnWhite": msgForCore = "sitOn White"; break; 
+		case "sitOnBlack": msgForCore = "sitOn Black"; break; 
 		case "standUp": msgForCore = "standUp"; break;
 		//case giveUp: msgForCore = "giveUp"; break; - openDialog //todo: przekierowanie później z poszczególnych buttonów w dialogu tutaj robić?
 		case "queueMe": msgForCore = "queueMe"; break; 
@@ -448,7 +453,11 @@ function movePiece()
 		disableAll();
 		websocket.send("move " + pieceFrom + pieceTo);
 	}
-	else console.log("Błędnie wprowadzone zapytanie o ruch.");
+	else 
+	{
+		console.log("Błędnie wprowadzone zapytanie o ruch.");
+		addMsgToClientPlainTextWindow("Błędnie wprowadzone zapytanie o ruch.", "info"); 
+	}
 }
 
 function info()

@@ -1,7 +1,5 @@
 <p>REJESTRACJA</p>
 <?php
-	//todo: sprawdzić logowanie i resejtrowanie
-	//todo: akceptuje regulamin
 	//todo: przywróć dane jeżeli wpisałeś coś źle z tutoriala (oprócz tego co źle)  https://youtu.be/fMJw90n8M60?list=PLOYHgt8dIdox81dbm1JWXQbm2geG1V2uh&t=6843  
 	
 	$kapcza = "6Lf9PygUAAAAAMdD3z1hDGssDbz0obmT8aLJyHTj";
@@ -76,7 +74,7 @@
 		</tr>
 		<tr>
 			<td></td>
-			<td colspan="2"><div class="g-recaptcha" data-sitekey="6Lf9PygUAAAAAEPWjrGrWkXqkKbK6_uxtW64eKDj"></div></td>
+			<td colspan="2"><div class="g-recaptcha" data-sitekey="6Lf9PygUAAAAAEPWjrGrWkXqkKbK6_uxtW64eKDj"></div>
 		</tr>
 		<tr>
 			<td></td>

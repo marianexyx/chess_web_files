@@ -103,7 +103,7 @@
 							var queueTextArea = document.getElementById("updateQueueTextArea");
 						});
 						
-						var wsUri = "ws://89.65.112.206:1234"; 
+						var wsUri = "ws://89.72.9.69:1234"; 
 						var websocket = null; //osobne połączenia
 						
 						function initWebSocket() 
@@ -156,9 +156,9 @@
 									else if (evt.data == 'logout:doubleLogin')
 									{
 										disableAll();
-										stopWebSocket();
+										stopWebSocket(); //todo: to chyba robi blad. sockety same sie wylacza po wylogowaniu
 										setTimeout(function() { window.location.href = 'index.php?a=logout'; }, 5000) //todo: przetestować
-										alert("Wylogowywanie: podwójny login");
+										alert("Wylogowywanie: podwójny login"); //todo: to musi być przekazywane jako parametr w gecie
 										window.location.href = 'index.php?a=logout';
 									}
 								};

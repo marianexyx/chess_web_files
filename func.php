@@ -1,12 +1,12 @@
 <?php     
-	define("WHITE", "Białe");
-	define("BLACK", "Czarne");
-	$_SESSION['white'] = 'WHITE';
-	$_SESSION['black'] = 'BLACK';
-	
-	define("NO_TURN", "NO_TURN");
-	define("WHITE_TURN", "WHITE_TURN");
-	define("BLACK_TURN", "BLACK_TURN");
+	define("WHITE", "White");
+	define("BLACK", "Black");
+	$_SESSION['white'] = WHITE;
+	$_SESSION['black'] = BLACK;
+		
+	define("NO_TURN", "noTurn");
+	define("WHITE_TURN", "whiteTurn");
+	define("BLACK_TURN", "blackTurn");
 	$_SESSION['turn'] = NO_TURN;
 	
     function call($sql) // Wywołanie zapytania do bazy (użytkownik)
