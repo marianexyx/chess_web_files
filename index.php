@@ -192,13 +192,12 @@
 						<h1>CameraViewer</h1>
 						<p><a href="http://www.adobe.com/go/getflashplayer">Get Adobe Flash player</a></p><br/>
 					</div>
-					<p>
-						<textarea readonly id="clientPlainTextWindow" style="width:400px;height:170px;"></textarea>
-					</p>		
-					<p>
+					<div id="clientPTE" style="float:none"><textarea readonly id="clientPlainTextWindow" style="width:400px;height:170px;"></textarea></div>	
+					<div id="promotionContent" style="float:left"></div>
+					<div style="clear: both;">
 						<button id="infoPTE" onClick="changePTEsource('infoPTE')" disabled>informacje</button> 
 						<button id="historyPTE" onClick="changePTEsource('historyPTE')">historia</button> 
-					</p>
+					</div>
 					<div id="promoteDialog"> </div> <!-- bez tego nie chce mi działać dialog-promote-->
 					<div id="startGameDialog" hidden="hidden">Wciśnij start, by rozpocząć grę. Pozostały czas: 120</div> 
 					

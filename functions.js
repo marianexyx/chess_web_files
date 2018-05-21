@@ -108,6 +108,32 @@ function historyInOneLineToHistoryPTE(historyInOneLine)
 	return historyPTETemp;
 }
 
+function showPromotions(promotions)
+{
+	if (promotions == "-1") 
+	{
+		$("#clientPTE").css('float','none');
+		$("#clientPTE").css('clear','both');
+		$("#clientPTE").css('align','none');
+		$("#promotionContent").html("");
+	}
+	else 
+	{
+		$("#clientPTE").css('float','left');
+		$("#clientPTE").css('clear','none');
+		$("#clientPTE").css('align','center');
+		//promotions = "b2:Q c7:q g5:K"; // testy
+		$("#promotionContent").html("&nbsp;<u>Promowane pionki:</u><br/>" + promotionsInOneLineToPromotionsDIV(promotions));
+	}
+}
+
+function promotionsInOneLineToPromotionsDIV(promotionsInOneLine)
+{
+	promotionsInOneLine = promotionsInOneLine.trim(); //remove whitespaces from both sides of a string
+	var promotionsDIV = promotionsInOneLine.replace(/\s/g,"<br/>");
+	return promotionsDIV;
+}
+
 var timerStart = null;
 function turnOffStartTimerIfItsOn()
 {
@@ -272,11 +298,16 @@ function ajaxResponse(ajaxData)
 	if (ajaxData[20] !='-1') blackTotalSeconds = ajaxData[20];
 	if (ajaxData[21] !='-1') whoseTurn = ajaxData[21];
 	
-	if (ajaxData[22] !='-1' && ajaxData[23] !='-1' && ajaxData[24] !='-1' && !$("#startGameDialog").dialog(startGameVar).dialog('isOpen')) 
+	if (ajaxData[22] !='-1' && ajaxData[23] !='-1' && ajaxData[24] !='-1' && ajaxData[0] !='White' && ajaxData[1] !='Black' && !$("#startGameDialog").dialog(startGameVar).dialog('isOpen')) 
 		showStartDialog(ajaxData[22], ajaxData[23], ajaxData[24]); 
-	else closeStartGameDialogIfOpened();
+	else 
+	{
+		console.log("ajaxData[22]:" + ajaxData[22] + ", ajaxData[23]:" + ajaxData[23] + ", ajaxData[24]:" + ajaxData[24]);
+		closeStartGameDialogIfOpened();
+	}
 	
-	if (ajaxData[25] !='-1') addMsgToClientPlainTextWindow(ajaxData[25], "history");
+	if (ajaxData[25] !='-1') { addMsgToClientPlainTextWindow(ajaxData[25], "history"); }
+	if (ajaxData[25] !='-1') { showPromotions(ajaxData[26]); }
 	
 	
 	
@@ -359,8 +390,8 @@ var promoteVar =
 		}, 
 		'\u265E': function() 
 		{
-			websocket.send("promoteTo:k"); //knight
-			console.log('clicked: promoteTo:k');
+			websocket.send("promoteTo:n"); //knight
+			console.log('clicked: promoteTo:n');
 			addMsgToClientPlainTextWindow("Pion promowany na: skoczek.", "info");
 			if ($(this).dialog('isOpen')) $(this).dialog("close");
 		}, 

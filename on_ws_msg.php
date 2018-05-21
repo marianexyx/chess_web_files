@@ -58,6 +58,7 @@
 			$_SESSION['stime'] = floor(substr($tableDataArr["start"], 2)/1000); //int
 		}
 		if (array_key_exists("history", $tableDataArr)) $_SESSION['history'] = $tableDataArr["history"];
+		if (array_key_exists("promoted", $tableDataArr)) $_SESSION['promoted'] = $tableDataArr["promoted"];
 		//$consoleAjax = "consoleAjax. data = " . $tableDataJSON; //var_dump($tableDataArr); //testy- podgląd
 		//$consoleAjax = print_r($tableDataArr, true);
 		//$textboxAjax = $consoleAjax;
@@ -91,6 +92,7 @@
 		//$_SESSION['bstart']; //23
 		//$_SESSION['stime']; //24
 		//$_SESSION['history']; //25
+		//$_SESSION['promoted']; //26
 		
 		$_SESSION['wtime'] = -1;
 		$_SESSION['btime'] = -1;
@@ -99,6 +101,7 @@
 		$_SESSION['bstart'] = -1;
 		$_SESSION['stime'] = -1;
 		$_SESSION['history'] = -1;
+		$_SESSION['promoted']= -1;
 		
 		$consoleAjax = 'wsMsgType val = '.$wsMsgType;
 		$enablingArr = array();
@@ -171,7 +174,7 @@
 				case q: $promoteType = "hetmana"; break;
 				case r: $promoteType = "wieżę"; break;
 				case b: $promoteType = "gońca"; break;
-				case k: $promoteType = "skoczka"; break	;
+				case n: $promoteType = "skoczka"; break	;
 				default: $consoleAjax = 'ERROR. promoted(): Unknown $promotePiece var = '.$promotePiece; break;
 			}
 			$promoteTurn = substr($wsMsgVal,7,2); 
@@ -244,9 +247,11 @@
 			$enablingArr = enabling('endOfGame');
 			break;
 			
+			//todo: jeżeli poniższy przypadek załatwie przy użyciu tylko table data, to mogę go usunąć
 			case 'history':
 			$_SESSION['history'] = $wsMsgVal;
 			break;
+			
 			
 			default: 
 			$consoleAjax = "ERROR: undefined msg type from core: ".$wsMsgType;
@@ -256,7 +261,7 @@
 		//todo: naprawić zwracanie tablicy- niech zwraca tylko te wartości, które są (i mogą) być zwracane. trzeba przywrócić key arraye. js powinien wyłapywać tylko te zmienne które przyjdą.
 		return array( $_SESSION['white'], $_SESSION['black'], $consoleAjax, $textboxAjax, $specialOption, 
 		$enablingArr[0], $enablingArr[1], $enablingArr[2], $enablingArr[3], $enablingArr[4], $enablingArr[5], $enablingArr[6], $enablingArr[7], $enablingArr[8], $enablingArr[9], $enablingArr[10], $enablingArr[11], $enablingArr[12],
-		$_SESSION['queue'], $_SESSION['wtime'], $_SESSION['btime'], $_SESSION['turn'], $_SESSION['wstart'], $_SESSION['bstart'], $_SESSION['stime'], $_SESSION['history'] );
+		$_SESSION['queue'], $_SESSION['wtime'], $_SESSION['btime'], $_SESSION['turn'], $_SESSION['wstart'], $_SESSION['bstart'], $_SESSION['stime'], $_SESSION['history'], $_SESSION['promoted']);
 	}
 	
 	if(isset($_POST['wsMsg']))
