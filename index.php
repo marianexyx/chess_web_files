@@ -6,15 +6,6 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
 		<title>Budgames - chess</title>
 		
-		<style> //todo: do zewnętrznego pliku dać
-			html, body { height:100%; overflow:auto; }
-			body { margin:0; }
-			#CameraViewer 
-			{
-			width: 640px;
-			height: 480px; 
-			}
-		</style>
 		<link rel="stylesheet" type="text/css" href="css/dialogNoClose.css">
 		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"> 
 		
@@ -25,29 +16,6 @@
 		<script src="swfobject.js"></script>
 		<!-- <script src="js/websocket.js"></script>  // todo: zmyślnie umieścić kod websocketów w zewnętrznym pliku -->
 		<script src="functions.js"></script>
-		<script> //stream  params //todo: do zewnętrznego pliku dać
-			var flashvars = {};
-			
-			var params = 
-			{
-				menu: "false",
-				scale: "noScale",
-				allowFullscreen: "true",
-				allowScriptAccess: "always",
-				bgcolor: "",
-				wmode: "direct" // can cause issues with FP settings & webcam
-			};
-			
-			var attributes = { id:"CameraViewer" };
-			
-			swfobject.embedSWF
-			(
-			"CameraViewer.swf", 
-			"altContent", "100%", "100%", "10.0.0", 
-			"expressInstall.swf", 
-			flashvars, params, attributes
-			);
-		</script>
 	</head>
 	<body>	
 		<table  align="center"  cellspacing="5" cellpadding="5" width="900" border="1">
@@ -188,11 +156,17 @@
 						
 						initWebSocket(); //połącz z websocketami (ważne to jest tutaj by pobrać startowe wartości strony) 
 					</script> 	
-					<div id="altContent">
-						<h1>CameraViewer</h1>
-						<p><a href="http://www.adobe.com/go/getflashplayer">Get Adobe Flash player</a></p><br/>
+					
+					<div id="video">
+						<iframe id="ytplayer" type="text/html" width="640" height="360"
+						  src="https://www.youtube.com/embed/live_stream?channel=UCLVBCJh3oKqWR2qo58BVd-w&autoplay=1&enablejsapi=1&origin=http://example.com"></iframe>
 					</div>
-					<div id="clientPTE" style="float:none"><textarea readonly id="clientPlainTextWindow" style="width:400px;height:170px;"></textarea></div>	
+					<br/>
+					<br/>
+					<div id="clientPTE" style="float:none">
+						<textarea readonly id="clientPlainTextWindow" style="width:400px;height:170px;"></textarea>
+					</div>	
+					
 					<div id="promotionContent" style="float:left"></div>
 					<div style="clear: both;">
 						<button id="infoPTE" onClick="changePTEsource('infoPTE')" disabled>informacje</button> 
@@ -249,7 +223,6 @@
 		<p align="center">
 			<font size="2">
 				<a href="http://cosinekitty.com/chenard/">Chess engine</a> by <a href="http://cosinekitty.com/">Don Cross</a>
-				| Camera stream by Michał Blaumann
 			</font>
 		</p>
 		
