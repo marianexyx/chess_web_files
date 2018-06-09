@@ -183,8 +183,8 @@
 			switch($gameStateAfterPromotion)
 			{
 				case 'continue': $gameState = "Ruch wykonuje ". ($promoteTurn == 'bt' ?  "Biały." : "Czarny."); break;
-				case 'whiteWon': $gameState = "Koniec gry. Wygrał Biały. Resetowanie planszy..."; break;
-				case 'blackWon': $gameState = "Koniec gry. Wygrał Czarny. Resetowanie planszy..."; break;
+				case 'whiteWon': $gameState = "Koniec gry. Białe wygrały. Resetowanie planszy..."; break;
+				case 'blackWon': $gameState = "Koniec gry. Czarne wygrały. Resetowanie planszy..."; break;
 				case 'draw': $gameState = "Koniec gry. Remis. Resetowanie planszy..."; break;
 				default: $consoleAjax = 'ERROR. promoted(): Unknown $gameStateAfterPromotion var = '. $gameStateAfterPromotion; break;
 			}

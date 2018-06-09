@@ -41,6 +41,7 @@ function disableAll()
 
 var infoPTEval = "";
 var historyPTEval = "";
+var queuePTEval = "";
 var PTEtype = "infoPTE";
 
 function refreshActualClientPlainTextWindowValue()
@@ -55,13 +56,42 @@ function refreshActualClientPlainTextWindowValue()
 		clientPlainTextWindow.value = historyPTEval;
 		clientPlainTextWindow.scrollTop = clientPlainTextWindow.scrollHeight;
 	}
+	else if (PTEtype == "queuePTE")
+	{
+		clientPlainTextWindow.value = queuePTEval;
+	}
 	else console.log("ERROR: refreshActualClientPlainTextWindowValue(): unknown PTEtype val = " + PTEtype);
 }
 
+var endOfGameVar = 
+{ 
+	autoOpen: false, 
+	title: "Koniec gry",
+	closeOnEscape: true,	
+	buttons: 
+	{
+		'OK': function()
+		{
+			if ($(this).dialog('isOpen'))
+				$(this).dialog('close');
+		}
+	}
+};
+
 function addMsgToClientPlainTextWindow(message, type)
 {
-	if (type == "info") infoPTEval += message + "\n";
+	if (type == "info") 
+	{
+		infoPTEval += message + "\n";
+		if (message.indexOf("Koniec gry") != -1)
+		{
+			$("#endOfGameDialog").html(message);
+			$("#endOfGameDialog").dialog(endOfGameVar).dialog("open");
+			setTimeout(function() { $("#endOfGameDialog").dialog('close'); }, 10000)
+		}
+	}
 	else if (type == "history") historyPTEval = historyInOneLineToHistoryPTE(message);
+	else if (type == "queue") queuePTEval = queueInOneLineToQueuePTE(message);
 	else console.log("ERROR: unknown type val in addMsgToClientPlainTextWindow");
 	
 	refreshActualClientPlainTextWindowValue();
@@ -77,14 +107,30 @@ function changePTEsource(PTEsource)
 		case "infoPTE": 
 		$("#infoPTE").attr("disabled", true);
 		$("#historyPTE").attr("disabled", false);
+		$("#queuePTE").attr("disabled", false);
+		$("#queuePlayer").hide();
+		$("#leaveQueue").hide();
 		break;
 		
 		case "historyPTE": 
 		$("#infoPTE").attr("disabled", false);
 		$("#historyPTE").attr("disabled", true);
+		$("#queuePTE").attr("disabled", false);
+		$("#queuePlayer").hide();
+		$("#leaveQueue").hide();
 		break;
 		
-		default: console.log("ERROR: unknown changePTEsource type"); break;
+		case "queuePTE":
+		$("#infoPTE").attr("disabled", false);
+		$("#historyPTE").attr("disabled", false);
+		$("#queuePTE").attr("disabled", true);
+		$("#queuePlayer").show();
+		$("#leaveQueue").show();
+		break;
+		
+		default: 
+		console.log("ERROR: unknown changePTEsource type"); 
+		break;
 	}
 	console.log("clicked btn: " + PTEsource);
 }
@@ -122,7 +168,6 @@ function showPromotions(promotions)
 		$("#clientPTE").css('float','left');
 		$("#clientPTE").css('clear','none');
 		$("#clientPTE").css('align','center');
-		//promotions = "b2:Q c7:q g5:K"; // testy
 		$("#promotionContent").html("&nbsp;<u>Promowane pionki:</u><br/>" + promotionsInOneLineToPromotionsDIV(promotions));
 	}
 }
@@ -151,8 +196,9 @@ function closeStartGameDialogIfOpened()
 	if ($("#startGameDialog").dialog(startGameVar).dialog('isOpen')) 
 	{
 		console.log("startGameDialog is open. close it");
-		$("#startGameDialog").dialog(startGameVar).dialog("close"); 
+		$("#startGameDialog").dialog(startGameVar).dialog('close'); 
 	}
+	$("#startGameDialog").html("Wciśnij start, by rozpocząć grę. Pozostały czas: 120");
 }
 
 var startInfo;
@@ -206,48 +252,58 @@ var startGameVar =
 	dialogClass: "no-close",
 	title: "Start gry",
 	closeOnEscape: true,	
-close: function (event, ui) 
-{
-	if (event.originalEvent) 
-	$(this).dialog("open");
-},
-buttons: 
-{
-	'start': function() 
+	close: function (event, ui) 
 	{
-		console.log('clicked: start');
-		disableAll();
-		websocket.send("newGame"); 
-		
-		startInfo = "Oczekiwanie aż drugi gracz wciśnie start: ";
-		$(this).dialog("option", "buttons", {});
-	}, 
-	'wstań': function() 
+		if (event.originalEvent) 
+		$(this).dialog("open");
+	},
+	buttons: 
 	{
-		console.log('clicked: standUp');
-		clickedBtn('standUp');		
-		if ($(this).dialog('isOpen')) $(this).dialog("close");
+		'start': function() 
+		{
+			console.log('clicked: start');
+			disableAll();
+			websocket.send("newGame"); 
+			
+			startInfo = "Oczekiwanie aż drugi gracz wciśnie start: ";
+			$(this).dialog("option", "buttons", {});
+		}, 
+		'wstań': function() 
+		{
+			console.log('clicked: standUp');
+			clickedBtn('standUp');		
+			if ($(this).dialog('isOpen')) $(this).dialog('close');
+		}
 	}
-}
 };
 
-function updateQueueTextArea(queueList)
+function queueInOneLineToQueuePTE(queueList)
 {
+	var queueListPlainText = "";
 	if (queueList != "queueEmpty") 
 	{
 		var queueListArr = queueList.split(",");
 		var index;
-		var queueListPlainText = "";
 		for (index = 0; index < queueListArr.length; ++index) 
 		{
 			console.log(queueListArr[index]);
 			var indexPlainText = index + 1;
 			queueListPlainText += indexPlainText + ". " + queueListArr[index] + "\n";
 		}
-		queueTextArea.value = queueListPlainText;
-		queueTextArea.scrollTop = queueTextArea.scrollHeight;
 	}
-	else queueTextArea.value = "";
+	else queueListPlainText = "";
+	
+	return queueListPlainText;
+}
+
+function queueSize(queueList)
+{
+	if (queueList != "queueEmpty") 
+	{
+		var queueListArr = queueList.split(",");
+		return queueListArr.length;
+	}
+	else return 0;
 }
 
 var timerGame = null;
@@ -270,35 +326,48 @@ var blackTotalSeconds = "-1";
 var whoseTurn = "-1";
 function ajaxResponse(ajaxData)
 {
-	if (ajaxData[0] !='-1') $('#whitePlayer').html(ajaxData[0]);
-	if (ajaxData[1] !='-1') $("#blackPlayer").html(ajaxData[1]);
+	if (ajaxData[0] != '-1') 
+	{
+		if(ajaxData[0] == "White") $('#whitePlayer').html("-");
+		else $('#whitePlayer').html(ajaxData[0]);
+	}
+	if (ajaxData[1] != '-1') 
+	{
+		if(ajaxData[1] == "Black") $('#blackPlayer').html("-");
+		else $('#blackPlayer').html(ajaxData[1]);
+	}
 	
-	if (ajaxData[2] !='-1') console.log(ajaxData[2]);
-	if (ajaxData[3] !='-1') addMsgToClientPlainTextWindow(ajaxData[3], "info");
-	if (ajaxData[4] !='-1') otherOption(ajaxData[4]);
+	if (ajaxData[2] != '-1') console.log(ajaxData[2]);
+	if (ajaxData[3] != '-1') addMsgToClientPlainTextWindow(ajaxData[3], "info");
+	if (ajaxData[4] != '-1') otherOption(ajaxData[4]);
 	
-	if (ajaxData[5] !='-1') console.log(ajaxData[5]);
-	if (ajaxData[6] !='-1') addMsgToClientPlainTextWindow(ajaxData[6], "info");
+	if (ajaxData[5] != '-1') console.log(ajaxData[5]);
+	if (ajaxData[6] != '-1') addMsgToClientPlainTextWindow(ajaxData[6], "info");
 	
-	if (ajaxData[7] !='-1') $("#whitePlayer").attr("disabled", ajaxData[7]);
-	if (ajaxData[8] !='-1') $("#blackPlayer").attr("disabled", ajaxData[8]);
-	if (ajaxData[9] !='-1') $("#standUpWhite").attr("disabled", ajaxData[9]);
-	if (ajaxData[10] !='-1') $("#standUpBlack").attr("disabled", ajaxData[10]);
+	if (ajaxData[7] != '-1') $("#whitePlayer").attr("disabled", ajaxData[7]);
+	if (ajaxData[8] != '-1') $("#blackPlayer").attr("disabled", ajaxData[8]);
+	if (ajaxData[9] != '-1') $("#standUpWhite").attr("disabled", ajaxData[9]);
+	if (ajaxData[10] != '-1') $("#standUpBlack").attr("disabled", ajaxData[10]);
 	if (ajaxData[11] == '1') console.log("start dialog should appear"); 
-	if (ajaxData[12] !='-1') $("#giveUpBtn").attr("disabled", ajaxData[12]);
-	if (ajaxData[13] !='-1') $("#pieceFrom").attr("disabled", ajaxData[13]); 
-	if (ajaxData[14] !='-1') $("#pieceTo").attr("disabled", ajaxData[14]);
-	if (ajaxData[15] !='-1') $("#movePieceButton").attr("disabled", ajaxData[15]);
-	if (ajaxData[16] !='-1') $("#queuePlayer").attr("disabled", ajaxData[16]);
-	if (ajaxData[17] !='-1') $("#leaveQueue").attr("disabled", ajaxData[17]);
+	if (ajaxData[12] != '-1') $("#giveUpBtn").attr("disabled", ajaxData[12]);
+	if (ajaxData[13] != '-1') $("#pieceFrom").attr("disabled", ajaxData[13]); 
+	if (ajaxData[14] != '-1') $("#pieceTo").attr("disabled", ajaxData[14]);
+	if (ajaxData[15] != '-1') $("#movePieceButton").attr("disabled", ajaxData[15]);
+	if (ajaxData[16] != '-1') $("#queuePlayer").attr("disabled", ajaxData[16]);
+	if (ajaxData[17] != '-1') $("#leaveQueue").attr("disabled", ajaxData[17]);
 	
-	if (ajaxData[18]!='-1') updateQueueTextArea(ajaxData[18]);
+	if (ajaxData[18]!= '-1') 
+	{
+		var queued = "kolejka(" + queueSize(ajaxData[18]) + ")";
+		$("#queuePTE").html(queued); 
+		addMsgToClientPlainTextWindow(ajaxData[18], "queue");
+	}
 	
-	if (ajaxData[19] !='-1') whiteTotalSeconds = ajaxData[19]; 
-	if (ajaxData[20] !='-1') blackTotalSeconds = ajaxData[20];
-	if (ajaxData[21] !='-1') whoseTurn = ajaxData[21];
+	if (ajaxData[19] != '-1') whiteTotalSeconds = ajaxData[19]; 
+	if (ajaxData[20] != '-1') blackTotalSeconds = ajaxData[20];
+	if (ajaxData[21] != '-1') whoseTurn = ajaxData[21];
 	
-	if (ajaxData[22] !='-1' && ajaxData[23] !='-1' && ajaxData[24] !='-1' && ajaxData[0] !='White' && ajaxData[1] !='Black' && !$("#startGameDialog").dialog(startGameVar).dialog('isOpen')) 
+	if (ajaxData[22] != '-1' && ajaxData[23] !='-1' && ajaxData[24] !='-1' && ajaxData[0] !='White' && ajaxData[1] !='Black' && !$("#startGameDialog").dialog(startGameVar).dialog('isOpen')) 
 		showStartDialog(ajaxData[22], ajaxData[23], ajaxData[24]); 
 	else 
 	{
@@ -306,12 +375,37 @@ function ajaxResponse(ajaxData)
 		closeStartGameDialogIfOpened();
 	}
 	
-	if (ajaxData[25] !='-1') { addMsgToClientPlainTextWindow(ajaxData[25], "history"); }
-	if (ajaxData[25] !='-1') { showPromotions(ajaxData[26]); }
+	if (ajaxData[25] != '-1') { addMsgToClientPlainTextWindow(ajaxData[25], "history"); }
+	if (ajaxData[25] != '-1') { showPromotions(ajaxData[26]); }
 	
 	
 	
 	if (whoseTurn != "-1" && whoseTurn != "NO_TURN") startWhiteTimerIfFirstTurn(whiteTotalSeconds, blackTotalSeconds);
+	
+	if (whoseTurn == "WHITE_TURN")
+	{
+		$("#whitePlayerBox").css('background-color', 'lightGreen'); 
+		$("#blackPlayerBox").css('background-color', 'white'); 
+		if (ajaxData[15] == false)
+			$("#moveSection").css('background-color', 'lightGreen'); 
+		else
+			$("#moveSection").css('background-color', 'white'); 
+	}
+	else if (whoseTurn == "BLACK_TURN")
+	{
+		$("#whitePlayerBox").css('background-color', 'white'); 
+		$("#blackPlayerBox").css('background-color', 'lightGreen'); 
+		if (ajaxData[15] == false)
+			$("#moveSection").css('background-color', 'lightGreen'); 
+		else
+			$("#moveSection").css('background-color', 'white'); 
+	}
+	else
+	{
+		$("#whitePlayerBox").css('background-color', 'white'); 
+		$("#blackPlayerBox").css('background-color', 'white'); 
+		$("#moveSection").css('background-color', 'white'); 
+	}
 	
 	if (whiteTotalSeconds != "-1" || blackTotalSeconds != "-1") //todo: zapakować w funkcję
 	{
@@ -366,10 +460,10 @@ var promoteVar =
 	{	
 		if (event.originalEvent) 
 		{
-			websocket.send("promoteTo:q"); // auto promote queen
+			websocket.send("promoteTo:q"); //auto promote queen
 			console.log('auto promote: promoteTo:q');
 			addMsgToClientPlainTextWindow("Pion promowany na: hetman.", "info");
-			if ($(this).dialog('isOpen')) $(this).dialog("close");
+			if ($(this).dialog('isOpen')) $(this).dialog('close');
 		}
 	},
 	buttons: 
@@ -379,28 +473,28 @@ var promoteVar =
 			websocket.send("promoteTo:q"); //queen
 			console.log('clicked: promoteTo:q');
 			addMsgToClientPlainTextWindow("Pion promowany na: hetman.", "info");
-			if ($(this).dialog('isOpen')) $(this).dialog("close");
+			if ($(this).dialog('isOpen')) $(this).dialog('close');
 		}, 
 		'\u265D': function() 
 		{
 			websocket.send("promoteTo:b"); //bishop
 			console.log('clicked: promoteTo:b');
 			addMsgToClientPlainTextWindow("Pion promowany na: goniec.", "info");
-			if ($(this).dialog('isOpen')) $(this).dialog("close");
+			if ($(this).dialog('isOpen')) $(this).dialog('close');
 		}, 
 		'\u265E': function() 
 		{
 			websocket.send("promoteTo:n"); //knight
 			console.log('clicked: promoteTo:n');
 			addMsgToClientPlainTextWindow("Pion promowany na: skoczek.", "info");
-			if ($(this).dialog('isOpen')) $(this).dialog("close");
+			if ($(this).dialog('isOpen')) $(this).dialog('close');
 		}, 
 		'\u265C': function() 
 		{
 			websocket.send("promoteTo:r"); //rook
 			console.log('clicked: promoteTo:r');
 			addMsgToClientPlainTextWindow("Pion promowany na: wieża.", "info");
-			if ($(this).dialog('isOpen')) $(this).dialog("close");
+			if ($(this).dialog('isOpen')) $(this).dialog('close');
 		}
 	}
 };
@@ -419,11 +513,11 @@ var giveUpVar =
 			disableAll();
 			addMsgToClientPlainTextWindow("Opuszczanie stołu...", "info"); 
 			websocket.send("giveUp"); 
-			if ($(this).dialog('isOpen')) $(this).dialog("close");
+			if ($(this).dialog('isOpen')) $(this).dialog('close');
 		}, 
 		'nie': function() 
 		{
-			if ($(this).dialog('isOpen')) $(this).dialog("close");
+			if ($(this).dialog('isOpen')) $(this).dialog('close');
 		}
 	}
 };
@@ -479,9 +573,13 @@ function movePiece()
 	var pieceToDigit = pieceTo.charAt(1);
 	
 	var squareLetters = ['a','b','c','d','e','f','g','h'];
-	if (pieceFrom.length == 2 && pieceTo.length == 2 && pieceFromDigit <= 8 && pieceToDigit <= 8 && pieceFromDigit >= 1 && pieceToDigit >= 1 && jQuery.inArray(pieceFromLetter, squareLetters) != '-1' && jQuery.inArray(pieceToLetter, squareLetters) != '-1')
+	if (pieceFrom.length == 2 && pieceTo.length == 2 && pieceFromDigit <= 8 && pieceToDigit <= 8 && pieceFromDigit >= 1 && pieceToDigit >= 1 && 
+		jQuery.inArray(pieceFromLetter, squareLetters) != '-1' && jQuery.inArray(pieceToLetter, squareLetters) != '-1')
 	{
 		disableAll();
+		$("#whitePlayerBox").css('background-color', 'white'); 
+		$("#blackPlayerBox").css('background-color', 'white'); 
+		$("#moveSection").css('background-color', 'white'); 
 		websocket.send("move " + pieceFrom + pieceTo);
 	}
 	else 

@@ -4,7 +4,7 @@
 		<meta charset="utf-8"/>
 		<meta name="description" content="" />
 		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-		<title>Budgames - chess</title>
+		<title>Budgames- Szachy</title>
 		
 		<link rel="stylesheet" type="text/css" href="css/dialogNoClose.css">
 		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"> 
@@ -30,12 +30,10 @@
 						error_reporting( error_reporting() & ~E_NOTICE ); //wyłącz ostrzeżenie, że niezdefiniowana jest zmienna 'a' i inne tego typu
 						
 						if(empty($_SESSION['id'])) 
-						{
-							echo '<center><a href="index.php?a=register">Zarejestruj się</a> | 
-							<a href="index.php?a=login">Zaloguj się</a></center>';
-						} 
-						else echo '<center><div id="info"><a href="#" onClick="return info();">Kontakt</a> | 
-						<a href="index.php?a=logout" onclick="return confirmLogout();">Wyloguj się</a></center></div>'; 
+							echo '<div align="center" style="float:left; padding-left: 50px"> <a href="index.php?a=register">Zarejestruj się</a> | <a href="index.php?a=login">Zaloguj się</a> </div>';
+						else 
+							echo '<div id="info" style="float:left; padding-left: 50px"><a href="#" onClick="return info();">Kontakt</a> | 
+								  <a href="index.php?a=logout" onclick="return confirmLogout();">Wyloguj się</a></div>'; 
 						
 						switch($_GET['a']) //zmienna w pasku ustalająca stronę po ob_end_flush; 'a' pobierane z "a href'ów"
 						{
@@ -68,7 +66,6 @@
 						{
 							var clientPlainTextWindow = document.getElementById("clientPlainTextWindow");
 							clientPlainTextWindow.value = "";
-							var queueTextArea = document.getElementById("updateQueueTextArea");
 						});
 						
 						var wsUri = "ws://89.72.9.69:1234"; 
@@ -158,7 +155,7 @@
 					</script> 	
 					
 					<div id="video">
-						<iframe id="ytplayer" type="text/html" width="640" height="360"
+						<iframe id="ytplayer" type="text/html" width="720" height="480"
 						  src="https://www.youtube.com/embed/live_stream?channel=UCLVBCJh3oKqWR2qo58BVd-w&autoplay=1&enablejsapi=1&origin=http://example.com"></iframe>
 					</div>
 					<br/>
@@ -171,23 +168,33 @@
 					<div style="clear: both;">
 						<button id="infoPTE" onClick="changePTEsource('infoPTE')" disabled>informacje</button> 
 						<button id="historyPTE" onClick="changePTEsource('historyPTE')">historia</button> 
+						<button id="queuePTE" onClick="changePTEsource('queuePTE')">kolejka</button> 
+						&nbsp;&nbsp;<button id="queuePlayer" onClick="clickedBtn('queueMe')" style="display: none;" disabled>Zakolejkuj</button>
+					    <button id="leaveQueue" onClick="clickedBtn('leaveQueue')" style="display: none;" disabled>Opuść</button>
 					</div>
 					<div id="promoteDialog"> </div> <!-- bez tego nie chce mi działać dialog-promote-->
 					<div id="startGameDialog" hidden="hidden">Wciśnij start, by rozpocząć grę. Pozostały czas: 120</div> 
+					<div id="endOfGameDialog" hidden="hidden">Koniec gry.</div> 
 					
 				</td>  
 				<td align="center" valign="top">
 					<table width="100%" cellpadding="15">
-						<td align= "left">
-							<img src="grafiki/white_pawn.jpg" alt="w_pawn" />
-							<button id="whitePlayer" onClick="clickedBtn('sitOnWhite')" disabled>Loading...</button> 
-							<button id="standUpWhite" onClick="clickedBtn('standUp')" disabled>Wstań</button> 
-						</td> 
-						<td align="right">
-							<img src="grafiki/black_pawn.jpg" alt="b_pawn" />
-							<button id="blackPlayer" onClick="clickedBtn('sitOnBlack')" disabled>Loading...</button> 
-							<button id="standUpBlack" onClick="clickedBtn('standUp')" disabled>Wstań</button> 
-						</td>						
+						<div id="whitePlayerBox" style="float:left; padding: 5px">
+							<div style="float:left"><font size="10">&#9817;</font></div>
+							<div style="float:left; padding-top: 10px">
+								Gracz Biały<br/>
+								<button id="whitePlayer" onClick="clickedBtn('sitOnWhite')" style="min-width:60px;" disabled >Loading...</button> 
+								<button id="standUpWhite" onClick="clickedBtn('standUp')" disabled>Wstań</button> 
+							</div>
+						</div> 
+						<div id="blackPlayerBox" style="float:right; padding: 5px">
+							<div style="float:left"><font size="10">&#9823;</font></div>
+							<div style="float:left; padding-top: 10px" >
+								Gracz Czarny<br/>
+								<button id="blackPlayer" onClick="clickedBtn('sitOnBlack')" style="min-width:60px;" disabled>Loading...</button> 
+								<button id="standUpBlack" onClick="clickedBtn('standUp')" disabled>Wstań</button> 
+							</div>	
+						</div>
 					</table>
 					<table width="80%" cellpadding="15">
 						<td align="center">
@@ -198,24 +205,14 @@
 							<div id="blackTime" style="float:right">30:00</div>
 						</td>
 					</table> 
-					<p>
+					<div id="moveSection" style="padding: 5px">
 						Przemieść bierkę z&nbsp;&nbsp;
 						<input type="text" id="pieceFrom" name="pieceFrom" maxlength="2" size="2" disabled />&nbsp;na&nbsp; 
 						<input type="text" id="pieceTo"   name="pieceTo"   maxlength="2" size="2" disabled />&nbsp;&nbsp;
 						<button id="movePieceButton" onClick="movePiece();" disabled >Wyślij</button> 
-					</p>
-					<!-- chat -->
-					<div id="chatarea" data-style="large"></div>
-					<script src="chatfiles/chatfunctions.js"></script>
-					<!-- /chat -->
-				</td>
-				<td align="center" valign="top">
-					<p align="center" valign="top"><b>Kolejka graczy</b></p> 
-					<button id="queuePlayer" onClick="clickedBtn('queueMe')" disabled>Zakolejkuj</button>
-					<button id="leaveQueue" onClick="clickedBtn('leaveQueue')" disabled>Opuść</button>
-					<p align="center" valign="bottom"> 
-						<textarea readonly id="queueTextArea" style="width:150px;height:570px;"></textarea> 
-					</p>
+					</div>
+					 <iframe width="350px" height="500px" 
+					src="https://www.youtube.com/live_chat?v=i6EPyaxc-GI&embed_domain=budgames.pl"></iframe>
 				</td>
 			</tr>
 		</table>  
