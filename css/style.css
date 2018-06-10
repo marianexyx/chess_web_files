@@ -1,0 +1,134 @@
+div
+{
+	border: 1px solid;
+	/* paddding: 5px; */
+}
+
+#mainDiv
+{
+	width: 1225px;
+	margin: 0 auto;
+}
+
+#menu
+{
+	width: 400px;
+}
+
+#content
+{
+	clear:both; 
+	display: flex;
+}
+
+#game
+{
+	float:left;
+}
+
+#playersBoxes
+{
+	display:flex;
+}
+
+#whitePlayerBox
+{
+	float:left; 
+	width:33.3%; 
+	display:flex;
+}
+
+#whiteTime
+{
+	float:left;
+}
+
+#whitePlayerSign
+{
+	float:left;
+}
+
+#whitePlayerBtns
+{
+	float:left; 
+	padding-top: 10px;
+}
+
+#whitePlayer
+{
+	min-width:60px;
+}
+
+#resign
+{
+	float:left; 
+	width: 33.3%; 
+	text-align:center;
+}
+
+#blackPlayerBox
+{
+	float:right; 
+	width:33.3%; 
+	text-align:right; 
+	display:flex;
+}
+
+#blackTime
+{
+	float:left;
+}
+
+#blackPlayerSign
+{
+	float:left;
+}
+
+#blackPlayerBtns
+{
+	float:left; 
+	padding-top: 10px;
+}
+
+#blackPlayer
+{
+	min-width:60px;
+}
+
+#moveSection
+{
+	padding: 5px;
+}
+
+#clientPlainTextWindow
+{
+	width:350px; 
+	height:170px;
+}
+
+#queuePlayer
+{
+	display: none;
+}
+
+#leaveQueue
+{
+	display: none;
+}
+
+#footage
+{
+	clear: both;
+}
+
+/* usunąc/naprawić style typu float:right */
+/* jeżeli chcę aby coś miało ID, a nie powinno mieć diva, by nie kompilokować, to używać span'ów */
+/* spróbować css'esować abslutnie wszystko co się da */
+/* wywalić zbędne pliki */
+/* przycisk "rezygnacja" niech będzie tym samym co przycisk "wstań" tylko w innych warunkach */
+/* niech będzie możliwość wpisywania ruchów na odwrót: 2a - 4a */
+/* jak się pojawi tura, to fucus niech łapie na pierwszym impucie do ruchów */
+/* zrobić tooltipy ze znakami zapytania gdzie niegdzie? */
+/* po wpisaniu drugiego znaku w 1szy imput ruchu drugi automatycznie czyścić */
+/* sprawdzić promocje */
+/* porobić odpowiednie paddingi i marginy wszędzie */
