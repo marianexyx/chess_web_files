@@ -1,4 +1,4 @@
-var reactBeep = new Audio('chatex/beep1.wav');
+var reactBeep = new Audio('sounds/beep1.wav');
 alertWindow = (function () 
 {
 	//todo: nie umiem zmienić koloru na migający niebieski
@@ -82,7 +82,7 @@ function addMsgToClientPlainTextWindow(message, type)
 {
 	if (type == "info") 
 	{
-		infoPTEval += message + "\n";
+		infoPTEval += "> " + message + "\n";
 		if (message.indexOf("Koniec gry") != -1)
 		{
 			$("#endOfGameDialog").html(message);
@@ -387,7 +387,10 @@ function ajaxResponse(ajaxData)
 		$("#whitePlayerBox").css('background-color', 'lightGreen'); 
 		$("#blackPlayerBox").css('background-color', 'white'); 
 		if (ajaxData[15] == false)
+		{
 			$("#moveSection").css('background-color', 'lightGreen'); 
+			$("#pieceFrom").focus();
+		}
 		else
 			$("#moveSection").css('background-color', 'white'); 
 	}
@@ -396,7 +399,10 @@ function ajaxResponse(ajaxData)
 		$("#whitePlayerBox").css('background-color', 'white'); 
 		$("#blackPlayerBox").css('background-color', 'lightGreen'); 
 		if (ajaxData[15] == false)
+		{
 			$("#moveSection").css('background-color', 'lightGreen'); 
+			$("#pieceFrom").focus();
+		}
 		else
 			$("#moveSection").css('background-color', 'white'); 
 	}
@@ -573,19 +579,36 @@ function movePiece()
 	var pieceToDigit = pieceTo.charAt(1);
 	
 	var squareLetters = ['a','b','c','d','e','f','g','h'];
-	if (pieceFrom.length == 2 && pieceTo.length == 2 && pieceFromDigit <= 8 && pieceToDigit <= 8 && pieceFromDigit >= 1 && pieceToDigit >= 1 && 
+	if (pieceFrom.length == 2 && pieceTo.length == 2)
+	{
+		if (pieceFromLetter <= 8 && pieceToLetter <= 8 && pieceFromLetter >= 1 && pieceToLetter >= 1 && 
+		jQuery.inArray(pieceFromDigit, squareLetters) != '-1' && jQuery.inArray(pieceToDigit, squareLetters) != '-1')
+		{ //todo: testować
+			//repair vice versed move command (f.e. "2e,4e" to "e2,e4"
+			var pieceFromLetterTemp = pieceFromDigit;
+			var pieceFromDigitTemp = pieceFromLetter;
+			var pieceToLetterTemp = pieceToDigitTemp;
+			var pieceToDigitTemp = pieceToLetter;
+			pieceFromLetter = pieceFromLetterTemp;
+			pieceFromDigit = pieceFromDigitTemp;
+			pieceToLetter = pieceToLetterTemp;
+			pieceToDigit = pieceToDigitTemp;
+		}
+		
+		if (pieceFromDigit <= 8 && pieceToDigit <= 8 && pieceFromDigit >= 1 && pieceToDigit >= 1 && 
 		jQuery.inArray(pieceFromLetter, squareLetters) != '-1' && jQuery.inArray(pieceToLetter, squareLetters) != '-1')
-	{
-		disableAll();
-		$("#whitePlayerBox").css('background-color', 'white'); 
-		$("#blackPlayerBox").css('background-color', 'white'); 
-		$("#moveSection").css('background-color', 'white'); 
-		websocket.send("move " + pieceFrom + pieceTo);
-	}
-	else 
-	{
-		console.log("Błędnie wprowadzone zapytanie o ruch.");
-		addMsgToClientPlainTextWindow("Błędnie wprowadzone zapytanie o ruch.", "info"); 
+		{
+			disableAll();
+			$("#whitePlayerBox").css('background-color', 'white'); 
+			$("#blackPlayerBox").css('background-color', 'white'); 
+			$("#moveSection").css('background-color', 'white'); 
+			websocket.send("move " + pieceFrom + pieceTo);
+		}
+		else 
+		{
+			console.log("Błędnie wprowadzone zapytanie o ruch.");
+			addMsgToClientPlainTextWindow("Błędnie wprowadzone zapytanie o ruch.", "info"); 
+		}
 	}
 }
 
@@ -626,4 +649,50 @@ function updatePlayersTime()
 		resetPlayersTimers();
 	}
 	else console.log("ERROR: updatePlayersTime(): unknown turn = " + whoseTurn);
-}				
+}			
+
+//todo: testować
+$("#pieceFrom" ).keydown(function() { pieceFromOnKeyPress(); });
+$("#pieceFrom" ).keydown(function() { pieceToOnKeyPress(); });
+
+function pieceFromOnKeyPress() 
+{
+	if ($('#pieceFrom').val().length >= 2) 
+	{
+		 $('#pieceTo').val('');
+		 $("#pieceTo").focus();
+	}
+}
+
+function pieceToOnKeyPress() 
+{
+	if ($('#pieceFrom').val().length >= 2 && $('#pieceTo').val().length >= 2) 
+		$( "#movePieceButton").focus();
+}	
+
+function serverStatus(state)
+{
+	switch (state)
+	{
+		case "connecting": 
+		$("#serverCSSCircleStatus").css("background-color", "grey");
+		$("#serverStatusInfo").html("ŁĄCZENIE...");
+		break;
+		
+		case "online": 
+		$("#serverCSSCircleStatus").css("background-color", "green");
+		$("#serverStatusInfo").html("ONLINE");
+		break;
+		
+		case "offline":
+		$("#serverCSSCircleStatus").css("background-color", "red");
+		$("#serverStatusInfo").html("OFFLINE");
+		break;
+		
+		default: 
+		console.log("ERROR: unknown serverStatus state:", state); 
+		$("#serverCSSCircleStatus").css("background-color", "red");
+		$("#serverStatusInfo").html("OFFLINE");
+		break;
+	}
+}

@@ -7,6 +7,7 @@
 		<title>Budgames- Szachy</title>
 		
 		<link rel="stylesheet" type="text/css" href="css/style.css">
+		<link rel="stylesheet" type="text/css" href="css/tooltip.css">
 		<link rel="stylesheet" type="text/css" href="css/dialogNoClose.css">
 		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"> 
 		
@@ -19,8 +20,8 @@
 		<script src="functions.js"></script>
 	</head>
 	<body>	
-		<div align="center" id="mainDiv">
-			<div id ="menu">
+		<div align="center" id="mainDiv" style="overflow: hidden">
+			<div id ="menu" style="overflow: hidden">
 				<?
 					ob_start();
 					session_start(); 
@@ -30,12 +31,12 @@
 					error_reporting( error_reporting() & ~E_NOTICE ); //wyłącz ostrzeżenie, że niezdefiniowana jest zmienna 'a' i inne tego typu
 					
 					if(empty($_SESSION['id'])) 
-						echo '<div align="center" style="float:left; margin:0 auto;"> 
-								<a href="index.php?a=register">Zarejestruj się</a> | <a href="index.php?a=login">Zaloguj się</a> 
+						echo '<div id="info" align="center" style="float:left; margin:0 auto;"> 
+								<a href="index.php?a=register">Zarejestruj się</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="index.php?a=login">Zaloguj się</a> 
 							  </div>';
 					else 
 						echo '<div id="info" align="center" style="float:left; margin:0 auto;">
-								<a href="#" onClick="return info();">Kontakt</a> | <a href="index.php?a=logout" onclick="return confirmLogout();">Wyloguj się</a>
+								<a href="#" onClick="return info();">Kontakt</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="index.php?a=logout" onclick="return confirmLogout();">Wyloguj się</a>
 							  </div>'; 
 					
 					switch($_GET['a']) //zmienna w pasku ustalająca stronę po ob_end_flush; 'a' pobierane z "a href'ów"
@@ -53,8 +54,13 @@
 					}
 					ob_end_flush(); // wyrzygaj stronę
 					?>
+					<div id="serverStatus">
+						|&nbsp;&nbsp;Serwer: 
+						<span id="serverCSSCircleStatus" class="dot"></span> 
+						<span id="serverStatusInfo">ŁĄCZENIE...</span>
+					</div>
 			</div>
-			<div id="content">
+			<div id="content" style="overflow: hidden">
 				<div id="game"><!-- todo: dlaczego wogle ten cały kod php/js poniżej jest w indexie? -->
 					<? 
 						$user = getUser($_SESSION['id']);
@@ -66,7 +72,7 @@
 					<script> 
 						$(function()  //odpala funkcje dopiero po zaladowaniu sie strony 
 						{
-							var clientPlainTextWindow = document.getElementById("clientPlainTextWindow");
+							var clientPlainTextWindow = $("#clientPlainTextWindow");
 							clientPlainTextWindow.value = "";
 						});
 						
@@ -85,13 +91,14 @@
 								
 								websocket.onerror = function (evt) 
 								{
-									addMsgToClientPlainTextWindow('WEBSCKT ERROR: ' + evt.data, "info");
+									console.log('WEboscket error:', evt.data);
+									serverStatus("offline");
 								};
 								
 								websocket.onclose = function (evt) 
 								{
-									addMsgToClientPlainTextWindow("DISCONNECTED", "info");
 									console.log('Socket is closed. Reconnect will be attempted in 1 second.', evt.reason);
+									serverStatus("offline");
 									websocket = null;
 									setTimeout(function() { initWebSocket(); }, 1000)
 								};
@@ -135,11 +142,11 @@
 									var stateStr;
 									switch (websocket.readyState) 
 									{
-										case 0: { stateStr = "CONNECTING"; break; }
-										case 1: { stateStr = "OPEN"; break; }
-										case 2: { stateStr = "CLOSING";	break; }
-										case 3: { stateStr = "CLOSED"; break; }
-										default: { stateStr = "UNKNOW"; break; }
+										case 0: { stateStr = "CONNECTING"; serverStatus("connecting"); break; }
+										case 1: { stateStr = "OPEN"; serverStatus("online"); break; }
+										case 2: { stateStr = "CLOSING";	serverStatus("offline"); break; }
+										case 3: { stateStr = "CLOSED"; serverStatus("offline"); break; }
+										default: { stateStr = "UNKNOW"; serverStatus("offline"); break; }
 									}
 									console.log("WebSocket state = " + websocket.readyState + " ( " + stateStr + " )");
 									
@@ -165,23 +172,23 @@
 						<div id="playersBoxes">
 							<div id="whitePlayerBox">
 								<div id="whiteTime"><br/>30:00</div>
-								<div id="whitePlayerSign"><font size="10">&#9817;</font></div>
+								<div id="whitePlayerSign">&#9817;</div>
 								<div id="whitePlayerBtns">
 									Gracz Biały<br/>
-									<button id="whitePlayer" onClick="clickedBtn('sitOnWhite')" disabled>Loading...</button> 
+									<button id="whitePlayer" onClick="clickedBtn('sitOnWhite')" disabled>-</button> 
 									<button id="standUpWhite" onClick="clickedBtn('standUp')" disabled>Wstań</button> 
 								</div>
 							</div> 
 							<div id="resign">
-								<div id="giveUpDialog" hidden="hidden">Czy chcesz opuścić grę?</div> <!-- czy to tu musi być? -->
+								<div id="giveUpDialog" hidden="hidden">Czy chcesz opuścić grę?</div> <!-- todo: czy to tu musi być? czy to może być spanem? czy mozę być z resztą dialogów?-->
 								<br/><button id="giveUpBtn" onClick="giveUp()" disabled>zrezygnuj</button>
 							</div>
 							<div id="blackPlayerBox">
 								<div id="blackTime" align="center"><br/>30:00</div>
-								<div id="blackPlayerSign"><font size="10">&#9823;</font></div> <!--css-->
+								<div id="blackPlayerSign">&#9823;</div>
 								<div id="blackPlayerBtns">
 									Gracz Czarny<br/>
-									<button id="blackPlayer" onClick="clickedBtn('sitOnBlack')" disabled>Loading...</button> 
+									<button id="blackPlayer" onClick="clickedBtn('sitOnBlack')" disabled>-</button> 
 									<button id="standUpBlack" onClick="clickedBtn('standUp')" disabled>Wstań</button> 
 								</div>	
 							</div>
@@ -192,54 +199,40 @@
 							<input type="text" id="pieceFrom" name="pieceFrom" maxlength="2" size="2" disabled />&nbsp;na&nbsp; 
 							<input type="text" id="pieceTo"   name="pieceTo"   maxlength="2" size="2" disabled />&nbsp;&nbsp;
 							<button id="movePieceButton" onClick="movePiece();" disabled >Wyślij</button> 
+							&nbsp;<span id="helpSign" class="tooltip">?
+								<span class="tooltiptext">Wprowadź w pierwszym polu pozycję bierki którą chcesz ruszyć, a w drugim polu jej 
+								pozycję docelową (np.: e2 e4). Roszadę wykonuje się przestawiąjąc króla o 2 pola.</span>
+							</span>
 						</div>
 					</div>
 				</div>  
-				<div style=" float: left;">
+				<div id="textBoxes">
 					<div id="clientPTE">
 						<textarea readonly id="clientPlainTextWindow"></textarea>
 					</div>	
-					<div id="promotionContent" style="float:left"></div> <!-- todo: czy to możę być gdzie indziej? i czy musi mieć float.left?-->
-					<div style="clear: both;">
-						<button id="infoPTE" onClick="changePTEsource('infoPTE')" disabled>informacje</button> 
+					<div id="promotionContent"></div> <!-- todo: odpowiada za okno promocji. sprawdzić to-->
+					<div id="pteType">
+						<button id="infoPTE" onClick="changePTEsource('infoPTE')" disabled>stół</button> 
 						<button id="historyPTE" onClick="changePTEsource('historyPTE')">historia</button> 
 						<button id="queuePTE" onClick="changePTEsource('queuePTE')">kolejka</button> 
-						&nbsp;&nbsp;<button id="queuePlayer" onClick="clickedBtn('queueMe')" disabled>Zakolejkuj</button>
-						<button id="leaveQueue" onClick="clickedBtn('leaveQueue')" disabled>Opuść</button>
+						&nbsp;&nbsp;&nbsp;<button id="queuePlayer" onClick="clickedBtn('queueMe')" disabled>kolejkuj</button>
+						<button id="leaveQueue" onClick="clickedBtn('leaveQueue')" disabled>opuść</button>
 					</div>
-					<div id="promoteDialog"> </div> <!-- bez tego nie chce mi działać dialog-promote-->
-					<div id="startGameDialog" hidden="hidden">Wciśnij start, by rozpocząć grę. Pozostały czas: 120</div> 
-					<div id="endOfGameDialog" hidden="hidden">Koniec gry.</div> 
-					<div align="center"> 
-						<iframe width="350px" height="500px" src="https://www.youtube.com/live_chat?v=i6EPyaxc-GI&embed_domain=budgames.pl">
+					<!-- todo: sprawdzić czy mogę to wywalić gdzieś na granice kodu -->
+					<span id="promoteDialog"></span> <!-- bez tego nie chce mi działać dialog-promote-->
+					<span id="startGameDialog" hidden="hidden">Wciśnij start, by rozpocząć grę. Pozostały czas: 120</span> 
+					<span id="endOfGameDialog" hidden="hidden">Koniec gry.</span> 
+					<div id="ytChat" align="center"> 
+						<iframe width="330px" height="420px" src="https://www.youtube.com/live_chat?v=i6EPyaxc-GI&embed_domain=budgames.pl">
 						</iframe>
 					</div>
 				</div>
 			</div>
 			<div id="footage" align="center">
-				<font size="2">
-					<a href="http://cosinekitty.com/chenard/">Chess engine</a> by <a href="http://cosinekitty.com/">Don Cross</a>
-				</font>
+				<a href="http://cosinekitty.com/chenard/">Chess engine</a> by <a href="http://cosinekitty.com/">Don Cross</a>
 			</div>
 		</div>  
-		
-		
-		<script> //todo: zamknąć to i przenieść poza index
-			document.getElementById("pieceFrom").onkeyup = function() {pieceFromOnKeyPress()};
-			document.getElementById("pieceTo").onkeyup = function() {pieceToOnKeyPress()};
-			
-			function pieceFromOnKeyPress() 
-			{
-				if (document.getElementById("pieceFrom").value.length >= 2) document.getElementById("pieceTo").focus();
-			}
-			
-			function pieceToOnKeyPress() 
-			{
-				if (document.getElementById("pieceFrom").value.length >= 2 && document.getElementById("pieceTo").value.length >= 2) 
-				document.getElementById("movePieceButton").focus();
-			}
-		</script>
-		
+				
 		<? enabling("notLoggedIn"); /*TODO: TO TU DOBRZE?*/ ?>
 	</body>
 </html>																									

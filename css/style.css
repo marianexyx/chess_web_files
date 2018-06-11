@@ -1,41 +1,86 @@
 div
 {
-	border: 1px solid;
-	/* paddding: 5px; */
+	padding: 5px;
 }
 
 #mainDiv
 {
-	width: 1225px;
+	width: 1238px;
 	margin: 0 auto;
+	padding-top: 20px;
 }
 
 #menu
 {
-	width: 400px;
+	border: 1px solid;
+}
+
+#serverStatus
+{
+	float:left;
+}
+
+.dot 
+{
+    height: 12px;
+    width: 12px;
+    background-color: grey;
+    border-radius: 50%;
+    display: inline-block;
 }
 
 #content
 {
 	clear:both; 
 	display: flex;
+	padding: 0px;
 }
 
 #game
 {
 	float:left;
+	border: 1px solid;
+}
+
+#textBoxes
+{
+	border: 1px solid;
+	float: left;
+}
+
+#promotionContent
+{
+	float:left; 
+	padding:0;
+}
+
+#pteType
+{
+	clear: both;
+}
+
+textarea {
+    resize: none;
+}
+
+#ytChat
+{
+	padding-top: 50px;
 }
 
 #playersBoxes
 {
-	display:flex;
+	display: flex;
+	padding: 15px;
 }
 
 #whitePlayerBox
 {
 	float:left; 
 	width:33.3%; 
-	display:flex;
+	display: flex;
+	border: 1px solid;
+	padding: 1px;
 }
 
 #whiteTime
@@ -46,12 +91,14 @@ div
 #whitePlayerSign
 {
 	float:left;
+	font-size: 300%;
 }
 
 #whitePlayerBtns
 {
 	float:left; 
 	padding-top: 10px;
+	height:auto;
 }
 
 #whitePlayer
@@ -68,10 +115,12 @@ div
 
 #blackPlayerBox
 {
-	float:right; 
+	float:left; 
 	width:33.3%; 
 	text-align:right; 
-	display:flex;
+	display: flex;
+	border: 1px solid;
+	padding: 1px;
 }
 
 #blackTime
@@ -82,12 +131,14 @@ div
 #blackPlayerSign
 {
 	float:left;
+	font-size: 300%;
 }
 
 #blackPlayerBtns
 {
 	float:left; 
 	padding-top: 10px;
+	text-align:center;
 }
 
 #blackPlayer
@@ -97,13 +148,13 @@ div
 
 #moveSection
 {
-	padding: 5px;
+	padding: 25px;
 }
 
 #clientPlainTextWindow
 {
-	width:350px; 
-	height:170px;
+	width:330px; 
+	height:160px;
 }
 
 #queuePlayer
@@ -119,16 +170,7 @@ div
 #footage
 {
 	clear: both;
+	font-size: 80%;
 }
 
-/* usunąc/naprawić style typu float:right */
-/* jeżeli chcę aby coś miało ID, a nie powinno mieć diva, by nie kompilokować, to używać span'ów */
-/* spróbować css'esować abslutnie wszystko co się da */
-/* wywalić zbędne pliki */
-/* przycisk "rezygnacja" niech będzie tym samym co przycisk "wstań" tylko w innych warunkach */
-/* niech będzie możliwość wpisywania ruchów na odwrót: 2a - 4a */
-/* jak się pojawi tura, to fucus niech łapie na pierwszym impucie do ruchów */
-/* zrobić tooltipy ze znakami zapytania gdzie niegdzie? */
-/* po wpisaniu drugiego znaku w 1szy imput ruchu drugi automatycznie czyścić */
 /* sprawdzić promocje */
-/* porobić odpowiednie paddingi i marginy wszędzie */
