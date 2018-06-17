@@ -5,6 +5,7 @@ div
 
 #mainDiv
 {
+	overflow: hidden;
 	width: 1238px;
 	margin: 0 auto;
 	padding-top: 20px;
@@ -12,6 +13,7 @@ div
 
 #menu
 {
+	overflow: hidden;
 	border: 1px solid;
 }
 
@@ -31,20 +33,25 @@ div
 
 #content
 {
+	overflow: hidden;
 	clear:both; 
 	display: flex;
 	padding: 0px;
+	border-right: 1px solid;
 }
 
 #game
 {
 	float:left;
-	border: 1px solid;
+	border-left: 1px solid;
+	border-bottom: 1px solid;
 }
 
 #textBoxes
 {
-	border: 1px solid;
+	border-bottom: 1px solid;
+	border-right: 1px solid;
+	border-left: 1px solid;
 	float: left;
 }
 
@@ -79,29 +86,35 @@ textarea {
 	float:left; 
 	width:33.3%; 
 	display: flex;
-	border: 1px solid;
 	padding: 1px;
 }
 
-#whiteTime
+#whitePlayerMiniBox, #blackPlayerMiniBox
+{
+	border: 1px solid;
+	width: 300px;
+}
+
+#whiteTime, #blackTime
 {
 	float:left;
 }
 
-#whitePlayerSign
+#whitePlayerSign, #blackPlayerSign
 {
 	float:left;
 	font-size: 300%;
 }
 
-#whitePlayerBtns
+#whitePlayerBtns, #blackPlayerBtns
 {
 	float:left; 
 	padding-top: 10px;
 	height:auto;
+	text-align:center;
 }
 
-#whitePlayer
+#whitePlayer, #blackPlayer
 {
 	min-width:60px;
 }
@@ -119,31 +132,7 @@ textarea {
 	width:33.3%; 
 	text-align:right; 
 	display: flex;
-	border: 1px solid;
 	padding: 1px;
-}
-
-#blackTime
-{
-	float:left;
-}
-
-#blackPlayerSign
-{
-	float:left;
-	font-size: 300%;
-}
-
-#blackPlayerBtns
-{
-	float:left; 
-	padding-top: 10px;
-	text-align:center;
-}
-
-#blackPlayer
-{
-	min-width:60px;
 }
 
 #moveSection
@@ -157,12 +146,7 @@ textarea {
 	height:160px;
 }
 
-#queuePlayer
-{
-	display: none;
-}
-
-#leaveQueue
+#queuePlayer, #leaveQueue
 {
 	display: none;
 }
@@ -173,4 +157,8 @@ textarea {
 	font-size: 80%;
 }
 
-/* sprawdzić promocje */
+/* 
+-sprawdzić promocje: niech ich box będzie bardziej z prawej, by było symetrycznie z divem po zepchniętym do lewej
+-captcha znowu nei działa?
+-jak dostaje odczyty czasu graczy z core, do zmienia się ich położenie na górne
+*/

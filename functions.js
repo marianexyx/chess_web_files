@@ -158,25 +158,47 @@ function showPromotions(promotions)
 {
 	if (promotions == "-1") 
 	{
-		$("#clientPTE").css('float','none');
-		$("#clientPTE").css('clear','both');
-		$("#clientPTE").css('align','none');
+		$("#moveSection").css('float','none');
+		$("#moveSection").css('clear','both');
+		$("#moveSection").css('align','none');
 		$("#promotionContent").html("");
 	}
 	else 
 	{
-		$("#clientPTE").css('float','left');
-		$("#clientPTE").css('clear','none');
-		$("#clientPTE").css('align','center');
+		$("#moveSection").css('float','left');
+		$("#moveSection").css('clear','none');
+		$("#moveSection").css('align','center');
 		$("#promotionContent").html("&nbsp;<u>Promowane pionki:</u><br/>" + promotionsInOneLineToPromotionsDIV(promotions));
 	}
 }
 
 function promotionsInOneLineToPromotionsDIV(promotionsInOneLine)
 {
-	promotionsInOneLine = promotionsInOneLine.trim(); //remove whitespaces from both sides of a string
-	var promotionsDIV = promotionsInOneLine.replace(/\s/g,"<br/>");
-	return promotionsDIV;
+	promotionsInOneLine = promotionsInOneLine.trim(); 
+	promotionsInOneLine = promotionsInOneLine.replace(/\s/g, '\xa0\xa0\xa0');
+		
+	var oneLineMaxLength = 26;
+	var lines = 1;
+	var totalLength = 0;
+	do
+	{
+		//todo: nie przycina perfekcyjnie, ale to naprawde mały problem
+		totalLength = oneLineMaxLength * lines;
+		if (promotionsInOneLine.length > totalLength)
+			promotionsInOneLine = promotionsInOneLine.substr(0,totalLength) + "<br/>" + promotionsInOneLine.substr(totalLength);
+		lines++;
+	}
+	while(promotionsInOneLine.length > totalLength + oneLineMaxLength)
+	
+	promotionsInOneLine = promotionsInOneLine.replace(":Q", ":\u2655");
+	promotionsInOneLine = promotionsInOneLine.replace(":B", ":\u2657");
+	promotionsInOneLine = promotionsInOneLine.replace(":R", ":\u2656");
+	promotionsInOneLine = promotionsInOneLine.replace(":N", ":\u2658");
+	promotionsInOneLine = promotionsInOneLine.replace(":q", ":\u265B");
+	promotionsInOneLine = promotionsInOneLine.replace(":b", ":\u265D");
+	promotionsInOneLine = promotionsInOneLine.replace(":r", ":\u265C");
+	promotionsInOneLine = promotionsInOneLine.replace(":n", ":\u265E");
+	return promotionsInOneLine;
 }
 
 var timerStart = null;
@@ -376,7 +398,7 @@ function ajaxResponse(ajaxData)
 	}
 	
 	if (ajaxData[25] != '-1') { addMsgToClientPlainTextWindow(ajaxData[25], "history"); }
-	if (ajaxData[25] != '-1') { showPromotions(ajaxData[26]); }
+	if (ajaxData[26] != '-1') { showPromotions(ajaxData[26]); }
 	
 	
 	
@@ -384,32 +406,36 @@ function ajaxResponse(ajaxData)
 	
 	if (whoseTurn == "WHITE_TURN")
 	{
-		$("#whitePlayerBox").css('background-color', 'lightGreen'); 
-		$("#blackPlayerBox").css('background-color', 'white'); 
+		$("#whitePlayerMiniBox").css('background-color', 'lightGreen'); 
+		$("#blackPlayerMiniBox").css('background-color', 'white'); 
 		if (ajaxData[15] == false)
 		{
 			$("#moveSection").css('background-color', 'lightGreen'); 
 			$("#pieceFrom").focus();
+			$('#pieceTo').val('');
+			$('#pieceFrom').val('');
 		}
 		else
 			$("#moveSection").css('background-color', 'white'); 
 	}
 	else if (whoseTurn == "BLACK_TURN")
 	{
-		$("#whitePlayerBox").css('background-color', 'white'); 
-		$("#blackPlayerBox").css('background-color', 'lightGreen'); 
+		$("#whitePlayerMiniBox").css('background-color', 'white'); 
+		$("#blackPlayerMiniBox").css('background-color', 'lightGreen'); 
 		if (ajaxData[15] == false)
 		{
 			$("#moveSection").css('background-color', 'lightGreen'); 
 			$("#pieceFrom").focus();
+			$('#pieceTo').val('');
+			$('#pieceFrom').val('');
 		}
 		else
 			$("#moveSection").css('background-color', 'white'); 
 	}
 	else
 	{
-		$("#whitePlayerBox").css('background-color', 'white'); 
-		$("#blackPlayerBox").css('background-color', 'white'); 
+		$("#whitePlayerMiniBox").css('background-color', 'white'); 
+		$("#blackPlayerMiniBox").css('background-color', 'white'); 
 		$("#moveSection").css('background-color', 'white'); 
 	}
 	
@@ -599,8 +625,8 @@ function movePiece()
 		jQuery.inArray(pieceFromLetter, squareLetters) != '-1' && jQuery.inArray(pieceToLetter, squareLetters) != '-1')
 		{
 			disableAll();
-			$("#whitePlayerBox").css('background-color', 'white'); 
-			$("#blackPlayerBox").css('background-color', 'white'); 
+			$("#whitePlayerMiniBox").css('background-color', 'white'); 
+			$("#blackPlayerMiniBox").css('background-color', 'white'); 
 			$("#moveSection").css('background-color', 'white'); 
 			websocket.send("move " + pieceFrom + pieceTo);
 		}
@@ -652,8 +678,8 @@ function updatePlayersTime()
 }			
 
 //todo: testować
-$("#pieceFrom" ).keydown(function() { pieceFromOnKeyPress(); });
-$("#pieceFrom" ).keydown(function() { pieceToOnKeyPress(); });
+$(function() { $("#pieceFrom").keyup(function() { pieceFromOnKeyPress(); }); });
+$(function() { $("#pieceTo").keyup(function() { pieceToOnKeyPress(); }); });
 
 function pieceFromOnKeyPress() 
 {
@@ -667,8 +693,8 @@ function pieceFromOnKeyPress()
 function pieceToOnKeyPress() 
 {
 	if ($('#pieceFrom').val().length >= 2 && $('#pieceTo').val().length >= 2) 
-		$( "#movePieceButton").focus();
-}	
+		$("#movePieceButton").focus();
+}
 
 function serverStatus(state)
 {

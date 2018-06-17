@@ -20,8 +20,8 @@
 		<script src="functions.js"></script>
 	</head>
 	<body>	
-		<div align="center" id="mainDiv" style="overflow: hidden">
-			<div id ="menu" style="overflow: hidden">
+		<div align="center" id="mainDiv">
+			<div id ="menu">
 				<?
 					ob_start();
 					session_start(); 
@@ -38,6 +38,14 @@
 						echo '<div id="info" align="center" style="float:left; margin:0 auto;">
 								<a href="#" onClick="return info();">Kontakt</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="index.php?a=logout" onclick="return confirmLogout();">Wyloguj się</a>
 							  </div>'; 
+					//to będzie mogło być poza php'em jeżeli login; rejestracja nie będą w tabelach		  
+					echo '
+					<div id="serverStatus">
+						|&nbsp;&nbsp;Serwer: 
+						<span id="serverCSSCircleStatus" class="dot"></span> 
+						<span id="serverStatusInfo">ŁĄCZENIE...</span>
+					</div>
+					';		  
 					
 					switch($_GET['a']) //zmienna w pasku ustalająca stronę po ob_end_flush; 'a' pobierane z "a href'ów"
 					{
@@ -54,13 +62,8 @@
 					}
 					ob_end_flush(); // wyrzygaj stronę
 					?>
-					<div id="serverStatus">
-						|&nbsp;&nbsp;Serwer: 
-						<span id="serverCSSCircleStatus" class="dot"></span> 
-						<span id="serverStatusInfo">ŁĄCZENIE...</span>
-					</div>
 			</div>
-			<div id="content" style="overflow: hidden">
+			<div id="content">
 				<div id="game"><!-- todo: dlaczego wogle ten cały kod php/js poniżej jest w indexie? -->
 					<? 
 						$user = getUser($_SESSION['id']);
@@ -171,12 +174,14 @@
 					<div id="table" align="center">
 						<div id="playersBoxes">
 							<div id="whitePlayerBox">
-								<div id="whiteTime"><br/>30:00</div>
 								<div id="whitePlayerSign">&#9817;</div>
-								<div id="whitePlayerBtns">
-									Gracz Biały<br/>
-									<button id="whitePlayer" onClick="clickedBtn('sitOnWhite')" disabled>-</button> 
-									<button id="standUpWhite" onClick="clickedBtn('standUp')" disabled>Wstań</button> 
+								<div id='whitePlayerMiniBox'>
+									<div id="whiteTime"><br/>30:00</div>
+									<div id="whitePlayerBtns">
+										Gracz Biały<br/>
+										<button id="whitePlayer" onClick="clickedBtn('sitOnWhite')" disabled>-</button> 
+										<button id="standUpWhite" onClick="clickedBtn('standUp')" disabled>Wstań</button> 
+									</div>
 								</div>
 							</div> 
 							<div id="resign">
@@ -184,13 +189,15 @@
 								<br/><button id="giveUpBtn" onClick="giveUp()" disabled>zrezygnuj</button>
 							</div>
 							<div id="blackPlayerBox">
-								<div id="blackTime" align="center"><br/>30:00</div>
 								<div id="blackPlayerSign">&#9823;</div>
-								<div id="blackPlayerBtns">
-									Gracz Czarny<br/>
-									<button id="blackPlayer" onClick="clickedBtn('sitOnBlack')" disabled>-</button> 
-									<button id="standUpBlack" onClick="clickedBtn('standUp')" disabled>Wstań</button> 
-								</div>	
+								<div id='blackPlayerMiniBox'>
+									<div id="blackTime" align="center"><br/>30:00</div>
+									<div id="blackPlayerBtns">
+										Gracz Czarny<br/>
+										<button id="blackPlayer" onClick="clickedBtn('sitOnBlack')" disabled>-</button> 
+										<button id="standUpBlack" onClick="clickedBtn('standUp')" disabled>Wstań</button> 
+									</div>	
+								</div>
 							</div>
 							<div style="clear:both"></div>
 						</div>
@@ -204,13 +211,14 @@
 								pozycję docelową (np.: e2 e4). Roszadę wykonuje się przestawiąjąc króla o 2 pola.</span>
 							</span>
 						</div>
+						<div id="promotionContent"></div> <!-- todo: odpowiada za okno promocji. sprawdzić to-->
+						<div style="clear:both"></div>
 					</div>
 				</div>  
 				<div id="textBoxes">
 					<div id="clientPTE">
 						<textarea readonly id="clientPlainTextWindow"></textarea>
 					</div>	
-					<div id="promotionContent"></div> <!-- todo: odpowiada za okno promocji. sprawdzić to-->
 					<div id="pteType">
 						<button id="infoPTE" onClick="changePTEsource('infoPTE')" disabled>stół</button> 
 						<button id="historyPTE" onClick="changePTEsource('historyPTE')">historia</button> 

@@ -31,7 +31,7 @@
 	if ($_GET['registered'] == true) echo 'Zarejestrowano poprawnie.';
 ?>
 
-<p>LOGOWANIE</p>
+<br/><p>LOGOWANIE</p>
 <form action="index.php?a=login" method="POST"> 
 	<table align="center">
 		<tr>
