@@ -1,12 +1,12 @@
 div
 {
-	padding: 5px;
+	padding: 4px;
 }
 
 #mainDiv
 {
 	overflow: hidden;
-	width: 1238px;
+	width: 1247px;
 	margin: 0 auto;
 	padding-top: 20px;
 }
@@ -44,21 +44,27 @@ div
 {
 	float:left;
 	border-left: 1px solid;
-	border-bottom: 1px solid;
+}
+
+#video
+{
+	padding:0px;
+	padding-top: 5px;
+	padding-bottom: 5px;
 }
 
 #textBoxes
 {
-	border-bottom: 1px solid;
-	border-right: 1px solid;
 	border-left: 1px solid;
 	float: left;
 }
 
 #promotionContent
 {
-	float:left; 
+	float:right; 
 	padding:0;
+	padding-right:140px;
+	display: none;
 }
 
 #pteType
@@ -78,7 +84,7 @@ textarea {
 #playersBoxes
 {
 	display: flex;
-	padding: 15px;
+	padding-bottom: 20px;
 }
 
 #whitePlayerBox
@@ -92,12 +98,16 @@ textarea {
 #whitePlayerMiniBox, #blackPlayerMiniBox
 {
 	border: 1px solid;
-	width: 300px;
+	width: 320px;
+	display:flex;
+	justify-content:center;
+	align-items:center;
 }
 
 #whiteTime, #blackTime
 {
 	float:left;
+	padding:0px;
 }
 
 #whitePlayerSign, #blackPlayerSign
@@ -137,7 +147,8 @@ textarea {
 
 #moveSection
 {
-	padding: 25px;
+	padding-top: 15px;
+	padding-bottom: 15px;
 }
 
 #clientPlainTextWindow
@@ -155,10 +166,5 @@ textarea {
 {
 	clear: both;
 	font-size: 80%;
+	border-top: 1px solid;
 }
-
-/* 
--sprawdzić promocje: niech ich box będzie bardziej z prawej, by było symetrycznie z divem po zepchniętym do lewej
--captcha znowu nei działa?
--jak dostaje odczyty czasu graczy z core, do zmienia się ich położenie na górne
-*/

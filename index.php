@@ -176,7 +176,7 @@
 							<div id="whitePlayerBox">
 								<div id="whitePlayerSign">&#9817;</div>
 								<div id='whitePlayerMiniBox'>
-									<div id="whiteTime"><br/>30:00</div>
+									<div id="whiteTime">30:00</div>
 									<div id="whitePlayerBtns">
 										Gracz Biały<br/>
 										<button id="whitePlayer" onClick="clickedBtn('sitOnWhite')" disabled>-</button> 
@@ -191,7 +191,7 @@
 							<div id="blackPlayerBox">
 								<div id="blackPlayerSign">&#9823;</div>
 								<div id='blackPlayerMiniBox'>
-									<div id="blackTime" align="center"><br/>30:00</div>
+									<div id="blackTime">30:00</div>
 									<div id="blackPlayerBtns">
 										Gracz Czarny<br/>
 										<button id="blackPlayer" onClick="clickedBtn('sitOnBlack')" disabled>-</button> 
@@ -223,7 +223,7 @@
 						<button id="infoPTE" onClick="changePTEsource('infoPTE')" disabled>stół</button> 
 						<button id="historyPTE" onClick="changePTEsource('historyPTE')">historia</button> 
 						<button id="queuePTE" onClick="changePTEsource('queuePTE')">kolejka</button> 
-						&nbsp;&nbsp;&nbsp;<button id="queuePlayer" onClick="clickedBtn('queueMe')" disabled>kolejkuj</button>
+						&nbsp;&nbsp;<button id="queuePlayer" onClick="clickedBtn('queueMe')" disabled>kolejkuj</button>
 						<button id="leaveQueue" onClick="clickedBtn('leaveQueue')" disabled>opuść</button>
 					</div>
 					<!-- todo: sprawdzić czy mogę to wywalić gdzieś na granice kodu -->

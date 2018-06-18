@@ -87,6 +87,8 @@ function addMsgToClientPlainTextWindow(message, type)
 		{
 			$("#endOfGameDialog").html(message);
 			$("#endOfGameDialog").dialog(endOfGameVar).dialog("open");
+			showPromotions("-1");
+			addMsgToClientPlainTextWindow("-1", "history");
 			setTimeout(function() { $("#endOfGameDialog").dialog('close'); }, 10000)
 		}
 	}
@@ -139,15 +141,18 @@ function historyInOneLineToHistoryPTE(historyInOneLine)
 {
 	historyInOneLine = historyInOneLine.trim(); //remove whitespaces from both sides of a string
 	var historyPTETemp = "";
-	var historyArray = historyInOneLine.split(" ");
-	if (historyArray.length > 0)
+	if (historyInOneLine != "-1")
 	{
-		for (i = 1; i < historyArray.length + 1; i++)
+		var historyArray = historyInOneLine.split(" ");
+		if (historyArray.length > 0)
 		{
-			if (i/2 != Math.ceil(i/2)) historyPTETemp += Math.ceil(i/2) + ". ";
-			historyPTETemp += historyArray[i-1];
-			if (i/2 != Math.ceil(i/2)) historyPTETemp += "\t";
-			else historyPTETemp += "\n";
+			for (i = 1; i < historyArray.length + 1; i++)
+			{
+				if (i/2 != Math.ceil(i/2)) historyPTETemp += Math.ceil(i/2) + ". ";
+				historyPTETemp += historyArray[i-1];
+				if (i/2 != Math.ceil(i/2)) historyPTETemp += "\t";
+				else historyPTETemp += "\n";
+			}
 		}
 	}
 
@@ -160,15 +165,17 @@ function showPromotions(promotions)
 	{
 		$("#moveSection").css('float','none');
 		$("#moveSection").css('clear','both');
-		$("#moveSection").css('align','none');
+		$("#moveSection").css('padding','25px');
+		$("#promotionContent").css('display','none');
 		$("#promotionContent").html("");
 	}
 	else 
 	{
 		$("#moveSection").css('float','left');
 		$("#moveSection").css('clear','none');
-		$("#moveSection").css('align','center');
-		$("#promotionContent").html("&nbsp;<u>Promowane pionki:</u><br/>" + promotionsInOneLineToPromotionsDIV(promotions));
+		$("#moveSection").css('padding-left','130px');
+		$("#promotionContent").css('display','block');
+		$("#promotionContent").html("&nbsp;<u>Promowane pionki:</u><br/><font size='4'>" + promotionsInOneLineToPromotionsDIV(promotions) + "</font>");
 	}
 }
 
@@ -190,14 +197,14 @@ function promotionsInOneLineToPromotionsDIV(promotionsInOneLine)
 	}
 	while(promotionsInOneLine.length > totalLength + oneLineMaxLength)
 	
-	promotionsInOneLine = promotionsInOneLine.replace(":Q", ":\u2655");
-	promotionsInOneLine = promotionsInOneLine.replace(":B", ":\u2657");
-	promotionsInOneLine = promotionsInOneLine.replace(":R", ":\u2656");
-	promotionsInOneLine = promotionsInOneLine.replace(":N", ":\u2658");
-	promotionsInOneLine = promotionsInOneLine.replace(":q", ":\u265B");
-	promotionsInOneLine = promotionsInOneLine.replace(":b", ":\u265D");
-	promotionsInOneLine = promotionsInOneLine.replace(":r", ":\u265C");
-	promotionsInOneLine = promotionsInOneLine.replace(":n", ":\u265E");
+	promotionsInOneLine = promotionsInOneLine.replace(/:Q/g, ":\u2655");
+	promotionsInOneLine = promotionsInOneLine.replace(/:B/g, ":\u2657");
+	promotionsInOneLine = promotionsInOneLine.replace(/:R/g, ":\u2656");
+	promotionsInOneLine = promotionsInOneLine.replace(/:N/g, ":\u2658");
+	promotionsInOneLine = promotionsInOneLine.replace(/:q/g, ":\u265B");
+	promotionsInOneLine = promotionsInOneLine.replace(/:b/g, ":\u265D");
+	promotionsInOneLine = promotionsInOneLine.replace(/:r/g, ":\u265C");
+	promotionsInOneLine = promotionsInOneLine.replace(/:n/g, ":\u265E");
 	return promotionsInOneLine;
 }
 
@@ -241,12 +248,12 @@ function showStartDialog(wClickedStart, bClickedStart, sTime)
 	}
 	else if ((wClickedStart == "w" && js_login == whitePlr) || (bClickedStart == "b" && js_login == blackPlr))
 	{
-		startInfo = "Oczekiwanie aż drugi gracz wciśnie start: ";
+		startInfo = "Oczekiwanie, aż drugi gracz wciśnie start: ";
 		$("#startGameDialog").dialog(startGameVar).dialog("option", "buttons", {});
 	}
 	else
 	{
-		startInfo = "Oczekiwanie aż gracze wcisną start: ";
+		startInfo = "Oczekiwanie, aż gracze wcisną start: ";
 		$("#startGameDialog").dialog(startGameVar).dialog("option", "buttons", {});
 	}
 	
@@ -287,7 +294,7 @@ var startGameVar =
 			disableAll();
 			websocket.send("newGame"); 
 			
-			startInfo = "Oczekiwanie aż drugi gracz wciśnie start: ";
+			startInfo = "Oczekiwanie, aż drugi gracz wciśnie start: ";
 			$(this).dialog("option", "buttons", {});
 		}, 
 		'wstań': function() 
@@ -404,39 +411,34 @@ function ajaxResponse(ajaxData)
 	
 	if (whoseTurn != "-1" && whoseTurn != "NO_TURN") startWhiteTimerIfFirstTurn(whiteTotalSeconds, blackTotalSeconds);
 	
-	if (whoseTurn == "WHITE_TURN")
+	if (whoseTurn == "WHITE_TURN") //todo: zapakować w funkcję
 	{
 		$("#whitePlayerMiniBox").css('background-color', 'lightGreen'); 
 		$("#blackPlayerMiniBox").css('background-color', 'white'); 
-		if (ajaxData[15] == false)
-		{
-			$("#moveSection").css('background-color', 'lightGreen'); 
-			$("#pieceFrom").focus();
-			$('#pieceTo').val('');
-			$('#pieceFrom').val('');
-		}
-		else
-			$("#moveSection").css('background-color', 'white'); 
 	}
 	else if (whoseTurn == "BLACK_TURN")
 	{
 		$("#whitePlayerMiniBox").css('background-color', 'white'); 
 		$("#blackPlayerMiniBox").css('background-color', 'lightGreen'); 
-		if (ajaxData[15] == false)
-		{
-			$("#moveSection").css('background-color', 'lightGreen'); 
-			$("#pieceFrom").focus();
-			$('#pieceTo').val('');
-			$('#pieceFrom').val('');
-		}
-		else
-			$("#moveSection").css('background-color', 'white'); 
 	}
 	else
 	{
 		$("#whitePlayerMiniBox").css('background-color', 'white'); 
 		$("#blackPlayerMiniBox").css('background-color', 'white'); 
 		$("#moveSection").css('background-color', 'white'); 
+	}
+	
+	if ((whoseTurn == "WHITE_TURN" || whoseTurn == "BLACK_TURN") && ajaxData[2].includes("TABLE_DATA") == false) //todo: zapakować w funkcję
+	{
+		if (ajaxData[15] == false)
+		{
+			$("#moveSection").css('background-color', 'lightGreen'); 
+			$("#pieceFrom").focus();
+			$('#pieceTo').val('');
+			$('#pieceFrom').val('');
+		}
+		else
+			$("#moveSection").css('background-color', 'white'); 
 	}
 	
 	if (whiteTotalSeconds != "-1" || blackTotalSeconds != "-1") //todo: zapakować w funkcję
@@ -668,7 +670,7 @@ function updatePlayersTime()
 	else if (whoseTurn == "BLACK_TURN")
 	{
 		blackTotalSeconds--;		
-		$("#blackTime").html(secondsToMinutesAndSeconds(blackTotalSeconds));
+		$("#blackTime").html("<br/>" + secondsToMinutesAndSeconds(blackTotalSeconds));
 	}
 	else if (whoseTurn == "NO_TURN")
 	{
