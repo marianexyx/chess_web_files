@@ -66,6 +66,7 @@
 	
 	function onWsMsg($wsMsgType, $wsMsgVal)
 	{
+		//todo: zwracać też może informację, która będzie dawała znać jakim typem użtkownika jesteś (logged/white/black itd)
 		//$whiteName = '-1'; //0
 		//$blackName = '-1'; //1
 		$consoleAjax = '-1'; //2
@@ -75,8 +76,8 @@
 		//$textboxEnabling = '-1'; //6, enabling[1]
 		//$whiteBtn = '-1'; //7, enabling[2]
 		//$blackBtn = '-1'; //8, enabling[3]
-		//$standWhite = '-1'; //9, enabling[4]
-		//$standBlack = '-1'; //10, enabling[5]
+		//$standUpWhite = '-1'; //9, enabling[4]
+		//$standUpBlack = '-1'; //10, enabling[5]
 		//$start = '-1'; //11, enabling[6]
 		//$giveup = '-1'; //12, enabling[7]
 		//$from = '-1'; //13, enabling[8]

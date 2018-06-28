@@ -29,9 +29,6 @@ function disableAll()
 {
 	$("#whitePlayer").attr("disabled", true);
 	$("#blackPlayer").attr("disabled", true);
-	$("#standUpWhite").attr("disabled", true);
-	$("#standUpBlack").attr("disabled", true);
-	$("#giveUpBtn").attr("disabled", true);
 	$("#pieceFrom").attr("disabled", true);
 	$("#pieceTo").attr("disabled", true);
 	$("#movePieceButton").attr("disabled", true);
@@ -234,7 +231,7 @@ var startInfo;
 function showStartDialog(wClickedStart, bClickedStart, sTime)
 {
 	turnOffStartTimerIfItsOn();
-	closeStartGameDialogIfOpened();
+	//closeStartGameDialogIfOpened();
 	console.log("open startGameDialog");
 	$("#startGameDialog").dialog(startGameVar).dialog("open"); 
 	var whitePlr = $("#whitePlayer").text();
@@ -267,6 +264,7 @@ function showStartDialog(wClickedStart, bClickedStart, sTime)
 			if (sTime <= 0)
 			{
 				turnOffStartTimerIfItsOn();
+				console.log('function showStartDialog: !timerStart: closeStartGameDialogIfOpened');
 				closeStartGameDialogIfOpened();
 			}
 		}, 1000); 
@@ -290,7 +288,6 @@ var startGameVar =
 	{
 		'start': function() 
 		{
-			console.log('clicked: start');
 			disableAll();
 			websocket.send("newGame"); 
 			
@@ -299,7 +296,6 @@ var startGameVar =
 		}, 
 		'wstań': function() 
 		{
-			console.log('clicked: standUp');
 			clickedBtn('standUp');		
 			if ($(this).dialog('isOpen')) $(this).dialog('close');
 		}
@@ -320,7 +316,7 @@ function queueInOneLineToQueuePTE(queueList)
 			queueListPlainText += indexPlainText + ". " + queueListArr[index] + "\n";
 		}
 	}
-	else queueListPlainText = "";
+	else queueListPlainText = "Nie ma żadnych graczy w kolejce.";
 	
 	return queueListPlainText;
 }
@@ -343,7 +339,7 @@ function startWhiteTimerIfFirstTurn(whiteTimeLeft, blackTimeLeft)
 		resetPlayersTimers();
 		if (!timerGame) 
 		{
-			ajaxResponse(ajaxData); //dlaczego tu wcześniej była deklaracja funkcji ajaxResponse?: "function "
+			ajaxResponse(ajaxData); //todo: dlaczego tu wcześniej była deklaracja funkcji ajaxResponse?: "function "
 			timerGame = setInterval(function(){ updatePlayersTime() }, 1000);
 		}
 		closeStartGameDialogIfOpened();
@@ -353,16 +349,42 @@ function startWhiteTimerIfFirstTurn(whiteTimeLeft, blackTimeLeft)
 var whiteTotalSeconds = "-1";
 var blackTotalSeconds = "-1";
 var whoseTurn = "-1";
+//todo: to moze przychodzić obliczone już z php'a?
+var bTableIsFull = false;
+var bClientIsLogged = false;
+var bClientIsPlayer = false;
+var bClientIsInQueue = false;
 function ajaxResponse(ajaxData)
 {
+	//bTableIsFull, toddo: jest pełen gdy nie możemy wcisnąć buttona białego i czarnego
+	if (ajaxData[0] != '-1' && ajaxData[1] != '-1' ) 
+	{
+		if (ajaxData[0] != 'White' && ajaxData[1] != 'Black')
+			bTableIsFull = true;
+		else bTableIsFull = false;
+	}
+	
+	//bClientIsLogged, todo: true jeżeli w skrócie da się wcisnąć którykolwiek z przycisków
+	//todo: zmiennej js_login da się w ogóle pozbyć z kodu
+	if (js_login === "") bClientIsLogged = false;
+	else bClientIsLogged = true;
+	
+	//bClientIsPlayer. true, gdy możemy wcisnąć standup/resign
+	if (ajaxData[9] == false || ajaxData[10] == false || ajaxData[12] == false)
+		bClientIsPlayer = true;
+	else bClientIsPlayer = false;
+	console.log("ajaxData[9]=" + ajaxData[9] + ", ajaxData[10]=" + ajaxData[10] + ", ajaxData[12]=" + ajaxData[12]);
+	
+
+	
 	if (ajaxData[0] != '-1') 
 	{
-		if(ajaxData[0] == "White") $('#whitePlayer').html("-");
+		if (ajaxData[0] == "White") $('#whitePlayer').html("-");
 		else $('#whitePlayer').html(ajaxData[0]);
 	}
 	if (ajaxData[1] != '-1') 
 	{
-		if(ajaxData[1] == "Black") $('#blackPlayer').html("-");
+		if (ajaxData[1] == "Black") $('#blackPlayer').html("-");
 		else $('#blackPlayer').html(ajaxData[1]);
 	}
 	
@@ -375,16 +397,20 @@ function ajaxResponse(ajaxData)
 	
 	if (ajaxData[7] != '-1') $("#whitePlayer").attr("disabled", ajaxData[7]);
 	if (ajaxData[8] != '-1') $("#blackPlayer").attr("disabled", ajaxData[8]);
-	if (ajaxData[9] != '-1') $("#standUpWhite").attr("disabled", ajaxData[9]);
-	if (ajaxData[10] != '-1') $("#standUpBlack").attr("disabled", ajaxData[10]);
-	if (ajaxData[11] == '1') console.log("start dialog should appear"); 
-	if (ajaxData[12] != '-1') $("#giveUpBtn").attr("disabled", ajaxData[12]);
+		
+	//if (ajaxData[11] == '1') console.log("start dialog should appear"); 
 	if (ajaxData[13] != '-1') $("#pieceFrom").attr("disabled", ajaxData[13]); 
 	if (ajaxData[14] != '-1') $("#pieceTo").attr("disabled", ajaxData[14]);
 	if (ajaxData[15] != '-1') $("#movePieceButton").attr("disabled", ajaxData[15]);
 	if (ajaxData[16] != '-1') $("#queuePlayer").attr("disabled", ajaxData[16]);
-	if (ajaxData[17] != '-1') $("#leaveQueue").attr("disabled", ajaxData[17]);
+	if (ajaxData[17] != '-1') 
+	{
+		$("#leaveQueue").attr("disabled", ajaxData[17]);
+		if (ajaxData[17] == false) bClientIsInQueue = true;
+		else bClientIsInQueue = false;
+	}
 	
+	//update queue info, todo: pack to function
 	if (ajaxData[18]!= '-1') 
 	{
 		var queued = "kolejka(" + queueSize(ajaxData[18]) + ")";
@@ -396,7 +422,8 @@ function ajaxResponse(ajaxData)
 	if (ajaxData[20] != '-1') blackTotalSeconds = ajaxData[20];
 	if (ajaxData[21] != '-1') whoseTurn = ajaxData[21];
 	
-	if (ajaxData[22] != '-1' && ajaxData[23] !='-1' && ajaxData[24] !='-1' && ajaxData[0] !='White' && ajaxData[1] !='Black' && !$("#startGameDialog").dialog(startGameVar).dialog('isOpen')) 
+	//show start dialog if core waits for starts, todo: pack to function
+	if (ajaxData[22] != '-1' && ajaxData[23] !='-1' && ajaxData[24] !='-1' && ajaxData[0] !='White' && ajaxData[1] !='Black') 
 		showStartDialog(ajaxData[22], ajaxData[23], ajaxData[24]); 
 	else 
 	{
@@ -409,9 +436,48 @@ function ajaxResponse(ajaxData)
 	
 	
 	
-	if (whoseTurn != "-1" && whoseTurn != "NO_TURN") startWhiteTimerIfFirstTurn(whiteTotalSeconds, blackTotalSeconds);
+	//manage standUp/giveUp
+	if (bClientIsPlayer)
+	{
+		if (ajaxData[9] == false) 
+		{
+			$("#standUpWhite").show();
+			$("#standUpWhite").html("Wstań");
+		}
+		else if (ajaxData[10] == false) 
+		{
+			$("#standUpBlack").show();
+			$("#standUpBlack").html("Wstań");
+		}
+		else
+		{
+			console.log("js_login == ajaxData[0]  -> " + js_login + " == " + ajaxData[0]);
+			console.log("js_login == ajaxData[1]  -> " + js_login + " == " + ajaxData[1]);
+			//todo: ciągnąć z php
+			if (js_login == ajaxData[0]) //(you are white)
+			{
+				$("#standUpWhite").show();
+				$("#standUpWhite").html("Rezygnacja");
+			}
+			else if (js_login == ajaxData[1]) //(you are black)
+			{
+				$("#standUpBlack").show();
+				$("#standUpBlack").html("Rezygnacja");
+			}
+			else console.log("ERROR: bClientIsPlayer == true, but != white && black");
+		}
+	}
+	else //turn off btns
+	{
+		$("#standUpWhite").hide();
+		$("#standUpBlack").hide();
+	}
 	
-	if (whoseTurn == "WHITE_TURN") //todo: zapakować w funkcję
+	if (whoseTurn != "-1" && whoseTurn != "NO_TURN") 
+		startWhiteTimerIfFirstTurn(whiteTotalSeconds, blackTotalSeconds);
+	
+	//show active player via changing div bg color, todo: pack to function
+	if (whoseTurn == "WHITE_TURN") 
 	{
 		$("#whitePlayerMiniBox").css('background-color', 'lightGreen'); 
 		$("#blackPlayerMiniBox").css('background-color', 'white'); 
@@ -428,7 +494,8 @@ function ajaxResponse(ajaxData)
 		$("#moveSection").css('background-color', 'white'); 
 	}
 	
-	if ((whoseTurn == "WHITE_TURN" || whoseTurn == "BLACK_TURN") && ajaxData[2].includes("TABLE_DATA") == false) //todo: zapakować w funkcję
+	//show active turn via changing div bg color, todo: pack to function
+	if ((whoseTurn == "WHITE_TURN" || whoseTurn == "BLACK_TURN") && ajaxData[2].includes("TABLE_DATA") == false) 
 	{
 		if (ajaxData[15] == false)
 		{
@@ -441,7 +508,8 @@ function ajaxResponse(ajaxData)
 			$("#moveSection").css('background-color', 'white'); 
 	}
 	
-	if (whiteTotalSeconds != "-1" || blackTotalSeconds != "-1") //todo: zapakować w funkcję
+	//update players timers, todo: pack to function
+	if (whiteTotalSeconds != "-1" || blackTotalSeconds != "-1") 
 	{
 		if (whiteTotalSeconds != "-1") 
 		$("#whiteTime").html(secondsToMinutesAndSeconds(whiteTotalSeconds));
@@ -456,11 +524,24 @@ function ajaxResponse(ajaxData)
 		
 		timerGame = setInterval(function(){ updatePlayersTime() }, 1000);
 	}
+	
+	//todo: doszlifować to jeszcze
+	//update additionalInfo
+	console.log("bClientIsLogged=" + bClientIsLogged + ", bTableIsFull=" + bTableIsFull + ", bClientIsPlayer=" + bClientIsPlayer + ", bClientIsInQueue=" + bClientIsInQueue);
+	if (!bClientIsLogged)
+		$("#additionalInfo").html("Musisz być zalogowany, aby móc grać.");
+	else if (bClientIsLogged && !bTableIsFull && !bClientIsPlayer)
+		$("#additionalInfo").html("By zagrać wybierz kolor bierek klikając przycisk gracza.");
+	else if (bClientIsLogged && !bTableIsFull && bClientIsPlayer && !bClientIsInQueue)
+		$("#additionalInfo").html("Oczekiwanie, aż do stołu gry przysiądzie się drugi gracz.");
+	else if (bClientIsLogged && bTableIsFull && !bClientIsPlayer && !bClientIsInQueue)
+		$("#additionalInfo").html("Stół gry jest pełen. By zagrać wejdź do kolejki graczy.");
+	else
+		$("#additionalInfo").html(" ");
 }
 
 function otherOption(othOpt)
 {
-	console.log('otherOption = ' + othOpt);
 	var wsMsg;
 	if (othOpt.substr(0,6) == "wsSend")
 	{
@@ -546,7 +627,7 @@ var giveUpVar =
 		{
 			disableAll();
 			addMsgToClientPlainTextWindow("Opuszczanie stołu...", "info"); 
-			websocket.send("giveUp"); 
+			websocket.send("standUp"); 
 			if ($(this).dialog('isOpen')) $(this).dialog('close');
 		}, 
 		'nie': function() 
@@ -567,16 +648,15 @@ function clickedBtn(buttonType)
 	var msgForCore;
 	switch(buttonType)
 	{
-		//todo: uda mi się tą funkcję zamknąć w 1 linijce?
 		case "sitOnWhite": msgForCore = "sitOn White"; break; 
 		case "sitOnBlack": msgForCore = "sitOn Black"; break; 
 		case "standUp": msgForCore = "standUp"; break;
-		//case giveUp: msgForCore = "giveUp"; break; - openDialog //todo: przekierowanie później z poszczególnych buttonów w dialogu tutaj robić?
+		case "giveUp": giveUp(); break; //todo: nie wyskoczyło mi okno rezygnacji
 		case "queueMe": msgForCore = "queueMe"; break; 
 		case "leaveQueue": msgForCore = "leaveQueue"; break; 
 		default: console.log("ERROR: unknown buttonType type"); break;
 	}
-	console.log("clicked btn: " + msgForCore);
+
 	if (msgForCore) websocket.send(msgForCore); 
 }
 
@@ -679,7 +759,6 @@ function updatePlayersTime()
 	else console.log("ERROR: updatePlayersTime(): unknown turn = " + whoseTurn);
 }			
 
-//todo: testować
 $(function() { $("#pieceFrom").keyup(function() { pieceFromOnKeyPress(); }); });
 $(function() { $("#pieceTo").keyup(function() { pieceToOnKeyPress(); }); });
 

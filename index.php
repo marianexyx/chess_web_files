@@ -33,11 +33,15 @@
 					if(empty($_SESSION['id'])) 
 						echo '<div id="info" align="center" style="float:left; margin:0 auto;"> 
 								<a href="index.php?a=register">Zarejestruj się</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="index.php?a=login">Zaloguj się</a> 
-							  </div>';
+							  </div>
+							  <script>$(function() { $("#additionalInfo").html("Musisz być zalogowany, aby móc grać."); });</script>
+							  ';
 					else 
 						echo '<div id="info" align="center" style="float:left; margin:0 auto;">
 								<a href="#" onClick="return info();">Kontakt</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="index.php?a=logout" onclick="return confirmLogout();">Wyloguj się</a>
-							  </div>'; 
+							  </div>
+							  <script>$(function() { $("#additionalInfo").html(" "); });</script>
+							  '; 
 					//to będzie mogło być poza php'em jeżeli login; rejestracja nie będą w tabelach		  
 					echo '
 					<div id="serverStatus">
@@ -49,7 +53,7 @@
 					
 					switch($_GET['a']) //zmienna w pasku ustalająca stronę po ob_end_flush; 'a' pobierane z "a href'ów"
 					{
-						case 'home': require_once('home.php'); break; //domyślny ( w takim razie po co tutaj?)
+						case 'home': require_once('home.php'); break; //domyślny (todo: w takim razie po co tutaj?)
 						case 'login': require_once('login.php'); break;
 						case 'register': require_once('register.php'); break;
 						case 'game': require_once('game.php'); break;
@@ -169,8 +173,9 @@
 					<div id="video">
 						<iframe id="ytplayer" type="text/html" width="854" height="480"
 						  src="https://www.youtube.com/embed/live_stream?channel=UCLVBCJh3oKqWR2qo58BVd-w&autoplay=1&enablejsapi=1&origin=http://example.com">
-						  </iframe>
+						</iframe>
 					</div>
+					<div id="additionalInfo"></div>
 					<div id="table" align="center">
 						<div id="playersBoxes">
 							<div id="whitePlayerBox">
@@ -180,13 +185,12 @@
 									<div id="whitePlayerBtns">
 										Gracz Biały<br/>
 										<button id="whitePlayer" onClick="clickedBtn('sitOnWhite')" disabled>-</button> 
-										<button id="standUpWhite" onClick="clickedBtn('standUp')" disabled>Wstań</button> 
+										<button id="standUpWhite" onClick="clickedBtn('standUp')" hidden="hidden" >Wstań</button> 
 									</div>
 								</div>
 							</div> 
 							<div id="resign">
 								<div id="giveUpDialog" hidden="hidden">Czy chcesz opuścić grę?</div> <!-- todo: czy to tu musi być? czy to może być spanem? czy mozę być z resztą dialogów?-->
-								<br/><button id="giveUpBtn" onClick="giveUp()" disabled>zrezygnuj</button>
 							</div>
 							<div id="blackPlayerBox">
 								<div id="blackPlayerSign">&#9823;</div>
@@ -195,7 +199,7 @@
 									<div id="blackPlayerBtns">
 										Gracz Czarny<br/>
 										<button id="blackPlayer" onClick="clickedBtn('sitOnBlack')" disabled>-</button> 
-										<button id="standUpBlack" onClick="clickedBtn('standUp')" disabled>Wstań</button> 
+										<button id="standUpBlack" onClick="clickedBtn('standUp')" hidden="hidden">Wstań</button> 
 									</div>	
 								</div>
 							</div>
