@@ -88,7 +88,15 @@
 		
 		if (!empty($_SESSION['id']))
 		{
-			$consoleEnabling = 'disabling val = '.$state;
+			$playersOnChairs = are2PlayersOnChairs();
+			$loggedPlrOnChair = isLoggedPlayerOnAnyChair();
+			$clientIsInQueue = isClientInQueue();
+			$loggedIsOnWhite = isLoggedPlayerOnChair(WHITE);
+			$loggedIsOnBlack = isLoggedPlayerOnChair(BLACK);
+
+			$consoleEnabling = 'disabling val = '.$state.', are2PlayersOnChairs() ='.$playersOnChairs.', isLoggedPlayerOnAnyChair() ='.$loggedPlrOnChair.
+				', isClientInQueue() ='.$clientIsInQueue.', isLoggedPlayerOnChair(WHITE) ='.$loggedIsOnWhite.', isLoggedPlayerOnChair(BLACK) ='.$loggedIsOnBlack.
+				', $_SESSION["queue"] ='.$_SESSION['queue'].', $_SESSION["login"] ='.$_SESSION['login'];
 			
 			if (are2PlayersOnChairs() && !isLoggedPlayerOnAnyChair() && !isClientInQueue()) $queuePlayer = true;
 			else if (isClientInQueue()) $leaveQueue = true;
@@ -125,7 +133,6 @@
 				break;
 				
 				case 'endOfGame':
-
 				$whiteChairEmpty = '-1';
 				$blackChairEmpty = '-1';
 				$whiteLoggedPlayerOnChair = '-1';

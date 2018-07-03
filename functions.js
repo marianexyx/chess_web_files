@@ -29,6 +29,8 @@ function disableAll()
 {
 	$("#whitePlayer").attr("disabled", true);
 	$("#blackPlayer").attr("disabled", true);
+	$("#standUpWhite").attr("disabled", true);
+	$("#standUpBlack").attr("disabled", true);
 	$("#pieceFrom").attr("disabled", true);
 	$("#pieceTo").attr("disabled", true);
 	$("#movePieceButton").attr("disabled", true);
@@ -210,7 +212,6 @@ function turnOffStartTimerIfItsOn()
 {
 	if (timerStart)
 	{
-		console.log("turnOffStartTimerIfItsOn()");
 		clearInterval(timerStart);
 		timerStart = null;
 	}
@@ -218,7 +219,6 @@ function turnOffStartTimerIfItsOn()
 
 function closeStartGameDialogIfOpened()
 {
-	console.log("closeStartGameDialogIfOpened(): try to close startGameDialog");
 	if ($("#startGameDialog").dialog(startGameVar).dialog('isOpen')) 
 	{
 		console.log("startGameDialog is open. close it");
@@ -231,12 +231,9 @@ var startInfo;
 function showStartDialog(wClickedStart, bClickedStart, sTime)
 {
 	turnOffStartTimerIfItsOn();
-	//closeStartGameDialogIfOpened();
-	console.log("open startGameDialog");
 	$("#startGameDialog").dialog(startGameVar).dialog("open"); 
-	var whitePlr = $("#whitePlayer").text();
+	var whitePlr = $("#whitePlayer").text(); //todo: dać gdzieś wyżej by tego używać globalnie
 	var blackPlr = $("#blackPlayer").text();
-	console.log("js_login = " + js_login + ", whitePlr = " + whitePlr + ", blackPlr = " + blackPlr);
 	if ((wClickedStart == "x" && js_login == whitePlr) || (bClickedStart == "x" && js_login == blackPlr))
 	{
 		alertWindow();
@@ -256,7 +253,6 @@ function showStartDialog(wClickedStart, bClickedStart, sTime)
 	
 	if (!timerStart) 
 	{
-		console.log("timerStart = true");
 		timerStart = setInterval(function() 
 		{ 
 			$("#startGameDialog").html(startInfo + sTime);
@@ -264,7 +260,6 @@ function showStartDialog(wClickedStart, bClickedStart, sTime)
 			if (sTime <= 0)
 			{
 				turnOffStartTimerIfItsOn();
-				console.log('function showStartDialog: !timerStart: closeStartGameDialogIfOpened');
 				closeStartGameDialogIfOpened();
 			}
 		}, 1000); 
@@ -288,7 +283,6 @@ var startGameVar =
 	{
 		'start': function() 
 		{
-			disableAll();
 			websocket.send("newGame"); 
 			
 			startInfo = "Oczekiwanie, aż drugi gracz wciśnie start: ";
@@ -397,7 +391,8 @@ function ajaxResponse(ajaxData)
 	
 	if (ajaxData[7] != '-1') $("#whitePlayer").attr("disabled", ajaxData[7]);
 	if (ajaxData[8] != '-1') $("#blackPlayer").attr("disabled", ajaxData[8]);
-		
+	if (ajaxData[9] != '-1') $("#standUpWhite").attr("disabled", ajaxData[9]);
+	if (ajaxData[10] != '-1') $("#standUpBlack").attr("disabled", ajaxData[10]);
 	//if (ajaxData[11] == '1') console.log("start dialog should appear"); 
 	if (ajaxData[13] != '-1') $("#pieceFrom").attr("disabled", ajaxData[13]); 
 	if (ajaxData[14] != '-1') $("#pieceTo").attr("disabled", ajaxData[14]);
@@ -442,27 +437,29 @@ function ajaxResponse(ajaxData)
 		if (ajaxData[9] == false) 
 		{
 			$("#standUpWhite").show();
+			$("#standUpWhite").attr("disabled", false);
 			$("#standUpWhite").html("Wstań");
 		}
 		else if (ajaxData[10] == false) 
 		{
 			$("#standUpBlack").show();
+			$("#standUpBlack").attr("disabled", false);
 			$("#standUpBlack").html("Wstań");
 		}
 		else
 		{
-			console.log("js_login == ajaxData[0]  -> " + js_login + " == " + ajaxData[0]);
-			console.log("js_login == ajaxData[1]  -> " + js_login + " == " + ajaxData[1]);
 			//todo: ciągnąć z php
 			if (js_login == ajaxData[0]) //(you are white)
 			{
 				$("#standUpWhite").show();
-				$("#standUpWhite").html("Rezygnacja");
+				$("#standUpWhite").attr("disabled", false);
+				$("#standUpWhite").html("Wyjdź");
 			}
 			else if (js_login == ajaxData[1]) //(you are black)
 			{
 				$("#standUpBlack").show();
-				$("#standUpBlack").html("Rezygnacja");
+				$("#standUpBlack").attr("disabled", false);
+				$("#standUpBlack").html("Wyjdź");
 			}
 			else console.log("ERROR: bClientIsPlayer == true, but != white && black");
 		}
@@ -471,6 +468,8 @@ function ajaxResponse(ajaxData)
 	{
 		$("#standUpWhite").hide();
 		$("#standUpBlack").hide();
+		$("#standUpWhite").attr("disabled", false);
+		$("#standUpBlack").attr("disabled", false);
 	}
 	
 	if (whoseTurn != "-1" && whoseTurn != "NO_TURN") 
@@ -512,9 +511,9 @@ function ajaxResponse(ajaxData)
 	if (whiteTotalSeconds != "-1" || blackTotalSeconds != "-1") 
 	{
 		if (whiteTotalSeconds != "-1") 
-		$("#whiteTime").html(secondsToMinutesAndSeconds(whiteTotalSeconds));
+		$("#whiteTime").html("Gracz Biały: " + secondsToMinutesAndSeconds(whiteTotalSeconds));
 		if (blackTotalSeconds != "-1") 
-		$("#blackTime").html(secondsToMinutesAndSeconds(blackTotalSeconds));
+		$("#blackTime").html("Gracz Czarny: " + secondsToMinutesAndSeconds(blackTotalSeconds));
 		
 		if (timerGame)
 		{
@@ -632,6 +631,8 @@ var giveUpVar =
 		}, 
 		'nie': function() 
 		{
+			$("#standUpWhite").attr("disabled", false);
+			$("#standUpBlack").attr("disabled", false);
 			if ($(this).dialog('isOpen')) $(this).dialog('close');
 		}
 	}
@@ -650,8 +651,7 @@ function clickedBtn(buttonType)
 	{
 		case "sitOnWhite": msgForCore = "sitOn White"; break; 
 		case "sitOnBlack": msgForCore = "sitOn Black"; break; 
-		case "standUp": msgForCore = "standUp"; break;
-		case "giveUp": giveUp(); break; //todo: nie wyskoczyło mi okno rezygnacji
+		case "standUp": if (bClientIsPlayer) giveUp(); break;
 		case "queueMe": msgForCore = "queueMe"; break; 
 		case "leaveQueue": msgForCore = "leaveQueue"; break; 
 		default: console.log("ERROR: unknown buttonType type"); break;
@@ -671,8 +671,8 @@ function resetPlayersTimers()
 {
 	whiteTotalSeconds = 30*60;
 	blackTotalSeconds = 30*60;
-	$("#whiteTime").html("30:00");
-	$("#blackTime").html("30:00");
+	$("#whiteTime").html("Gracz Biały: 30:00");
+	$("#blackTime").html("Gracz Czarny: 30:00");
 }
 
 function movePiece()
@@ -745,12 +745,12 @@ function updatePlayersTime()
 	if (whoseTurn == "WHITE_TURN")
 	{
 		whiteTotalSeconds--;
-		$("#whiteTime").html(secondsToMinutesAndSeconds(whiteTotalSeconds));
+		$("#whiteTime").html("Gracz Biały: " + secondsToMinutesAndSeconds(whiteTotalSeconds));
 	}
 	else if (whoseTurn == "BLACK_TURN")
 	{
 		blackTotalSeconds--;		
-		$("#blackTime").html("<br/>" + secondsToMinutesAndSeconds(blackTotalSeconds));
+		$("#blackTime").html("Gracz Czarny: " + secondsToMinutesAndSeconds(blackTotalSeconds));
 	}
 	else if (whoseTurn == "NO_TURN")
 	{

@@ -104,12 +104,6 @@ textarea {
 	align-items:center;
 }
 
-#whiteTime, #blackTime
-{
-	float:left;
-	padding:0px;
-}
-
 #whitePlayerSign, #blackPlayerSign
 {
 	float:left;

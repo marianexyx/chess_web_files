@@ -181,11 +181,10 @@
 							<div id="whitePlayerBox">
 								<div id="whitePlayerSign">&#9817;</div>
 								<div id='whitePlayerMiniBox'>
-									<div id="whiteTime">30:00</div>
 									<div id="whitePlayerBtns">
-										Gracz Biały<br/>
+										<div id="whiteTime">Gracz Biały: 30:00</div>
 										<button id="whitePlayer" onClick="clickedBtn('sitOnWhite')" disabled>-</button> 
-										<button id="standUpWhite" onClick="clickedBtn('standUp')" hidden="hidden" >Wstań</button> 
+										<button id="standUpWhite" onClick="clickedBtn('standUp')" hidden="hidden" disabled>Wstań</button> 
 									</div>
 								</div>
 							</div> 
@@ -195,11 +194,10 @@
 							<div id="blackPlayerBox">
 								<div id="blackPlayerSign">&#9823;</div>
 								<div id='blackPlayerMiniBox'>
-									<div id="blackTime">30:00</div>
 									<div id="blackPlayerBtns">
-										Gracz Czarny<br/>
+										<div id="blackTime">Gracz Czarny: 30:00</div>
 										<button id="blackPlayer" onClick="clickedBtn('sitOnBlack')" disabled>-</button> 
-										<button id="standUpBlack" onClick="clickedBtn('standUp')" hidden="hidden">Wstań</button> 
+										<button id="standUpBlack" onClick="clickedBtn('standUp')" hidden="hidden" disabled>Wstań</button> 
 									</div>	
 								</div>
 							</div>
