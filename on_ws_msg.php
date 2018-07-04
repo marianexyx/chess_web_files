@@ -37,31 +37,43 @@
 		
 		return $textboxAjax;
 	}
-	
+		
 	function tableDataStringToSession($tableDataString)
 	{
+		$TABLE_DATA = array(
+			"NONE" => "0x00",
+			"ACTION" => "0x01",
+			"WHITE_PLAYER" => "0x02",
+			"BLACK_PLAYER" => "0x03",
+			"GAME_STATE" => "0x04",
+			"WHITE_TIME" => "0x05",
+			"BLACK_TYPE" => "0x06",
+			"QUEUE" => "0x07",
+			"START_TIME" => "0x08",
+			"HISTORY" => "0x09",
+			"PROMOTIONS" => "0x0a",
+			"ERROR" => "0x0b",
+		);
+		
 		$tableDataStart = strpos($tableDataString, "{");
 		$tableDataStop = strpos($tableDataString, "}");
 		$tableDataJSON = substr($tableDataString, $tableDataStart, $tableDataStop+1);
 		$tableDataArr = json_decode($tableDataJSON, true);
 		
-		if (array_key_exists("wplr", $tableDataArr)) $_SESSION['white'] = $tableDataArr["wplr"];
-		if (array_key_exists("bplr", $tableDataArr)) $_SESSION['black'] = $tableDataArr["bplr"];
-		if (array_key_exists("turn", $tableDataArr)) $_SESSION['turn'] = extractTurnType($tableDataArr["turn"]);
-		if (array_key_exists("wtime", $tableDataArr)) $_SESSION['wtime'] = floor($tableDataArr["wtime"]/1000);
-		if (array_key_exists("btime", $tableDataArr)) $_SESSION['btime'] = floor($tableDataArr["btime"]/1000);
-		if (array_key_exists("queue", $tableDataArr)) $_SESSION['queue'] = $tableDataArr["queue"];
-		if (array_key_exists("start", $tableDataArr)) //np.: "start":"wb92"
+		if (array_key_exists($TABLE_DATA["WHITE_PLAYER"], $tableDataArr)) $_SESSION['white'] = $tableDataArr[$TABLE_DATA["WHITE_PLAYER"]];
+		if (array_key_exists($TABLE_DATA["BLACK_PLAYER"], $tableDataArr)) $_SESSION['black'] = $tableDataArr[$TABLE_DATA["BLACK_PLAYER"]];
+		if (array_key_exists($TABLE_DATA["GAME_STATE"], $tableDataArr)) $_SESSION['turn'] = extractTurnType($tableDataArr[$TABLE_DATA["GAME_STATE"]]);
+		if (array_key_exists($TABLE_DATA["WHITE_TIME"], $tableDataArr)) $_SESSION['wtime'] = floor($tableDataArr[$TABLE_DATA["WHITE_TIME"]]/1000);
+		if (array_key_exists($TABLE_DATA["BLACK_TYPE"], $tableDataArr)) $_SESSION['btime'] = floor($tableDataArr[$TABLE_DATA["BLACK_TYPE"]]/1000);
+		if (array_key_exists($TABLE_DATA["QUEUE"], $tableDataArr)) $_SESSION['queue'] = $tableDataArr[$TABLE_DATA["QUEUE"]];
+		if (array_key_exists($TABLE_DATA["START_TIME"], $tableDataArr)) //np.: "start":"wb92"
 		{
-			$_SESSION['wstart'] = substr($tableDataArr["start"], 0, 1); //w or x
-			$_SESSION['bstart'] = substr($tableDataArr["start"], 1, 1); //b or x
-			$_SESSION['stime'] = floor(substr($tableDataArr["start"], 2)/1000); //int
+			$_SESSION['wstart'] = substr($tableDataArr[$TABLE_DATA["START_TIME"]], 0, 1); //w or x
+			$_SESSION['bstart'] = substr($tableDataArr[$TABLE_DATA["START_TIME"]], 1, 1); //b or x
+			$_SESSION['stime'] = floor(substr($tableDataArr[$TABLE_DATA["START_TIME"]], 2)/1000); //int
 		}
-		if (array_key_exists("history", $tableDataArr)) $_SESSION['history'] = $tableDataArr["history"];
-		if (array_key_exists("promoted", $tableDataArr)) $_SESSION['promoted'] = $tableDataArr["promoted"];
-		//$consoleAjax = "consoleAjax. data = " . $tableDataJSON; //var_dump($tableDataArr); //testy- podgląd
-		//$consoleAjax = print_r($tableDataArr, true);
-		//$textboxAjax = $consoleAjax;
+		if (array_key_exists($TABLE_DATA["HISTORY"], $tableDataArr)) $_SESSION['history'] = $tableDataArr[$TABLE_DATA["HISTORY"]];
+		if (array_key_exists($TABLE_DATA["PROMOTIONS"], $tableDataArr)) $_SESSION['promoted'] = $tableDataArr[$TABLE_DATA["PROMOTIONS"]];
 	}
 	
 	function onWsMsg($wsMsgType, $wsMsgVal)
