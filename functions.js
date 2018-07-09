@@ -31,9 +31,6 @@ function disableAll()
 	$("#blackPlayer").attr("disabled", true);
 	$("#standUpWhite").attr("disabled", true);
 	$("#standUpBlack").attr("disabled", true);
-	$("#pieceFrom").attr("disabled", true);
-	$("#pieceTo").attr("disabled", true);
-	$("#movePieceButton").attr("disabled", true);
 	$("#queuePlayer").attr("disabled", true);
 	$("#leaveQueue").attr("disabled", true);
 }
@@ -162,17 +159,11 @@ function showPromotions(promotions)
 {
 	if (promotions == "-1") 
 	{
-		$("#moveSection").css('float','none');
-		$("#moveSection").css('clear','both');
-		$("#moveSection").css('padding','25px');
 		$("#promotionContent").css('display','none');
 		$("#promotionContent").html("");
 	}
 	else 
 	{
-		$("#moveSection").css('float','left');
-		$("#moveSection").css('clear','none');
-		$("#moveSection").css('padding-left','130px');
 		$("#promotionContent").css('display','block');
 		$("#promotionContent").html("&nbsp;<u>Promowane pionki:</u><br/><font size='4'>" + promotionsInOneLineToPromotionsDIV(promotions) + "</font>");
 	}
@@ -348,6 +339,7 @@ var bTableIsFull = false;
 var bClientIsLogged = false;
 var bClientIsPlayer = false;
 var bClientIsInQueue = false;
+var bPlayerCanSendMove = false;
 function ajaxResponse(ajaxData)
 {
 	//bTableIsFull, toddo: jest pełen gdy nie możemy wcisnąć buttona białego i czarnego
@@ -394,9 +386,9 @@ function ajaxResponse(ajaxData)
 	if (ajaxData[9] != '-1') $("#standUpWhite").attr("disabled", ajaxData[9]);
 	if (ajaxData[10] != '-1') $("#standUpBlack").attr("disabled", ajaxData[10]);
 	//if (ajaxData[11] == '1') console.log("start dialog should appear"); 
-	if (ajaxData[13] != '-1') $("#pieceFrom").attr("disabled", ajaxData[13]); 
-	if (ajaxData[14] != '-1') $("#pieceTo").attr("disabled", ajaxData[14]);
-	if (ajaxData[15] != '-1') $("#movePieceButton").attr("disabled", ajaxData[15]);
+	if (ajaxData[13] != '-1'); //todo: old #pieceFrom btn. code to remove  
+	if (ajaxData[14] != '-1'); //todo: old #pieceTo btn. code to remove  
+	if (ajaxData[15] != '-1'); //todo: old #movePieceButton btn. code to remove 
 	if (ajaxData[16] != '-1') $("#queuePlayer").attr("disabled", ajaxData[16]);
 	if (ajaxData[17] != '-1') 
 	{
@@ -490,7 +482,6 @@ function ajaxResponse(ajaxData)
 	{
 		$("#whitePlayerMiniBox").css('background-color', 'white'); 
 		$("#blackPlayerMiniBox").css('background-color', 'white'); 
-		$("#moveSection").css('background-color', 'white'); 
 	}
 	
 	//show active turn via changing div bg color, todo: pack to function
@@ -498,13 +489,14 @@ function ajaxResponse(ajaxData)
 	{
 		if (ajaxData[15] == false)
 		{
-			$("#moveSection").css('background-color', 'lightGreen'); 
-			$("#pieceFrom").focus();
-			$('#pieceTo').val('');
-			$('#pieceFrom').val('');
+			$("#perspective").css('z-index', '10'); 
+			bPlayerCanSendMove = true;
 		}
 		else
-			$("#moveSection").css('background-color', 'white'); 
+		{
+			$("#perspective").css('z-index', '8'); 
+			bPlayerCanSendMove = false;
+		}
 	}
 	
 	//update players timers, todo: pack to function
@@ -626,6 +618,7 @@ var giveUpVar =
 		{
 			disableAll();
 			addMsgToClientPlainTextWindow("Opuszczanie stołu...", "info"); 
+			$("#perspective").css('z-index', '8'); 
 			websocket.send("standUp"); 
 			if ($(this).dialog('isOpen')) $(this).dialog('close');
 		}, 
@@ -675,51 +668,6 @@ function resetPlayersTimers()
 	$("#blackTime").html("Gracz Czarny: 30:00");
 }
 
-function movePiece()
-{
-	var pieceFrom = $("#pieceFrom").val().toLowerCase();
-	var pieceTo = $("#pieceTo").val().toLowerCase();
-	$("#pieceFrom").val("");
-	$("#pieceTo").val("");
-	var pieceFromLetter = pieceFrom.charAt(0);
-	var pieceFromDigit = pieceFrom.charAt(1);
-	var pieceToLetter = pieceTo.charAt(0);
-	var pieceToDigit = pieceTo.charAt(1);
-	
-	var squareLetters = ['a','b','c','d','e','f','g','h'];
-	if (pieceFrom.length == 2 && pieceTo.length == 2)
-	{
-		if (pieceFromLetter <= 8 && pieceToLetter <= 8 && pieceFromLetter >= 1 && pieceToLetter >= 1 && 
-		jQuery.inArray(pieceFromDigit, squareLetters) != '-1' && jQuery.inArray(pieceToDigit, squareLetters) != '-1')
-		{ //todo: testować
-			//repair vice versed move command (f.e. "2e,4e" to "e2,e4"
-			var pieceFromLetterTemp = pieceFromDigit;
-			var pieceFromDigitTemp = pieceFromLetter;
-			var pieceToLetterTemp = pieceToDigitTemp;
-			var pieceToDigitTemp = pieceToLetter;
-			pieceFromLetter = pieceFromLetterTemp;
-			pieceFromDigit = pieceFromDigitTemp;
-			pieceToLetter = pieceToLetterTemp;
-			pieceToDigit = pieceToDigitTemp;
-		}
-		
-		if (pieceFromDigit <= 8 && pieceToDigit <= 8 && pieceFromDigit >= 1 && pieceToDigit >= 1 && 
-		jQuery.inArray(pieceFromLetter, squareLetters) != '-1' && jQuery.inArray(pieceToLetter, squareLetters) != '-1')
-		{
-			disableAll();
-			$("#whitePlayerMiniBox").css('background-color', 'white'); 
-			$("#blackPlayerMiniBox").css('background-color', 'white'); 
-			$("#moveSection").css('background-color', 'white'); 
-			websocket.send("move " + pieceFrom + pieceTo);
-		}
-		else 
-		{
-			console.log("Błędnie wprowadzone zapytanie o ruch.");
-			addMsgToClientPlainTextWindow("Błędnie wprowadzone zapytanie o ruch.", "info"); 
-		}
-	}
-}
-
 function info()
 {
 	$("#info").html('mariusz.pak.89@gmail.com | <a href="index.php?a=logout" onclick="return deleteask();">Wyloguj się</a></center>');
@@ -759,24 +707,6 @@ function updatePlayersTime()
 	else console.log("ERROR: updatePlayersTime(): unknown turn = " + whoseTurn);
 }			
 
-$(function() { $("#pieceFrom").keyup(function() { pieceFromOnKeyPress(); }); });
-$(function() { $("#pieceTo").keyup(function() { pieceToOnKeyPress(); }); });
-
-function pieceFromOnKeyPress() 
-{
-	if ($('#pieceFrom').val().length >= 2) 
-	{
-		 $('#pieceTo').val('');
-		 $("#pieceTo").focus();
-	}
-}
-
-function pieceToOnKeyPress() 
-{
-	if ($('#pieceFrom').val().length >= 2 && $('#pieceTo').val().length >= 2) 
-		$("#movePieceButton").focus();
-}
-
 function serverStatus(state)
 {
 	switch (state)
@@ -801,5 +731,60 @@ function serverStatus(state)
 		$("#serverCSSCircleStatus").css("background-color", "red");
 		$("#serverStatusInfo").html("OFFLINE");
 		break;
+	}
+}
+
+var fieldFromClicked = "0";
+var fieldToClicked = "0";
+var moveFromTo = "";
+function clickBoardField(fieldPos)
+{
+	if (bClientIsPlayer && bPlayerCanSendMove) //additional conditions
+	{	
+		console.log("clickBoardField(): fieldPos = " + fieldPos.id);
+		
+		if (fieldFromClicked == "0") 
+		{
+			fieldFromClicked = fieldPos;
+			//$(fieldPos).css("background-color", "rgba(179,212,252,0.15)");
+			$(fieldPos).css("background", "radial-gradient(closest-side, green, transparent");
+		}
+		else 
+		{
+			fieldToClicked = fieldPos;
+			//$(fieldFromClicked).css("background-color", ""); 
+			$(fieldFromClicked).css("background", ""); 
+			moveFromTo = fieldFromClicked.id + fieldToClicked.id;
+			console.log("2 fields are clicked. move = " + moveFromTo + ", clear them now.");
+			movePiece(moveFromTo);
+			fieldFromClicked = "0";
+			fieldToClicked = "0";
+			bPlayerCanSendMove = false;
+		}
+	}
+}
+
+function movePiece(fromTo)
+{
+	var pieceFromLetter = fromTo.charAt(0);
+	var pieceFromDigit = fromTo.charAt(1);
+	var pieceToLetter = fromTo.charAt(2);
+	var pieceToDigit = fromTo.charAt(3);
+	
+	var squareLetters = ['a','b','c','d','e','f','g','h'];
+	
+	if (fromTo.length == 4 && pieceFromDigit <= 8 && pieceToDigit <= 8 && pieceFromDigit >= 1 && pieceToDigit >= 1 && 
+	jQuery.inArray(pieceFromLetter, squareLetters) != '-1' && jQuery.inArray(pieceToLetter, squareLetters) != '-1')
+	{
+		disableAll();
+		$("#whitePlayerMiniBox").css('background-color', 'white'); 
+		$("#blackPlayerMiniBox").css('background-color', 'white'); 
+		$("#perspective").css('z-index', '8'); 
+		websocket.send("move " + fromTo);
+	}
+	else 
+	{
+		console.log("ERROR: movePiece(): fromTo string is in wrong format. it's == " + fromTo);
+		//todo: co dalej z takim fantem robić? odświerzać stronę?
 	}
 }

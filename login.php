@@ -19,6 +19,7 @@
 					$_SESSION = array(); //czyścimy superglobalną tablicę
 					$_SESSION['id'] = $zapytanie['id']; // i przypisujemy superglobalną numerem gracza z bazy
 					$_SESSION['login'] = $zapytanie['login'];
+					$_SESSION['hash'] = $zapytanie['hash'];
 					header('Location: index.php?a=game'); //posiadając gracza wszędzie tam gdzie jest "session_start()" przechodzimy do indexu. skrypt tu się urywa
 				} 
 				else echo 'Taki gracz nie istnieje lub hasło jest niepoprawne.';

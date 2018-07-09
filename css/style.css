@@ -1,6 +1,15 @@
-div
+#info
 {
 	padding: 4px;
+	float: left; 
+	margin: 0 auto;
+}
+
+#user
+{
+	padding: 4px;
+	float: right; 
+	margin: 0 auto;
 }
 
 #mainDiv
@@ -8,17 +17,20 @@ div
 	overflow: hidden;
 	width: 1247px;
 	margin: 0 auto;
+	padding: 4px;
 	padding-top: 20px;
 }
 
 #menu
 {
 	overflow: hidden;
+	padding: 4px;
 	border: 1px solid;
 }
 
 #serverStatus
 {
+	padding: 4px;
 	float:left;
 }
 
@@ -36,7 +48,6 @@ div
 	overflow: hidden;
 	clear:both; 
 	display: flex;
-	padding: 0px;
 	border-right: 1px solid;
 }
 
@@ -48,42 +59,44 @@ div
 
 #video
 {
-	padding:0px;
-	padding-top: 5px;
-	padding-bottom: 5px;
+	padding: 6px;
 }
 
 #textBoxes
 {
 	border-left: 1px solid;
+	padding: 4px;
 	float: left;
 }
 
 #promotionContent
 {
 	float:right; 
-	padding:0;
 	padding-right:140px;
 	display: none;
 }
 
 #pteType
 {
+	padding: 4px;
 	clear: both;
 }
 
 textarea {
     resize: none;
+	padding: 4px;
 }
 
 #ytChat
 {
+	padding: 4px;
 	padding-top: 50px;
 }
 
 #playersBoxes
 {
 	display: flex;
+	padding: 4px;
 	padding-bottom: 20px;
 }
 
@@ -98,6 +111,7 @@ textarea {
 #whitePlayerMiniBox, #blackPlayerMiniBox
 {
 	border: 1px solid;
+	padding: 4px;
 	width: 320px;
 	display:flex;
 	justify-content:center;
@@ -108,11 +122,13 @@ textarea {
 {
 	float:left;
 	font-size: 300%;
+	padding: 4px;
 }
 
 #whitePlayerBtns, #blackPlayerBtns
 {
 	float:left; 
+	padding: 4px;
 	padding-top: 10px;
 	height:auto;
 	text-align:center;
@@ -121,10 +137,12 @@ textarea {
 #whitePlayer, #blackPlayer
 {
 	min-width:60px;
+	padding: 4px;
 }
 
 #resign
 {
+	padding: 4px;
 	float:left; 
 	width: 33.3%; 
 	text-align:center;
@@ -139,25 +157,22 @@ textarea {
 	padding: 1px;
 }
 
-#moveSection
-{
-	padding-top: 15px;
-	padding-bottom: 15px;
-}
-
 #clientPlainTextWindow
 {
+	padding: 4px;
 	width:330px; 
 	height:160px;
 }
 
 #queuePlayer, #leaveQueue
 {
+	padding: 4px;
 	display: none;
 }
 
 #footage
 {
+	padding: 4px;
 	clear: both;
 	font-size: 80%;
 	border-top: 1px solid;

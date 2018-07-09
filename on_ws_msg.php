@@ -269,7 +269,7 @@
 			default: 
 			$consoleAjax = "ERROR: undefined msg type from core: ".$wsMsgType;
 			break; 
-		}	
+		}
 		
 		//todo: naprawić zwracanie tablicy- niech zwraca tylko te wartości, które są (i mogą) być zwracane. trzeba przywrócić key arraye. js powinien wyłapywać tylko te zmienne które przyjdą.
 		return array( $_SESSION['white'], $_SESSION['black'], $consoleAjax, $textboxAjax, $specialOption, 

@@ -36,7 +36,8 @@
 						if ($istnieje) echo 'Istnieje już gracz o takim samym loginie lub adresie email.';
 						else
 						{
-							call("INSERT INTO users (login, password, email) VALUES ('$login','$pass','$email')");
+							$randomHash = bin2hex(mcrypt_create_iv(10, MCRYPT_DEV_URANDOM));
+							call("INSERT INTO users (login, password, email, hash) VALUES ('$login','$pass','$email','$randomHash')");
 							header('Location: index.php?a=login&registered=true');
 						}
 					}
