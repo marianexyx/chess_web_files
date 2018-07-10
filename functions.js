@@ -345,7 +345,7 @@ function ajaxResponse(ajaxData)
 	//bTableIsFull, toddo: jest pełen gdy nie możemy wcisnąć buttona białego i czarnego
 	if (ajaxData[0] != '-1' && ajaxData[1] != '-1' ) 
 	{
-		if (ajaxData[0] != 'White' && ajaxData[1] != 'Black')
+		if (ajaxData[0] != '0' && ajaxData[1] != '0')
 			bTableIsFull = true;
 		else bTableIsFull = false;
 	}
@@ -365,12 +365,12 @@ function ajaxResponse(ajaxData)
 	
 	if (ajaxData[0] != '-1') 
 	{
-		if (ajaxData[0] == "White") $('#whitePlayer').html("-");
+		if (ajaxData[0] == "0") $('#whitePlayer').html("-");
 		else $('#whitePlayer').html(ajaxData[0]);
 	}
 	if (ajaxData[1] != '-1') 
 	{
-		if (ajaxData[1] == "Black") $('#blackPlayer').html("-");
+		if (ajaxData[1] == "0") $('#blackPlayer').html("-");
 		else $('#blackPlayer').html(ajaxData[1]);
 	}
 	
@@ -410,7 +410,7 @@ function ajaxResponse(ajaxData)
 	if (ajaxData[21] != '-1') whoseTurn = ajaxData[21];
 	
 	//show start dialog if core waits for starts, todo: pack to function
-	if (ajaxData[22] != '-1' && ajaxData[23] !='-1' && ajaxData[24] !='-1' && ajaxData[0] !='White' && ajaxData[1] !='Black') 
+	if (ajaxData[22] != '-1' && ajaxData[23] != '-1' && ajaxData[24] != '-1' && ajaxData[0] != '0' && ajaxData[1] != '0') 
 		showStartDialog(ajaxData[22], ajaxData[23], ajaxData[24]); 
 	else 
 	{

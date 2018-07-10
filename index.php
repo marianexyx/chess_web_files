@@ -7,7 +7,6 @@
 		<title>Budgames- Szachy</title>
 		
 		<link rel="stylesheet" type="text/css" href="css/style.css">
-		<link rel="stylesheet" type="text/css" href="css/tooltip.css">
 		<link rel="stylesheet" type="text/css" href="css/chessboardOnVideo.css">
 		<link rel="stylesheet" type="text/css" href="css/dialogNoClose.css">
 		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"> 
