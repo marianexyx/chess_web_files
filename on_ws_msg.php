@@ -3,15 +3,35 @@
 	require_once('disabling.php');
 	require_once('include/inc.php');
 	
-	function extractTurnType($shortTurn)
+	function whoseTurnFromGameStatus($GS)
 	{
-		$fullTurn;
-		if ($shortTurn == 'nt') $fullTurn = NO_TURN; 
-		else if($shortTurn == 'wt') $fullTurn = WHITE_TURN;
-		else if($shortTurn == 'bt') $fullTurn = BLACK_TURN;
-		else $fullTurn = 'ERROR: unknown turn type = '.$shortTurn;
+		$GAME_STATE = array(
+			"ERROR" => "0x00",
+			"TURN_NONE_WAITING_FOR_PLAYERS" => "0x01",
+			"TURN_NONE_WAITING_FOR_START_CONFIRMS" => "0x02",
+			"TURN_NONE_RESETING" => "0x03",
+			"TURN_WHITE" => "0x04",
+			"TURN_WHITE_FIRST_TURN" => "0x05",
+			"TURN_WHITE_PROMOTE" => "0x06",
+			"TURN_BLACK" => "0x07",
+			"TURN_BLACK_PROMOTE" => "0x08",
+		);
 		
-		return $fullTurn;
+		switch($GS)
+		{
+		case $GAME_STATE["ERROR"]: return NO_TURN;
+		case $GAME_STATE["TURN_NONE_WAITING_FOR_PLAYERS"]: return NO_TURN;
+		case $GAME_STATE["TURN_NONE_WAITING_FOR_START_CONFIRMS"]: return NO_TURN;
+		case $GAME_STATE["TURN_NONE_RESETING"]: return NO_TURN;
+		case $GAME_STATE["TURN_WHITE"]: return WHITE_TURN;
+		case $GAME_STATE["TURN_WHITE_FIRST_TURN"]: return WHITE_TURN;
+		case $GAME_STATE["TURN_WHITE_PROMOTE"]: return WHITE_TURN;
+		case $GAME_STATE["TURN_BLACK"]: return BLACK_TURN;
+		case $GAME_STATE["TURN_BLACK_PROMOTE"]: return BLACK_TURN;
+		default:
+			$_SESSION['consoleAjax'] = 'ERROR. whoseTurnFromGameStatus(): unknwon GAME_STATUS = '.$GS;
+			return NO_TURN;
+		}
 	} 
 	
 	function endOfGame($checkmate, $endType)
@@ -38,6 +58,22 @@
 		
 		return $_SESSION['textboxAjax'];
 	}
+	
+	function getClientNamesFromSqlIDs($IDsList)
+	{
+		//todo: zapytanie może być wykonane tylo raz przy użyciu "OR", i mozna wyciągać tylko loginy z bazy, zamiast całych linii
+		$IDsListArr = explode(" ", $IDsList);
+		$sqlQueryString = "SELECT * FROM users WHERE id = ";
+		$clientNamesList = "";
+		foreach ($IDsListArr as $value)
+		{
+			$sqlQueryString = $sqlQueryString.' id = '.$value.' OR';
+			$sqlQueuedClient = row($sqlQueryString.$value);
+			$clientNamesList = $clientNamesList.$sqlQueuedClient['login'].' ';
+		}
+		$clientNamesList = trim($clientNamesList);
+		return $clientNamesList;
+	}
 		
 	function tableDataStringToSession($tableDataString)
 	{
@@ -55,7 +91,7 @@
 			"PROMOTIONS" => "0x0a",
 			"ERROR" => "0x0b",
 		);
-		
+				
 		$tableDataStart = strpos($tableDataString, "{");
 		$tableDataStop = strpos($tableDataString, "}");
 		$tableDataJSON = substr($tableDataString, $tableDataStart, $tableDataStop+1);
@@ -79,22 +115,29 @@
 			else
 			{
 				$queryBlack = row("SELECT * FROM users WHERE id = ".$blackId);
-				if ($queryBlack) $_SESSION['black'] = $queryBlack['login']; 
+				if ($queryBlack) $_SESSION['black'] = $queryBlack['login'];
 				else $_SESSION['black'] = "<ERROR>";
 			}
 		}
-		if (array_key_exists($TABLE_DATA["GAME_STATE"], $tableDataArr)) $_SESSION['turn'] = extractTurnType($tableDataArr[$TABLE_DATA["GAME_STATE"]]);
-		if (array_key_exists($TABLE_DATA["WHITE_TIME"], $tableDataArr)) $_SESSION['wtime'] = floor($tableDataArr[$TABLE_DATA["WHITE_TIME"]]/1000);
-		if (array_key_exists($TABLE_DATA["BLACK_TYPE"], $tableDataArr)) $_SESSION['btime'] = floor($tableDataArr[$TABLE_DATA["BLACK_TYPE"]]/1000);
-		if (array_key_exists($TABLE_DATA["QUEUE"], $tableDataArr)) $_SESSION['queue'] = $tableDataArr[$TABLE_DATA["QUEUE"]];
-		if (array_key_exists($TABLE_DATA["START_TIME"], $tableDataArr)) //np.: "start":"wb92"
+		if (array_key_exists($TABLE_DATA["GAME_STATE"], $tableDataArr)) 
+			$_SESSION['turn'] = whoseTurnFromGameStatus($tableDataArr[$TABLE_DATA["GAME_STATE"]]);
+		if (array_key_exists($TABLE_DATA["WHITE_TIME"], $tableDataArr)) 
+			$_SESSION['whiteTime'] = $tableDataArr[$TABLE_DATA["WHITE_TIME"]];
+		if (array_key_exists($TABLE_DATA["BLACK_TYPE"], $tableDataArr)) 
+			$_SESSION['blackTime'] = $tableDataArr[$TABLE_DATA["BLACK_TYPE"]];
+		if (array_key_exists($TABLE_DATA["QUEUE"], $tableDataArr)) 
+			$_SESSION['queue'] = getClientNamesFromSqlIDs($tableDataArr[$TABLE_DATA["QUEUE"]]);
+		if (array_key_exists($TABLE_DATA["START_TIME"], $tableDataArr)) //np.: "start":"192", where 1st number determine who clicked, rest is time
 		{
-			$_SESSION['wstart'] = substr($tableDataArr[$TABLE_DATA["START_TIME"]], 0, 1); //w or x
-			$_SESSION['bstart'] = substr($tableDataArr[$TABLE_DATA["START_TIME"]], 1, 1); //b or x
-			$_SESSION['stime'] = floor(substr($tableDataArr[$TABLE_DATA["START_TIME"]], 2)/1000); //int
+			$playersClickedStart = substr($tableDataArr[$TABLE_DATA["START_TIME"]], 0, 1);
+			$_SESSION['whiteStart'] = (($playersClickedStart % 2) == 0 ? false : true);
+			$_SESSION['blackStart'] = ($playersClickedStart > 1 ? true : false);
+			$_SESSION['startTime'] = substr($tableDataArr[$TABLE_DATA["START_TIME"]], 1);
 		}
-		if (array_key_exists($TABLE_DATA["HISTORY"], $tableDataArr)) $_SESSION['history'] = $tableDataArr[$TABLE_DATA["HISTORY"]];
-		if (array_key_exists($TABLE_DATA["PROMOTIONS"], $tableDataArr)) $_SESSION['promoted'] = $tableDataArr[$TABLE_DATA["PROMOTIONS"]];
+		if (array_key_exists($TABLE_DATA["HISTORY"], $tableDataArr)) 
+			$_SESSION['history'] = $tableDataArr[$TABLE_DATA["HISTORY"]];
+		if (array_key_exists($TABLE_DATA["PROMOTIONS"], $tableDataArr)) 
+			$_SESSION['promoted'] = $tableDataArr[$TABLE_DATA["PROMOTIONS"]];
 	}
 	
 	function onWsMsg($wsMsgType, $wsMsgVal)
@@ -119,21 +162,21 @@
 		//$queuePlayer = '-1'; //16, enabling[11]
 		//$leaveQueue = '-1'; //17, enabling[12]
 		$_SESSION['queue'] = '-1'; //18
-		//$_SESSION['wtime']; //19 //todo: te ostatnie zienne są troche niepokolei w stosunku do pierwszych pięciu...
-		//$_SESSION['btime']; //20 //...tak, to zrobiłem bo nie trzeba będzie aż tak doku zmieniać
+		//$_SESSION['whiteTime']; //19 //todo: te ostatnie zienne są troche niepokolei w stosunku do pierwszych pięciu...
+		//$_SESSION['blackTime']; //20 //...tak, to zrobiłem bo nie trzeba będzie aż tak doku zmieniać
 		//$_SESSION['turn']; //21
-		//$_SESSION['wstart']; //22
-		//$_SESSION['bstart']; //23
-		//$_SESSION['stime']; //24
+		//$_SESSION['whiteStart']; //22
+		//$_SESSION['blackStart']; //23
+		//$_SESSION['startTime']; //24
 		//$_SESSION['history']; //25
 		//$_SESSION['promoted']; //26
 		
-		$_SESSION['wtime'] = -1;
-		$_SESSION['btime'] = -1;
+		$_SESSION['whiteTime'] = -1;
+		$_SESSION['blackTime'] = -1;
 		$_SESSION['turn'] = -1;
-		$_SESSION['wstart'] = -1;
-		$_SESSION['bstart'] = -1;
-		$_SESSION['stime'] = -1;
+		$_SESSION['whiteStart'] = -1;
+		$_SESSION['blackStart'] = -1;
+		$_SESSION['startTime'] = -1;
 		$_SESSION['history'] = -1;
 		$_SESSION['promoted']= -1;
 		
@@ -150,13 +193,13 @@
 				$enablingArr = enabling('newGame');
 			}
 			else $_SESSION['textboxAjax'] = "ERROR: game started when players aren't on chairs"; 
-			$_SESSION['wtime'] = 30*60;
-			$_SESSION['btime'] = 30*60;
+			$_SESSION['whiteTime'] = 30*60;
+			$_SESSION['blackTime'] = 30*60;
 			break;
 			
 			case 'moveRespond':
 			$moveOk = substr($wsMsgVal,0,4); 
-			$_SESSION['turn'] = extractTurnType(substr($wsMsgVal,5,2));
+			$_SESSION['turn'] = whoseTurnFromGameStatus(substr($wsMsgVal,5,2));
 			
 			$gameStatus = substr($wsMsgVal,8,4);
 			if (strstr($gameStatus, " ")) $gameStatus = strstr($wsMsgVal, " ");
@@ -230,14 +273,14 @@
 			case 'badMove':
 			$_SESSION['consoleAjax'] = 'badMove: '.$wsMsgVal;
 			$badMove = substr($wsMsgVal,0,4);
-			$_SESSION['turn'] = extractTurnType(substr($wsMsgVal,5,2));
+			$_SESSION['turn'] = whoseTurnFromGameStatus(substr($wsMsgVal,5,2));
 			$_SESSION['textboxAjax'] = "Błędne rządanie ruchu: ".$badMove."! Wpisz inny ruch.";
 			$enablingArr = enabling('badMove');
 			break;
 			
 			case 'updateQueue':
 			$_SESSION['queue'] = $wsMsgVal; 
-			if ($_SESSION['queue'] == "queueEmpty") $enablingArr = enabling('queueEmpty');
+			if ($_SESSION['queue'] == "0") $enablingArr = enabling('queueEmpty');
 			else $enablingArr = enabling('queueNotEmpty');
 			break;
 			
@@ -295,7 +338,7 @@
 		//todo: naprawić zwracanie tablicy- niech zwraca tylko te wartości, które są (i mogą) być zwracane. trzeba przywrócić key arraye. js powinien wyłapywać tylko te zmienne które przyjdą.
 		$returnArray = array($_SESSION['white'], $_SESSION['black'], $_SESSION['consoleAjax'], $_SESSION['textboxAjax'], $specialOption, 
 		$enablingArr[0], $enablingArr[1], $enablingArr[2], $enablingArr[3], $enablingArr[4], $enablingArr[5], $enablingArr[6], $enablingArr[7], $enablingArr[8], $enablingArr[9], $enablingArr[10], $enablingArr[11], 
-		$enablingArr[12], $_SESSION['queue'], $_SESSION['wtime'], $_SESSION['btime'], $_SESSION['turn'], $_SESSION['wstart'], $_SESSION['bstart'], $_SESSION['stime'], $_SESSION['history'], $_SESSION['promoted']);
+		$enablingArr[12], $_SESSION['queue'], $_SESSION['whiteTime'], $_SESSION['blackTime'], $_SESSION['turn'], $_SESSION['whiteStart'], $_SESSION['blackStart'], $_SESSION['startTime'], $_SESSION['history'], $_SESSION['promoted']);
 		$_SESSION['consoleAjax'] = '-1'; 
 		$_SESSION['textboxAjax'] = '-1'; 
 		return $returnArray;

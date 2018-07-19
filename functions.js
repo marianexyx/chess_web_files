@@ -165,7 +165,8 @@ function showPromotions(promotions)
 	else 
 	{
 		$("#promotionContent").css('display','block');
-		$("#promotionContent").html("&nbsp;<u>Promowane pionki:</u><br/><font size='4'>" + promotionsInOneLineToPromotionsDIV(promotions) + "</font>");
+		$("#promotionContent").html("&nbsp;<u>Promowane pionki:</u><br/><font size='4'>" 
+			+ promotionsInOneLineToPromotionsDIV(promotions) + "</font>");
 	}
 }
 
@@ -187,14 +188,14 @@ function promotionsInOneLineToPromotionsDIV(promotionsInOneLine)
 	}
 	while(promotionsInOneLine.length > totalLength + oneLineMaxLength)
 	
-	promotionsInOneLine = promotionsInOneLine.replace(/:Q/g, ":\u2655");
-	promotionsInOneLine = promotionsInOneLine.replace(/:B/g, ":\u2657");
-	promotionsInOneLine = promotionsInOneLine.replace(/:R/g, ":\u2656");
-	promotionsInOneLine = promotionsInOneLine.replace(/:N/g, ":\u2658");
-	promotionsInOneLine = promotionsInOneLine.replace(/:q/g, ":\u265B");
-	promotionsInOneLine = promotionsInOneLine.replace(/:b/g, ":\u265D");
-	promotionsInOneLine = promotionsInOneLine.replace(/:r/g, ":\u265C");
-	promotionsInOneLine = promotionsInOneLine.replace(/:n/g, ":\u265E");
+	promotionsInOneLine = promotionsInOneLine.replace(/_Q/g, ":\u2655");
+	promotionsInOneLine = promotionsInOneLine.replace(/_B/g, ":\u2657");
+	promotionsInOneLine = promotionsInOneLine.replace(/_R/g, ":\u2656");
+	promotionsInOneLine = promotionsInOneLine.replace(/_N/g, ":\u2658");
+	promotionsInOneLine = promotionsInOneLine.replace(/_q/g, ":\u265B");
+	promotionsInOneLine = promotionsInOneLine.replace(/_b/g, ":\u265D");
+	promotionsInOneLine = promotionsInOneLine.replace(/_r/g, ":\u265C");
+	promotionsInOneLine = promotionsInOneLine.replace(/_n/g, ":\u265E");
 	return promotionsInOneLine;
 }
 
@@ -219,19 +220,20 @@ function closeStartGameDialogIfOpened()
 }
 
 var startInfo;
-function showStartDialog(wClickedStart, bClickedStart, sTime)
+function showStartDialog(whiteClickedStart, blackClickedStart, startTime)
 {
 	turnOffStartTimerIfItsOn();
 	$("#startGameDialog").dialog(startGameVar).dialog("open"); 
 	var whitePlr = $("#whitePlayer").text(); //todo: dać gdzieś wyżej by tego używać globalnie
 	var blackPlr = $("#blackPlayer").text();
-	if ((wClickedStart == "x" && js_login == whitePlr) || (bClickedStart == "x" && js_login == blackPlr))
+	//todo: nie robić warunków, tylko niech z php wpada jakaś zmienna która decyduje
+	if ((whiteClickedStart == false && js_login == whitePlr) || (blackClickedStart == false && js_login == blackPlr))
 	{
 		alertWindow();
 		reactBeep.play();
 		startInfo = "Wciśnij start, by rozpocząć grę. Pozostały czas: ";
 	}
-	else if ((wClickedStart == "w" && js_login == whitePlr) || (bClickedStart == "b" && js_login == blackPlr))
+	else if ((whiteClickedStart == true && js_login == whitePlr) || (blackClickedStart == true && js_login == blackPlr))
 	{
 		startInfo = "Oczekiwanie, aż drugi gracz wciśnie start: ";
 		$("#startGameDialog").dialog(startGameVar).dialog("option", "buttons", {});
@@ -246,9 +248,9 @@ function showStartDialog(wClickedStart, bClickedStart, sTime)
 	{
 		timerStart = setInterval(function() 
 		{ 
-			$("#startGameDialog").html(startInfo + sTime);
-			sTime = sTime - 1;
-			if (sTime <= 0)
+			$("#startGameDialog").html(startInfo + startTime);
+			startTime = startTime - 1;
+			if (startTime <= 0)
 			{
 				turnOffStartTimerIfItsOn();
 				closeStartGameDialogIfOpened();
@@ -290,9 +292,9 @@ var startGameVar =
 function queueInOneLineToQueuePTE(queueList)
 {
 	var queueListPlainText = "";
-	if (queueList != "queueEmpty") 
+	if (queueList != "0") 
 	{
-		var queueListArr = queueList.split(",");
+		var queueListArr = queueList.split(" ");
 		var index;
 		for (index = 0; index < queueListArr.length; ++index) 
 		{
@@ -308,7 +310,7 @@ function queueInOneLineToQueuePTE(queueList)
 
 function queueSize(queueList)
 {
-	if (queueList != "queueEmpty") 
+	if (queueList != "0") 
 	{
 		var queueListArr = queueList.split(",");
 		return queueListArr.length;
