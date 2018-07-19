@@ -1,8 +1,6 @@
 # chess_web_files
-Prawie wszystkie pliki zawarte na stronie gry <br />
-Brakuje plików typu: <br />
--pliki streamu obrazu <br />
--pliki typu htaccess i htpasswd <br />
--pliki chatu <br />
--pliki ustawień serwera <br />
--niektórych linijek z hasłami do serwerów <br />
+This project works in synergy with DobotChess repo.<br />
+Almost all web files are here.<br />
+Missing files types: <br />
+-htaccess, htpasswd <br />
+-server configuration, passwords, etc <br />
