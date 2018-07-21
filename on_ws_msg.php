@@ -3,9 +3,152 @@
 	require_once('disabling.php');
 	require_once('include/inc.php');
 	
+	if(isset($_POST['wsMsg']))
+	{	
+		resetSessionData();
+		
+		//todo: wyciąganie danych do zmiennych sesyjnych może się odbywać w osobnym pliku, tak samo jak enabling (razem z wszystkimi podfunkcjami)
+		//todo: special opcje/promocje/inne różne niesesyjne operacje- odbywają się w tableDataStringToSession. przenieść je do enabling
+		tableDataStringToSession($_POST['wsMsg']); //todo: zmienić nazwę na taką która sugeruje, że tu jedynie zczytujemy zmienne do sesyjnych
+		
+		$enablingArr = array();
+		$enablingArr = enabling(); //todo: niech nazwa funkcji sugeruje, że tutaj są obliczane wartości na podstawie wszystkich zapisanych zmiennych seryjnych (tj. nie mogę być obliczane bez spisania ich wcześniej)
+		
+		$returnArray = array
+		(
+			"whitePlayerName" => $_SESSION['whitePlayer'], 
+			"blackPlayerName" => $_SESSION['blackPlayer'], 
+			"consoleMsg" => $_SESSION['consoleAjax'], 
+			"PTEmsg" => $_SESSION['textboxAjax'],
+			"specialOption" => $_SESSION['specialOption'], 	
+			"clientIsLogged" => $enablingArr["clientIsLogged"],
+			"loggedPlayerIsOnAnyChair" => $enablingArr["loggedPlayerIsOnAnyChair"],
+			"loggedPlayerIsOnWhiteChair" => $enablingArr["loggedPlayerIsOnWhiteChair"],
+			"loggedPlayerIsOnBlackChair" => $enablingArr["loggedPlayerIsOnBlackChair"],
+			"tableIsFull" => $enablingArr["tableIsFull"],
+			"clientIsInQueue" => $enablingArr["clientIsInQueue"],
+			"whitePlayerBtn" => $enablingArr["whitePlayerBtn"],
+			"blackPlayerBtn" => $enablingArr["blackPlayerBtn"],
+			"playerCanMakeMove" => $enablingArr["playerCanMakeMove"],
+			"queuePlayerBtn" => $enablingArr["queuePlayerBtn"],
+			"leaveQueueBtn" => $enablingArr["leaveQueueBtn"],
+			"queuedPlayers" => $_SESSION['queue'], 
+			"whitePlayerTimeLeft" => $_SESSION['whiteTime'], 
+			"blackPlayerTimeLeft" => $_SESSION['blackTime'], 
+			"whoseTurn" => $_SESSION['turn'], 
+			"historyOfMoves" => $_SESSION['history'], 
+			"promotedPawnsList" => $_SESSION['promoted']
+		);
+		
+		foreach($returnArray as &$value) { if (is_null($value)) { $value = '-1'; }} unset($value);
+		header('Content-type: application/json; charset=utf-8"');
+		echo json_encode($returnArray); //, JSON_UNESCAPED_UNICODE); //todo:- polskie znaki?
+	}
+	
+	function tableDataStringToSession($tableDataString)
+	{
+		$TABLE_DATA = array
+		(
+			"NONE" => "0x00",
+			"ACTION" => "0x01",
+			"WHITE_PLAYER" => "0x02",
+			"BLACK_PLAYER" => "0x03",
+			"GAME_STATE" => "0x04",
+			"WHITE_TIME" => "0x05",
+			"BLACK_TYPE" => "0x06",
+			"QUEUE" => "0x07",
+			"START_TIME" => "0x08",
+			"HISTORY" => "0x09",
+			"PROMOTIONS" => "0x0a",
+			"ERROR" => "0x0b"
+		);
+				
+		$tableDataStart = strpos($tableDataString, "{");
+		$tableDataStop = strpos($tableDataString, "}");
+		$tableDataJSON = substr($tableDataString, $tableDataStart, $tableDataStop+1);
+		$tableDataArr = json_decode($tableDataJSON, true);
+		
+		if (array_key_exists($TABLE_DATA["ACTION"], $tableDataArr))
+			makeAction($tableDataArr[$TABLE_DATA["ACTION"]]);
+		if (array_key_exists($TABLE_DATA["WHITE_PLAYER"], $tableDataArr))
+		{			
+			$whiteId = $tableDataArr[$TABLE_DATA["WHITE_PLAYER"]];
+			if ($whiteId == '0') 
+				$_SESSION['whitePlayer'] = '-1';
+			else
+			{
+				$queryWhite = row("SELECT * FROM users WHERE id = '$whiteId'");
+				if ($queryWhite) $_SESSION['whitePlayer'] = $queryWhite['login']; 
+				else $_SESSION['whitePlayer'] = "<ERROR>";
+			}
+		}
+		if (array_key_exists($TABLE_DATA["BLACK_PLAYER"], $tableDataArr))
+		{
+			$blackId = $tableDataArr[$TABLE_DATA["BLACK_PLAYER"]];
+			if ($blackId == '0')
+				$_SESSION['blackPlayer'] = '-1';
+			else
+			{
+				$queryBlack = row("SELECT * FROM users WHERE id = ".$blackId);
+				if ($queryBlack) $_SESSION['blackPlayer'] = $queryBlack['login'];
+				else $_SESSION['blackPlayer'] = "<ERROR>";
+			}
+		}
+		if (array_key_exists($TABLE_DATA["GAME_STATE"], $tableDataArr)) 
+		{
+			$_SESSION['turn'] = whoseTurnFromGameStatus($tableDataArr[$TABLE_DATA["GAME_STATE"]]);
+			//$_SESSION['specialOption'] = specialOptionFromGameStatus($tableDataArr[$TABLE_DATA["GAME_STATE"]]); //todo: opis w funkcji
+		}
+		if (array_key_exists($TABLE_DATA["WHITE_TIME"], $tableDataArr)) 
+			$_SESSION['whiteTime'] = $tableDataArr[$TABLE_DATA["WHITE_TIME"]];
+		if (array_key_exists($TABLE_DATA["BLACK_TYPE"], $tableDataArr)) 
+			$_SESSION['blackTime'] = $tableDataArr[$TABLE_DATA["BLACK_TYPE"]];
+		if (array_key_exists($TABLE_DATA["QUEUE"], $tableDataArr)) 
+			$_SESSION['queue'] = getClientNamesFromSqlIDs($tableDataArr[$TABLE_DATA["QUEUE"]]);
+		if (array_key_exists($TABLE_DATA["START_TIME"], $tableDataArr)) //np.: "start":"192", where 1st number determine who clicked, rest is time
+		{
+			//todo: zapakować w funkcję
+			$playersClickedStart = substr($tableDataArr[$TABLE_DATA["START_TIME"]], 0, 1);
+			$_SESSION['whitePlayerClickedStart'] = (($playersClickedStart % 2) == 0 ? false : true); //todo: do wyrzucenia
+			$_SESSION['blackPlayerClickedStart'] = (($playersClickedStart > 1) ? true : false);
+			$whitePlayerClickedStart = (($playersClickedStart % 2) == 0 ? false : true);
+			$blackPlayerClickedStart = (($playersClickedStart > 1) ? true : false);
+			$_SESSION['startTime'] = substr($tableDataArr[$TABLE_DATA["START_TIME"]], 1);
+			$startDialogType = 'none';
+			if ($_SESSION['whitePlayer'] == '-1' || $_SESSION['blackPlayer'] == '-1') 
+				$_SESSION['consoleAjax'] .= 'ERROR: tried to use params before they had been set | ';
+			if ($_SESSION['whitePlayer'] == $_SESSION['login'])
+				$startDialogType = (($whitePlayerClickedStart) ? 'wait' : 'click');
+			else if	($_SESSION['blackPlayer'] == $_SESSION['login'])
+				$startDialogType = (($blackPlayerClickedStart) ? 'wait' : 'click');
+			$_SESSION['specialOption'] = 'showStartdialog:'.$startDialogType.'+'.$_SESSION['startTime']; //todo:json?
+		}
+		if (array_key_exists($TABLE_DATA["HISTORY"], $tableDataArr)) 
+			$_SESSION['history'] = $tableDataArr[$TABLE_DATA["HISTORY"]];
+		if (array_key_exists($TABLE_DATA["PROMOTIONS"], $tableDataArr)) 
+			$_SESSION['promoted'] = $tableDataArr[$TABLE_DATA["PROMOTIONS"]];
+	}
+	
+	function resetSessionData()
+	{
+		$_SESSION['consoleAjax'] = '-1'; 
+		$_SESSION['textboxAjax'] = '-1'; 
+		$_SESSION['specialOption'] = '-1'; //todo: upewnić się że special opcje nie będą się krossować (albo nawarstwiać je)
+		$_SESSION['queue'] = '-1';
+		$_SESSION['whiteTime'] = '-1'; //todo: te ostatnie zienne są troche niepokolei w stosunku do pierwszych kilku
+		$_SESSION['blackTime'] = '-1';
+		$_SESSION['turn'] = '-1';
+		$_SESSION['whitePlayerClickedStart'] = '-1';
+		$_SESSION['blackPlayerClickedStart'] = '-1';
+		$_SESSION['startTime'] = '-1';
+		$_SESSION['history'] = '-1';
+		$_SESSION['promoted']= '-1';
+	}
+		
 	function whoseTurnFromGameStatus($GS)
 	{
-		$GAME_STATE = array(
+		$GAME_STATE = array
+		(
 			"ERROR" => "0x00",
 			"TURN_NONE_WAITING_FOR_PLAYERS" => "0x01",
 			"TURN_NONE_WAITING_FOR_START_CONFIRMS" => "0x02",
@@ -14,7 +157,7 @@
 			"TURN_WHITE_FIRST_TURN" => "0x05",
 			"TURN_WHITE_PROMOTE" => "0x06",
 			"TURN_BLACK" => "0x07",
-			"TURN_BLACK_PROMOTE" => "0x08",
+			"TURN_BLACK_PROMOTE" => "0x08"
 		);
 		
 		switch($GS)
@@ -29,343 +172,170 @@
 		case $GAME_STATE["TURN_BLACK"]: return BLACK_TURN;
 		case $GAME_STATE["TURN_BLACK_PROMOTE"]: return BLACK_TURN;
 		default:
-			$_SESSION['consoleAjax'] = 'ERROR. whoseTurnFromGameStatus(): unknwon GAME_STATUS = '.$GS;
+			$_SESSION['consoleAjax'] .= 'ERROR. whoseTurnFromGameStatus(): unknwon GAME_STATUS = '.$GS.' | ';
 			return NO_TURN;
 		}
-	} 
-	
-	function endOfGame($checkmate, $endType)
-	{
-		$_SESSION['textboxAjax'] = '-1';
-		
-		if ($endType == "wWon") $_SESSION['textboxAjax'] = "Koniec gry: Białe wygrały wykonując ruch: ".$checkmate;
-		else if($endType == "bWon") $_SESSION['textboxAjax'] = "Koniec gry: Czarne wygrały wykonując ruch: ".$checkmate;
-		else if($endType == "draw")	$_SESSION['textboxAjax'] = "Koniec gry: Remis";	// TODO: co dalej?  na kurniku obu graczy deklalure remis bodajże
-		else $_SESSION['textboxAjax'] = "endOfGame(): ERROR: unknown parameter";
-		
-		$_SESSION['textboxAjax'] = $_SESSION['textboxAjax'].". Resetowanie planszy...";
-		
-		return $_SESSION['textboxAjax'];
 	}
 	
-	function gameInProgress($move, $turn)
+	function specialOptionFromGameStatus($GS)
 	{
-		$_SESSION['textboxAjax'] = '-1';
+		//todo: wszystkie te opcje ustawiać w disabling. samo disabling rozumieć jako "akcje ustawiane po zczytaniu wszystkich zmiennych...
+		//...z core i zapisaniu ich w zmiennych sesyjnych". dopiero na ich podstawie można obliczać to jakie specjalne opcje (okna promocji...
+		//..., okna startu itd) mogą się pojawiać
+		$_SESSION['specialOption'] = 'promote'; 
 		
-		if ($turn == 'WHITE_TURN') $_SESSION['textboxAjax'] = 'Czarny wykonał ruch: '.$move.'. Ruch wykonują Białe.';
-		else if ($turn == 'BLACK_TURN') $_SESSION['textboxAjax'] = 'Biały wykonał ruch: '.$move.'. Ruch wykonują Czarne.';
-		else  $_SESSION['textboxAjax'] = 'ERROR. Unknown turn value = '.$turn;
-		
-		return $_SESSION['textboxAjax'];
+		switch($GS) 
+		{
+		case $GAME_STATE["TURN_WHITE_PROMOTE"]: return WHITE_TURN;
+		case $GAME_STATE["TURN_BLACK_PROMOTE"]: return BLACK_TURN;
+		default: return "-1";
+		}
 	}
 	
 	function getClientNamesFromSqlIDs($IDsList)
-	{
+	{	
 		//todo: zapytanie może być wykonane tylo raz przy użyciu "OR", i mozna wyciągać tylko loginy z bazy, zamiast całych linii
-		$IDsListArr = explode(" ", $IDsList);
-		$sqlQueryString = "SELECT * FROM users WHERE id = ";
-		$clientNamesList = "";
-		foreach ($IDsListArr as $value)
+		if ($IDsList == "0")
+			return "-1";
+		else
 		{
-			$sqlQueryString = $sqlQueryString.' id = '.$value.' OR';
-			$sqlQueuedClient = row($sqlQueryString.$value);
-			$clientNamesList = $clientNamesList.$sqlQueuedClient['login'].' ';
+			$IDsListArr = explode(" ", $IDsList);
+			$sqlQueryString = "SELECT * FROM users WHERE id = ";
+			$clientNamesList = "";
+			foreach ($IDsListArr as $value)
+			{
+				$sqlQueryString = $sqlQueryString.' id = '.$value.' OR';
+				$sqlQueuedClient = row($sqlQueryString.$value);
+				$clientNamesList = $clientNamesList.$sqlQueuedClient['login'].' ';
+			}
+			$clientNamesList = trim($clientNamesList);
+			return $clientNamesList;
 		}
-		$clientNamesList = trim($clientNamesList);
-		return $clientNamesList;
 	}
 		
-	function tableDataStringToSession($tableDataString)
+	function makeAction($action)
 	{
-		$TABLE_DATA = array(
+		$ACTION_TYPE = array
+		(
 			"NONE" => "0x00",
-			"ACTION" => "0x01",
-			"WHITE_PLAYER" => "0x02",
-			"BLACK_PLAYER" => "0x03",
-			"GAME_STATE" => "0x04",
-			"WHITE_TIME" => "0x05",
-			"BLACK_TYPE" => "0x06",
-			"QUEUE" => "0x07",
-			"START_TIME" => "0x08",
-			"HISTORY" => "0x09",
-			"PROMOTIONS" => "0x0a",
-			"ERROR" => "0x0b",
+			"NEW_GAME_STARTED" => "0x01",
+			"CONTINUE" => "0x02", //todo: useless
+			"BAD_MOVE" => "0x03",
+			"PROMOTE_TO_WHAT" => "0x04",
+			"RESET_COMPLITED" => "0x05",
+			"END_GAME_NONE" => "0x06", 	//error type. end_of_game can't be none
+			"END_GAME_NORMAL_WIN_WHITE" => "0x07",
+			"END_GAME_NORMAL_WIN_BLACK" => "0x08",
+			"END_GAME_DRAW" => "0x09",
+			"END_GAME_GIVE_UP_WHITE" => "0x0a",
+			"END_GAME_GIVE_UP_BLACK" => "0x0b",
+			"END_GAME_SOCKET_LOST_WHITE" => "0x0c",
+			"END_GAME_SOCKET_LOST_BLACK" => "0x0d",
+			"END_GAME_TIMEOUT_GAME_WHITE" => "0x0e",
+			"END_GAME_TIMEOUT_GAME_BLACK" => "0x0f", 
+			"END_GAME_ERROR" => "0x10",
+			"ERROR" => "0xff"
 		);
-				
-		$tableDataStart = strpos($tableDataString, "{");
-		$tableDataStop = strpos($tableDataString, "}");
-		$tableDataJSON = substr($tableDataString, $tableDataStart, $tableDataStop+1);
-		$tableDataArr = json_decode($tableDataJSON, true);
 		
-		if (array_key_exists($TABLE_DATA["WHITE_PLAYER"], $tableDataArr))
-		{			
-			$whiteId = $tableDataArr[$TABLE_DATA["WHITE_PLAYER"]];
-			if ($whiteId == "0") $_SESSION['white'] = $whiteId;
-			else
-			{
-				$queryWhite = row("SELECT * FROM users WHERE id = '$whiteId'");
-				if ($queryWhite) $_SESSION['white'] = $queryWhite['login']; 
-				else $_SESSION['white'] = "<ERROR>";
-			}
-		}
-		if (array_key_exists($TABLE_DATA["BLACK_PLAYER"], $tableDataArr))
-		{
-			$blackId = $tableDataArr[$TABLE_DATA["BLACK_PLAYER"]];
-			if ($blackId == "0") $_SESSION['black'] = $blackId;
-			else
-			{
-				$queryBlack = row("SELECT * FROM users WHERE id = ".$blackId);
-				if ($queryBlack) $_SESSION['black'] = $queryBlack['login'];
-				else $_SESSION['black'] = "<ERROR>";
-			}
-		}
-		if (array_key_exists($TABLE_DATA["GAME_STATE"], $tableDataArr)) 
-			$_SESSION['turn'] = whoseTurnFromGameStatus($tableDataArr[$TABLE_DATA["GAME_STATE"]]);
-		if (array_key_exists($TABLE_DATA["WHITE_TIME"], $tableDataArr)) 
-			$_SESSION['whiteTime'] = $tableDataArr[$TABLE_DATA["WHITE_TIME"]];
-		if (array_key_exists($TABLE_DATA["BLACK_TYPE"], $tableDataArr)) 
-			$_SESSION['blackTime'] = $tableDataArr[$TABLE_DATA["BLACK_TYPE"]];
-		if (array_key_exists($TABLE_DATA["QUEUE"], $tableDataArr)) 
-			$_SESSION['queue'] = getClientNamesFromSqlIDs($tableDataArr[$TABLE_DATA["QUEUE"]]);
-		if (array_key_exists($TABLE_DATA["START_TIME"], $tableDataArr)) //np.: "start":"192", where 1st number determine who clicked, rest is time
-		{
-			$playersClickedStart = substr($tableDataArr[$TABLE_DATA["START_TIME"]], 0, 1);
-			$_SESSION['whiteStart'] = (($playersClickedStart % 2) == 0 ? false : true);
-			$_SESSION['blackStart'] = ($playersClickedStart > 1 ? true : false);
-			$_SESSION['startTime'] = substr($tableDataArr[$TABLE_DATA["START_TIME"]], 1);
-		}
-		if (array_key_exists($TABLE_DATA["HISTORY"], $tableDataArr)) 
-			$_SESSION['history'] = $tableDataArr[$TABLE_DATA["HISTORY"]];
-		if (array_key_exists($TABLE_DATA["PROMOTIONS"], $tableDataArr)) 
-			$_SESSION['promoted'] = $tableDataArr[$TABLE_DATA["PROMOTIONS"]];
-	}
-	
-	function onWsMsg($wsMsgType, $wsMsgVal)
-	{
-		//todo: zwracać też może informację, która będzie dawała znać jakim typem użtkownika jesteś (logged/white/black itd)
-		//$whiteName = '-1'; //0
-		//$blackName = '-1'; //1
-		//$_SESSION['consoleAjax'] = '-1'; //2
-		//$_SESSION['textboxAjax'] = '-1'; //3
-		$specialOption = '-1'; //4
-		//$consoleEnabling = '-1'; //5, enabling[0]
-		//$textboxEnabling = '-1'; //6, enabling[1]
-		//$whiteBtn = '-1'; //7, enabling[2]
-		//$blackBtn = '-1'; //8, enabling[3]
-		//$standUpWhite = '-1'; //9, enabling[4]
-		//$standUpBlack = '-1'; //10, enabling[5]
-		//$start = '-1'; //11, enabling[6]
-		//$giveup = '-1'; //12, enabling[7]
-		//$from = '-1'; //13, enabling[8]
-		//$to = '-1'; //14, enabling[9]
-		//$send = '-1'; //15, enabling[10]
-		//$queuePlayer = '-1'; //16, enabling[11]
-		//$leaveQueue = '-1'; //17, enabling[12]
-		$_SESSION['queue'] = '-1'; //18
-		//$_SESSION['whiteTime']; //19 //todo: te ostatnie zienne są troche niepokolei w stosunku do pierwszych pięciu...
-		//$_SESSION['blackTime']; //20 //...tak, to zrobiłem bo nie trzeba będzie aż tak doku zmieniać
-		//$_SESSION['turn']; //21
-		//$_SESSION['whiteStart']; //22
-		//$_SESSION['blackStart']; //23
-		//$_SESSION['startTime']; //24
-		//$_SESSION['history']; //25
-		//$_SESSION['promoted']; //26
-		
-		$_SESSION['whiteTime'] = -1;
-		$_SESSION['blackTime'] = -1;
-		$_SESSION['turn'] = -1;
-		$_SESSION['whiteStart'] = -1;
-		$_SESSION['blackStart'] = -1;
-		$_SESSION['startTime'] = -1;
-		$_SESSION['history'] = -1;
-		$_SESSION['promoted']= -1;
-		
-		$_SESSION['consoleAjax'] = 'wsMsgType val = '.$wsMsgType;
-		$enablingArr = array();
-		
-		switch ($wsMsgType)
+		switch ($action)
 		{		
-			case 'newGameStarted':
-			$_SESSION['turn'] = WHITE_TURN;
-			if ($_SESSION['white'] != WHITE && $_SESSION['black'] != BLACK)
-			{
-				$_SESSION['textboxAjax'] = "Nowa gra rozpoczęta. Białe wykonują ruch."; 
-				$enablingArr = enabling('newGame');
-			}
-			else $_SESSION['textboxAjax'] = "ERROR: game started when players aren't on chairs"; 
-			$_SESSION['whiteTime'] = 30*60;
-			$_SESSION['blackTime'] = 30*60;
-			break;
+			case $ACTION_TYPE["NONE"]:
+			case $ACTION_TYPE["CONTINUE"]: 
+				break;
+		
+			case $ACTION_TYPE["NEW_GAME_STARTED"]:
+				if ($_SESSION['whitePlayer'] != WHITE && $_SESSION['blackPlayer'] != BLACK)
+				{
+					$_SESSION['textboxAjax'] = "Nowa gra rozpoczęta. Białe wykonują ruch."; 
+				}
+				else $_SESSION['textboxAjax'] = "ERROR: game started when players aren't on chairs"; 
+				$_SESSION['whiteTime'] = 30*60; //start time == 30 mins
+				$_SESSION['blackTime'] = 30*60; 
+				break;
 			
-			case 'moveRespond':
-			$moveOk = substr($wsMsgVal,0,4); 
-			$_SESSION['turn'] = whoseTurnFromGameStatus(substr($wsMsgVal,5,2));
+			case $ACTION_TYPE["BAD_MOVE"]:
+				$_SESSION['consoleAjax'] .= 'badMove | ';
+				$_SESSION['textboxAjax'] = 'Błędne rządanie ruchu! Wybierz inny ruch.';
+				break;
 			
-			$gameStatus = substr($wsMsgVal,8,4);
-			if (strstr($gameStatus, " ")) $gameStatus = strstr($wsMsgVal, " ");
+			//todo: to może wynikać z typu statusu gry, tymbardziej że po odświerzeniu strony ta akcja zniknie
+			case $ACTION_TYPE["PROMOTE_TO_WHAT"]: 
+				$_SESSION['specialOption'] = 'promote'; 
+				$_SESSION['consoleAjax'] .= 'show promotion buttons window | ';
+				break;
 			
-			$optionalRestOfMsg = substr($wsMsgVal,13);
-			
-			$_SESSION['consoleAjax'] = 'moveOk = '.$moveOk .', turn = '.$_SESSION['turn'].', gameStatus = '.$gameStatus;
-			
-			if ($gameStatus == "cont") 
-			{
-				$enablingArr = enabling('gameInProgress');
-				$_SESSION['textboxAjax'] = gameInProgress($moveOk, $_SESSION['turn']);
-			}
-			else if ($gameStatus == "wWon" || $gameStatus == "bWon" || $gameStatus == "draw") 
-			{				
-				if (strpos($optionalRestOfMsg, "TABLE_DATA") !== false) 
+			case $ACTION_TYPE["RESET_COMPLITED"]: 
+				$_SESSION['turn'] = NO_TURN;
+				if (strpos($wsMsgVal, "TABLE_DATA") !== false) 
 					tableDataStringToSession($wsMsgVal);
-				$enablingArr = enabling('endOfGame');
-				$_SESSION['textboxAjax'] = endOfGame($moveOk, $gameStatus);
-			}
-			else $_SESSION['textboxAjax'] = 'ERROR: moveRespond(): unknown gameStatus value = '.$gameStatus;
-			break;
-			
-			case 'resetComplited':
-			$_SESSION['turn'] = NO_TURN;
-			if (strpos($wsMsgVal, "TABLE_DATA") !== false) 
-				tableDataStringToSession($wsMsgVal);
-			$enablingArr = enabling('resetComplited');
-			break;
-			
-			case 'promoteToWhat':		
-			$specialOption = 'promote'; 
-			$enablingArr = enabling('promote');
-			$_SESSION['consoleAjax'] = $_SESSION['consoleAjax'].', show promotion buttons window';
-			break;
-		
-			case 'TABLE_DATA':					
-			tableDataStringToSession($wsMsgVal);
-			if ($_SESSION['turn'] != NO_TURN) $enablingArr = enabling('gameInProgress');
-			else $enablingArr = enabling('endOfGame');	
-			break;
-			
-			case 'promoted': 
-			$promotingMove = substr($wsMsgVal,0,4);	
-			$promotePiece = substr($wsMsgVal,5,1);
-			$promoteType;
-			switch($promotePiece)
-			{
-				case q: $promoteType = "hetmana"; break;
-				case r: $promoteType = "wieżę"; break;
-				case b: $promoteType = "gońca"; break;
-				case n: $promoteType = "skoczka"; break	;
-				default: $_SESSION['consoleAjax'] = 'ERROR. promoted(): Unknown $promotePiece var = '.$promotePiece; break;
-			}
-			$promoteTurn = substr($wsMsgVal,7,2); 
-			$gameStateAfterPromotion = substr($wsMsgVal,10);
-			$gameState;
-			switch($gameStateAfterPromotion)
-			{
-				case 'continue': $gameState = "Ruch wykonuje ". ($promoteTurn == 'bt' ?  "Biały." : "Czarny."); break;
-				case 'whiteWon': $gameState = "Koniec gry. Białe wygrały. Resetowanie planszy..."; break;
-				case 'blackWon': $gameState = "Koniec gry. Czarne wygrały. Resetowanie planszy..."; break;
-				case 'draw': $gameState = "Koniec gry. Remis. Resetowanie planszy..."; break;
-				default: $_SESSION['consoleAjax'] = 'ERROR. promoted(): Unknown $gameStateAfterPromotion var = '. $gameStateAfterPromotion; break;
-			}
+				break;
 
-			$_SESSION['textboxAjax'] = ($promoteTurn == "bt" ?  "Biały." : "Czarny.").' wykonał promocję piona ruchem)'
-			.$promotingMove.' na '.$promoteType.'. '.$gameState;
-			break;
-			
-			case 'badMove':
-			$_SESSION['consoleAjax'] = 'badMove: '.$wsMsgVal;
-			$badMove = substr($wsMsgVal,0,4);
-			$_SESSION['turn'] = whoseTurnFromGameStatus(substr($wsMsgVal,5,2));
-			$_SESSION['textboxAjax'] = "Błędne rządanie ruchu: ".$badMove."! Wpisz inny ruch.";
-			$enablingArr = enabling('badMove');
-			break;
-			
-			case 'updateQueue':
-			$_SESSION['queue'] = $wsMsgVal; 
-			if ($_SESSION['queue'] == "0") $enablingArr = enabling('queueEmpty');
-			else $enablingArr = enabling('queueNotEmpty');
-			break;
-			
-			//todo: poniższe funkcje prawie niczym się nie różnią
-			case 'giveUp':
-			$_SESSION['turn'] = NO_TURN;
-			$whoGaveUp = substr($wsMsgVal,0,5);
-			$optionalRestOfMsg = substr($wsMsgVal,5);
-			if ($whoGaveUp == WHITE) $_SESSION['textboxAjax'] = "Koniec gry: Białe się poddały. Czarne wygrały.";
-			else if ($whoGaveUp == BLACK) $_SESSION['textboxAjax'] = "Koniec gry: Czarne się poddały. Białe wygrały.";
-			else $_SESSION['consoleAjax'] = "ERROR: undefined giving up player type";
-			$_SESSION['textboxAjax'] = $_SESSION['textboxAjax'].". Resetowanie planszy...";
-			if (strpos($optionalRestOfMsg, "TABLE_DATA") !== false) 
-				tableDataStringToSession($wsMsgVal);
-			$enablingArr = enabling('endOfGame');
-			break;
-			
-			case 'socketLost':
-			$_SESSION['turn'] = NO_TURN;
-			$whoGaveUp = substr($wsMsgVal,0,5);
-			$optionalRestOfMsg = substr($wsMsgVal,5);
-			if ($whoGaveUp == WHITE) $_SESSION['textboxAjax'] = "Koniec gry: Białe się rozłączyły. Czarne wygrały.";
-			else if ($whoGaveUp == BLACK) $_SESSION['textboxAjax'] = "Koniec gry: Czarne się rozłączyły. Białe wygrały.";
-			else $_SESSION['consoleAjax'] = "ERROR: undefined socket lost player type";
-			$_SESSION['textboxAjax'] = $_SESSION['textboxAjax'].". Resetowanie planszy...";
-			if (strpos($optionalRestOfMsg, "TABLE_DATA") !== false) 
-				tableDataStringToSession($wsMsgVal);
-			$enablingArr = enabling('endOfGame');
-			break;
-			
-			case 'timeOut':
-			$_SESSION['turn'] = NO_TURN;
-			$whoGaveUp = substr($wsMsgVal,0,5);
-			$optionalRestOfMsg = substr($wsMsgVal,5);
-			if ($whoGaveUp == WHITE) $_SESSION['textboxAjax'] = "Koniec gry: Koniec czasu białego. Czarne wygrały.";
-			else if ($whoGaveUp == BLACK) $_SESSION['textboxAjax'] = "Koniec gry: Koniec czasu czarnego. Białe wygrały.";
-			else $_SESSION['consoleAjax'] = "ERROR: undefined time out player type";
-			$_SESSION['textboxAjax'] = $_SESSION['textboxAjax'].". Resetowanie planszy...";
-			if (strpos($optionalRestOfMsg, "TABLE_DATA") !== false) 
-				tableDataStringToSession($wsMsgVal);
-			$enablingArr = enabling('endOfGame');
-			break;
-			
-			//todo: jeżeli poniższy przypadek załatwie przy użyciu tylko table data, to mogę go usunąć
-			case 'history':
-			$_SESSION['history'] = $wsMsgVal;
-			break;
-			
-			
+			case $ACTION_TYPE["END_GAME_NORMAL_WIN_WHITE"]: 
+			case $ACTION_TYPE["END_GAME_NORMAL_WIN_BLACK"]: 
+			case $ACTION_TYPE["END_GAME_DRAW"]: //todo: rozpatrywać oddzielnie jakoś?
+			case $ACTION_TYPE["END_GAME_GIVE_UP_WHITE"]: 
+			case $ACTION_TYPE["END_GAME_GIVE_UP_BLACK"]: 
+			case $ACTION_TYPE["END_GAME_SOCKET_LOST_WHITE"]: 
+			case $ACTION_TYPE["END_GAME_SOCKET_LOST_BLACK"]: 
+			case $ACTION_TYPE["END_GAME_TIMEOUT_GAME_WHITE"]: 
+			case $ACTION_TYPE["END_GAME_TIMEOUT_GAME_BLACK"]: 
+				$_SESSION['turn'] = NO_TURN;
+				$whoLost; $playerWhoWon; $playerWhoLost;
+				switch($action)
+				{
+					case $ACTION_TYPE["END_GAME_NORMAL_WIN_WHITE"]: 
+					case $ACTION_TYPE["END_GAME_GIVE_UP_WHITE"]:
+					case $ACTION_TYPE["END_GAME_SOCKET_LOST_WHITE"]: 
+					case $ACTION_TYPE["END_GAME_TIMEOUT_GAME_WHITE"]: 
+						$whoLost = WHITE; break;
+					case $ACTION_TYPE["END_GAME_NORMAL_WIN_BLACK"]: 
+					case $ACTION_TYPE["END_GAME_GIVE_UP_BLACK"]:
+					case $ACTION_TYPE["END_GAME_SOCKET_LOST_BLACK"]: 
+					case $ACTION_TYPE["END_GAME_TIMEOUT_GAME_BLACK"]: 
+						$whoLost = BLACK; break;
+					case $ACTION_TYPE["END_GAME_DRAW"]:
+					default: $whoLost = NONE;
+				}
+				if ($whoLost == WHITE) 
+				{
+					$playerWhoWon = "Czarn";
+					$playerWhoLost = "Biał";
+				}
+				else if ($whoLost == BLACK) 
+				{
+					$playerWhoWon = "Biał";
+					$playerWhoLost = "Czarn";
+				}
+				else if ($whoLost == NONE) $_SESSION['textboxAjax'] = 'Koniec gry: Remis.';
+				else $_SESSION['consoleAjax'] .= 'ERROR: undefined player type = '.$whoLost.' | ';
+				if ($whoLost == WHITE || $whoLost == BLACK)
+				{
+					switch($action)
+					{
+						case $ACTION_TYPE["END_GAME_NORMAL_WIN_WHITE"]: 
+						case $ACTION_TYPE["END_GAME_NORMAL_WIN_BLACK"]: 
+							$_SESSION['textboxAjax'] = 'Koniec gry: '.$playerWhoWon.'e wygrały.';
+							break;
+						case $ACTION_TYPE["END_GAME_GIVE_UP_WHITE"]: 
+						case $ACTION_TYPE["END_GAME_GIVE_UP_BLACK"]: 
+							$_SESSION['textboxAjax'] = 'Koniec gry: '.$playerWhoLost.'e się poddały. '.$playerWhoWon.'e wygrały.';
+							break;
+						case $ACTION_TYPE["END_GAME_SOCKET_LOST_WHITE"]: 
+						case $ACTION_TYPE["END_GAME_SOCKET_LOST_BLACK"]: 
+							$_SESSION['textboxAjax'] = 'Koniec gry: '.$playerWhoLost.'e się rozłączyły. '.$playerWhoWon.'e wygrały.';
+							break;
+						case $ACTION_TYPE["END_GAME_TIMEOUT_GAME_WHITE"]: 
+						case $ACTION_TYPE["END_GAME_TIMEOUT_GAME_BLACK"]: 
+							$_SESSION['textboxAjax'] = 'Koniec gry: '.$playerWhoLost.'emu skończył się czas. '.$playerWhoWon.'e wygrały.';
+							break;
+					}
+				}
+				$_SESSION['textboxAjax'] .= ' Resetowanie planszy...';
+				break;
+	
 			default: 
-			$_SESSION['consoleAjax'] = "ERROR: undefined msg type from core: ".$wsMsgType;
-			break; 
+				$_SESSION['consoleAjax'] .= 'ERROR: unnormal ACTION_TYPE = '.$action.' | ';
+				break;
 		}
-		
-		//todo: naprawić zwracanie tablicy- niech zwraca tylko te wartości, które są (i mogą) być zwracane. trzeba przywrócić key arraye. js powinien wyłapywać tylko te zmienne które przyjdą.
-		$returnArray = array($_SESSION['white'], $_SESSION['black'], $_SESSION['consoleAjax'], $_SESSION['textboxAjax'], $specialOption, 
-		$enablingArr[0], $enablingArr[1], $enablingArr[2], $enablingArr[3], $enablingArr[4], $enablingArr[5], $enablingArr[6], $enablingArr[7], $enablingArr[8], $enablingArr[9], $enablingArr[10], $enablingArr[11], 
-		$enablingArr[12], $_SESSION['queue'], $_SESSION['whiteTime'], $_SESSION['blackTime'], $_SESSION['turn'], $_SESSION['whiteStart'], $_SESSION['blackStart'], $_SESSION['startTime'], $_SESSION['history'], $_SESSION['promoted']);
-		$_SESSION['consoleAjax'] = '-1'; 
-		$_SESSION['textboxAjax'] = '-1'; 
-		return $returnArray;
 	}
-	
-	if(isset($_POST['wsMsg']))
-	{
-		$rawWsg = $_POST['wsMsg'];
-		$coreOption = '';
-		$coreAnswer = '';
-		
-		if	($rawWsg == 'newOk') 							{ $return = onWsMsg("newGameStarted", ''); }
-		else if	(substr($rawWsg,0,6) == 'moveOk') 			{ $return = onWsMsg("moveRespond", substr($rawWsg,7)); }
-		else if ($rawWsg == 'promoteToWhat')				{ $return = onWsMsg("promoteToWhat", ''); }
-		else if	(substr($rawWsg,0,14) == 'resetComplited')	{ $return = onWsMsg("resetComplited", substr($rawWsg,15)); } 
-		else if	(substr($rawWsg,0,10) == 'TABLE_DATA') 		{ $return = onWsMsg("TABLE_DATA", substr($rawWsg,10)); } 
-		else if	(substr($rawWsg,0,8) == 'promoted') 		{ $return = onWsMsg("promoted", substr($rawWsg,9)); }
-		else if	(substr($rawWsg,0,7) == 'badMove') 			{ $return = onWsMsg("badMove", substr($rawWsg,8)); }
-		else if	(substr($rawWsg,0,6) == 'giveUp') 			{ $return = onWsMsg("giveUp", substr($rawWsg,6)); }
-		else if	(substr($rawWsg,0,10) == 'socketLost') 		{ $return = onWsMsg("socketLost", substr($rawWsg,10)); }
-		else if	(substr($rawWsg,0,7) == 'timeOut') 			{ $return = onWsMsg("timeOut", substr($rawWsg,7)); }
-		else if	(substr($rawWsg,0,7) == 'history') 			{ $return = onWsMsg("history", substr($rawWsg,8)); }
-		else $return['consoleAjax'] = 'ERROR. Unknown ws::onMessage value = '.$rawWsg; 
-	}
-	
-	foreach($return as &$value) { if (is_null($value)) { $value = '-1'; }} unset($value);
-	
-	header('Content-type: application/json; charset=utf-8"');
-	echo json_encode($return); //, JSON_UNESCAPED_UNICODE); //todo:- polskie znaki?
 ?>

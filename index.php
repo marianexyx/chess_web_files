@@ -123,7 +123,8 @@
 											data: { wsMsg: evt.data },
 											success: function (data) 
 											{ 
-												if(typeof data == 'object') data = $.map(data, function(el) { return el; });
+												if (typeof data == 'object') 
+													data = $.map(data, function(el) { return el; });
 												console.log('ajax: on_ws_msg.php- success: ' + data); 
 												ajaxResponse(data);
 											},

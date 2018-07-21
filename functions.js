@@ -79,7 +79,7 @@ function addMsgToClientPlainTextWindow(message, type)
 	if (type == "info") 
 	{
 		infoPTEval += "> " + message + "\n";
-		if (message.indexOf("Koniec gry") != -1)
+		if (message.indexOf("Koniec gry") != '-1')
 		{
 			$("#endOfGameDialog").html(message);
 			$("#endOfGameDialog").dialog(endOfGameVar).dialog("open");
@@ -365,16 +365,10 @@ function ajaxResponse(ajaxData)
 	
 
 	
-	if (ajaxData[0] != '-1') 
-	{
-		if (ajaxData[0] == "0") $('#whitePlayer').html("-");
-		else $('#whitePlayer').html(ajaxData[0]);
-	}
-	if (ajaxData[1] != '-1') 
-	{
-		if (ajaxData[1] == "0") $('#blackPlayer').html("-");
-		else $('#blackPlayer').html(ajaxData[1]);
-	}
+	if (ajaxData[0] == '-1') $('#whitePlayer').html("-");
+	else $('#whitePlayer').html(ajaxData[0]);
+	if (ajaxData[1] == '-1') $('#blackPlayer').html("-");
+	else $('#blackPlayer').html(ajaxData[1]);
 	
 	if (ajaxData[2] != '-1') console.log(ajaxData[2]);
 	if (ajaxData[3] != '-1') addMsgToClientPlainTextWindow(ajaxData[3], "info");
@@ -520,7 +514,8 @@ function ajaxResponse(ajaxData)
 	
 	//todo: doszlifować to jeszcze
 	//update additionalInfo
-	console.log("bClientIsLogged=" + bClientIsLogged + ", bTableIsFull=" + bTableIsFull + ", bClientIsPlayer=" + bClientIsPlayer + ", bClientIsInQueue=" + bClientIsInQueue);
+	console.log("bClientIsLogged=" + bClientIsLogged + ", bTableIsFull=" + bTableIsFull + ", bClientIsPlayer=" + bClientIsPlayer + 
+				", bClientIsInQueue=" + bClientIsInQueue);
 	if (!bClientIsLogged)
 		$("#additionalInfo").html("Musisz być zalogowany, aby móc grać.");
 	else if (bClientIsLogged && !bTableIsFull && !bClientIsPlayer)
@@ -533,7 +528,7 @@ function ajaxResponse(ajaxData)
 		$("#additionalInfo").html(" ");
 }
 
-function otherOption(othOpt)
+function otherOption(othOpt) //todo: dać tu wuęcej funkcji, albo usunąć to i zrobić tak jak resztę
 {
 	var wsMsg;
 	if (othOpt.substr(0,6) == "wsSend")
@@ -575,8 +570,8 @@ var promoteVar =
 		}
 	},
 	buttons: 
-	{
-		'\u265B': function() //todo: mogę się kiedyś pokusić o zrobienie podziału koloru znaków na białe/czarne. białe: U+2655, U+2657, U+2658, U+2656.
+	{ //todo: mogę się kiedyś pokusić o zrobienie podziału koloru znaków na białe/czarne. białe: U+2655, U+2657, U+2658, U+2656.
+		'\u265B': function() 
 		{
 			websocket.send("promoteTo:q"); //queen
 			console.log('clicked: promoteTo:q');

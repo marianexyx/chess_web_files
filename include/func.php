@@ -1,8 +1,6 @@
 <?php     
 	define("WHITE", "White");
 	define("BLACK", "Black");
-	$_SESSION['white'] = "0";
-	$_SESSION['black'] = "0";
 		
 	define("NO_TURN", "noTurn");
 	define("WHITE_TURN", "whiteTurn");
