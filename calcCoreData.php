@@ -3,13 +3,12 @@
 	define('WHITE', 'White');
 	define('BLACK', 'Black');
 	
-	if(!isset($_SESSION)) session_start(); //todo: jeżeli sesji by tu sesji jeszcze nie było, to chyba nic by mi nie działało i tak, więc po co to? chyba...
-	//... po to, żeby plik ten miał dostęp do zmiennych sesyjnych, bo z automatu ich by nie miał
+	if(!isset($_SESSION)) session_start(); 
 		
-	function enabling()
+	function calculateDataFromSessionVars()
 	{
 		$clientIsLogged = !empty($_SESSION['id']);
-		$loggedPlayerIsOnAnyChair = false; //todo: to ma robić we frontEndzie jako zmienna sprawdzająca także dla standUp
+		$loggedPlayerIsOnAnyChair = false;
 		$loggedPlayerIsOnWhiteChair = false;
 		$loggedPlayerIsOnBlackChair = false;
 		$tableIsFull = false;
@@ -19,6 +18,7 @@
 		$playerCanMakeMove = false;
 		$queuePlayerBtn = false;
 		$leaveQueueBtn = false;
+		$specialOption = '-1';
 			
 		if ($clientIsLogged)
 		{
@@ -32,15 +32,9 @@
 			if (isChairEmpty(BLACK) && !isLoggedPlayerOnChair(WHITE)) $blackPlayerBtn = true;
 			if (are2playersAreOnChairs() && !isLoggedPlayerOnAnyChair() && !isClientInQueue()) $queuePlayerBtn = true;
 			else if (isClientInQueue()) $leaveQueueBtn = true;
-			
-			//todo: usunąć w następnym commicie
-			/*$_SESSION['consoleAjax'] .= 'disabling(): are2playersAreOnChairs() ='.(($tableIsFull)?'true':'false')
-			.', isLoggedPlayerOnAnyChair() ='.(($loggedPlayerIsOnAnyChair)?'true':'false').', isClientInQueue() ='
-			.(($clientIsInQueue)?'true':'false').', isLoggedPlayerOnChair(WHITE) ='.(($loggedPlayerIsOnWhiteChair)?'true':'false')
-			.', isLoggedPlayerOnChair(BLACK) ='.(($loggedPlayerIsOnBlackChair)?'true':'false').', $_SESSION["queue"] ='
-			.$_SESSION['queue'].', $_SESSION["login"] ='.$_SESSION['login'].', isChairEmpty(WHITE) = '
-			.((isChairEmpty(WHITE))?'true':'false').', isLoggedPlayerOnChair(BLACK) = '.((isLoggedPlayerOnChair(BLACK))?'true':'false')
-			.', $whitePlayerBtn = '.(($whitePlayerBtn)?'true':'false');*/
+			if ($_SESSION['gameState'] == $GAME_STATE["NEW_GAME_STARTED"]) $specialOption = 'newGameStarted';
+			else if (isPromotionConditionsMet()) $specialOption = 'promote';
+			else if (isGameStateAnEndType()) $specialOption = 'endOfGame';
 		}
 		else $_SESSION['consoleAjax'] .= 'ERROR: Empty session ID- client isnt logged | ';
 		
@@ -56,7 +50,8 @@
 			"blackPlayerBtn" => $blackPlayerBtn,
 			"playerCanMakeMove" => $playerCanMakeMove,
 			"queuePlayerBtn" => $queuePlayerBtn,
-			"leaveQueueBtn" => $leaveQueueBtn
+			"leaveQueueBtn" => $leaveQueueBtn,
+			"specialOption" => $specialOption
 		);
 	}
 		
@@ -131,5 +126,31 @@
 			else return false;
 		}
 		else return false;
+	}
+	
+	function isPromotionConditionsMet()
+	{
+		if (($_SESSION['gameState'] == $GAME_STATE["TURN_WHITE_PROMOTE"] && isLoggedPlayerOnChair(WHITE)) ||
+			($_SESSION['gameState'] == $GAME_STATE["TURN_BLACK_PROMOTE"] && isLoggedPlayerOnChair(BLACK)))
+			return true;
+		else return false;
+	}
+	
+	function isGameStateAnEndType()
+	{	
+		switch($_SESSION['action'])
+		{
+			case $ACTION_TYPE["END_GAME_NORMAL_WIN_WHITE"]:
+			case $ACTION_TYPE["END_GAME_NORMAL_WIN_BLACK"]:
+			case $ACTION_TYPE["END_GAME_DRAW"]:
+			case $ACTION_TYPE["END_GAME_GIVE_UP_WHITE"]:
+			case $ACTION_TYPE["END_GAME_GIVE_UP_BLACK"]:
+			case $ACTION_TYPE["END_GAME_SOCKET_LOST_WHITE"]:
+			case $ACTION_TYPE["END_GAME_SOCKET_LOST_BLACK"]:
+			case $ACTION_TYPE["END_GAME_TIMEOUT_GAME_WHITE"]:
+			case $ACTION_TYPE["END_GAME_TIMEOUT_GAME_BLACK"]:
+				return true;
+			default: return false;
+		}
 	}
 ?>							

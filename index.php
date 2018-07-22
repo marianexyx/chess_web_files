@@ -26,7 +26,7 @@
 					ob_start();
 					session_start(); 
 					require_once('include/inc.php');
-					require_once('disabling.php');
+					require_once('calcCoreData.php'); //todo: raczej do wyjebania. koment na samym dole
 					
 					error_reporting( error_reporting() & ~E_NOTICE ); //wyłącz ostrzeżenie, że niezdefiniowana jest zmienna 'a' i inne tego typu
 					
@@ -71,9 +71,8 @@
 				<div id="game"><!-- todo: dlaczego wogle ten cały kod php/js poniżej jest w indexie? -->
 					<? 
 						$user = getUser($_SESSION['id']);
-						/*$_SESSION['table_id'] = 1; //póki co jest tylko jeden stół, więc zmienna zbędna*/
 						$_SESSION['login'] = $user['login'];   
-						echo '<script> var js_login = "'.$_SESSION['login'].'";</script>';
+						echo '<script> var js_login = "'.$_SESSION['login'].'";</script>'; //todo: postarać się wyeleminować js_login z kodu
 					?>
 					
 					<script> 
@@ -90,15 +89,11 @@
 						{
 							if ("WebSocket" in window) 
 							{
-								if (websocket == null) 
-								{
-									websocket = new WebSocket(wsUri); 
-									console.log("create new websocket connection");
-								} else { console.log("Already connected to webscoket server. websocket =" + websocket); }	
+								if (websocket == null) { websocket = new WebSocket(wsUri);} 
 								
 								websocket.onerror = function (evt) 
 								{
-									console.log('WEboscket error:', evt.data);
+									console.log('Weboscket error:', evt.data);
 									serverStatus("offline");
 								};
 								
@@ -112,7 +107,6 @@
 								
 								websocket.onmessage = function (evt) 
 								{ 
-									console.log('msg from core: ' + evt.data);
 									if (evt.data != 'connectionOnline' && evt.data != 'logout:doubleLogin')
 									{
 										$.ajax(
@@ -121,13 +115,7 @@
 											type: "POST",			
 											dataType: "json",
 											data: { wsMsg: evt.data },
-											success: function (data) 
-											{ 
-												if (typeof data == 'object') 
-													data = $.map(data, function(el) { return el; });
-												console.log('ajax: on_ws_msg.php- success: ' + data); 
-												ajaxResponse(data);
-											},
+											success: function (data) { ajaxResponse(data); },
 											error: function(xhr, status, error) 
 											{
 												var err = eval("(" + xhr.responseText + ")");
@@ -156,7 +144,6 @@
 										case 3: { stateStr = "CLOSED"; serverStatus("offline"); break; }
 										default: { stateStr = "UNKNOW"; serverStatus("offline"); break; }
 									}
-									console.log("WebSocket state = " + websocket.readyState + " ( " + stateStr + " )");
 									
 									<? if(isset($_SESSION['login']) && !empty($_SESSION['login'])) echo 'websocket.send("im '.$_SESSION['id'].'&'.$_SESSION['hash'].'");';
 									else echo 'websocket.send("getTableDataAsJSON");'; ?>
@@ -318,6 +305,6 @@
 			</div>
 		</div>  
 				
-		<? enabling("notLoggedIn"); /*TODO: TO TU DOBRZE?*/ ?>
+		<? calculateDataFromSessionVars(); /*TODO: TO TU DOBRZE? wystarczy wywołać chyba tylko js f: disableAll- a i to będzie aż nadto*/ ?>
 	</body>
 </html>																									

@@ -1,29 +1,167 @@
-var reactBeep = new Audio('sounds/beep1.wav');
-alertWindow = (function () 
+//todo: poupychać funkcje do osobnych plików
+
+var whiteTotalSeconds = "-1";
+var blackTotalSeconds = "-1";
+var whoseTurn = "-1";
+var bTableIsFull = false;
+var bClientIsLogged = false;
+var bClientIsPlayer = false;
+var bClientIsWhitePlayer = false;
+var bClientIsBlackPlayer = false;
+var bClientIsInQueue = false;
+var bPlayerCanSendMove = false;
+var infoMsgPTE = "";
+function ajaxResponse(ajaxData)
 {
-	//todo: nie umiem zmienić koloru na migający niebieski
-	console.log("alertWindow() and play beep"); 
+	disableAll();
+	var startTimeVar = 0;
+	var otherOptionVar = "";
+
+	if (ajaxData.hasOwnProperty("consoleMsg")) console.log(ajaxData["consoleMsg"]);
+	if (ajaxData.hasOwnProperty("PTEmsg")) infoMsgPTE = ajaxData["PTEmsg"];
+	if (ajaxData.hasOwnProperty("whoseTurn")) whoseTurn = ajaxData["whoseTurn"];
+	if (ajaxData.hasOwnProperty("whitePlayerName")) $('#whitePlayer').html(ajaxData["whitePlayerName"]); else $('#whitePlayer').html("-");
+	if (ajaxData.hasOwnProperty("blackPlayerName")) $('#blackPlayer').html(ajaxData["blackPlayerName"]); else $('#blackPlayer').html("-");
+	if (ajaxData.hasOwnProperty("whitePlayerTimeLeft")) whiteTotalSeconds = ajaxData["whitePlayerTimeLeft"];
+	if (ajaxData.hasOwnProperty("blackPlayerTimeLeft")) blackTotalSeconds = ajaxData["blackPlayerTimeLeft"];
+	if (ajaxData.hasOwnProperty("startTimeLeft")) startTimeVar = ajaxData["startTimeLeft"];
+	if (ajaxData.hasOwnProperty("historyOfMoves")) addMsgToClientPlainTextWindow(ajaxData["historyOfMoves"], "history");
+	if (ajaxData.hasOwnProperty("promotedPawnsList")) showPromotions(ajaxData["promotedPawnsList"]);
+	if (ajaxData.hasOwnProperty("queuedPlayers")) addMsgToClientPlainTextWindow(ajaxData["queuedPlayers"], "queue");
+	if (ajaxData.hasOwnProperty("clientIsLogged")) bClientIsLogged = ajaxData["clientIsLogged"];
+	if (ajaxData.hasOwnProperty("loggedPlayerIsOnAnyChair")) bClientIsPlayer = ajaxData["loggedPlayerIsOnAnyChair"];
+	if (ajaxData.hasOwnProperty("loggedPlayerIsOnWhiteChair")) bClientIsWhitePlayer = ajaxData["loggedPlayerIsOnWhiteChair"];
+	if (ajaxData.hasOwnProperty("loggedPlayerIsOnBlackChair")) bClientIsBlackPlayer = ajaxData["loggedPlayerIsOnBlackChair"];
+	if (ajaxData.hasOwnProperty("tableIsFull")) bTableIsFull = ajaxData["tableIsFull"];
+	if (ajaxData.hasOwnProperty("clientIsInQueue")) bClientIsInQueue = ajaxData["clientIsInQueue"];
+	if (ajaxData.hasOwnProperty("whitePlayerBtn")) $("#whitePlayer").attr("disabled", !ajaxData["whitePlayerBtn"]);
+	if (ajaxData.hasOwnProperty("blackPlayerBtn")) $("#blackPlayer").attr("disabled", !ajaxData["blackPlayerBtn"]);
+	if (ajaxData.hasOwnProperty("playerCanMakeMove")) bPlayerCanSendMove = ajaxData["playerCanMakeMove"];
+	if (ajaxData.hasOwnProperty("queuePlayerBtn")) $("#queuePlayer").attr("disabled", !ajaxData["queuePlayerBtn"]);
+	if (ajaxData.hasOwnProperty("leaveQueueBtn")) $("#leaveQueue").attr("disabled", !bClientIsInQueue);
+	if (ajaxData.hasOwnProperty("specialOption")) otherOptionVar = ajaxData["specialOption"];
+	else closeStartGameDialogIfOpened();
 	
-    var oldTitle = document.title;
-    var msg = "Oczekiwanie na gracza!";
-    var timeoutId;
-    var blink = function() { document.title = document.title == msg ? ' ' : msg; };
-    var clear = function() 
+	//needed to save above params before using some of this functions below, to avoid using non-updated global vars
+	if (ajaxData.hasOwnProperty("PTEmsg")) addMsgToClientPlainTextWindow(infoMsgPTE, "info");
+	updatePlayersTimers();
+	updateHelpInfo();
+	manageStandUpBtns();
+	showActivePlayerWithCSS();
+	if (startTimeVar > 0) showStartDialog(ajaxData["startTimeLeft"]); 
+	if (ajaxData.hasOwnProperty("specialOption")) otherOption(otherOptionVar);
+	letPlayerMakeMoveIfItsHisTurn();
+}
+
+function otherOption(othOpt)
+{
+	if (othOpt == 'newGameStarted')
+		startGameTimers(); 
+	else if (othOpt == 'promote')
+		$("#promoteDialog").dialog(promoteVar).dialog("open");
+	else if (othOpt == 'endOfGame')
 	{
-        clearInterval(timeoutId);
-        document.title = oldTitle;
-        window.onmousemove = null;
-        timeoutId = null;
-    };
-    return function () 
+		$("#endOfGameDialog").html(infoMsgPTE); 
+		$("#endOfGameDialog").dialog(endOfGameVar).dialog("open");
+		setTimeout(function() { $("#endOfGameDialog").dialog('close'); }, 7000)
+	}
+	else console.log("ERROR: Unknown othOpt val.");
+}
+
+function updatePlayersTimers()
+{
+	$("#whiteTime").html("Gracz Biały: " + secondsToMinutesAndSeconds(whiteTotalSeconds));
+	$("#blackTime").html("Gracz Czarny: " + secondsToMinutesAndSeconds(blackTotalSeconds));
+	
+	if (timerGame)
 	{
-        if (!timeoutId) 
+		clearInterval(timerGame);
+		timerGame = null;
+	}
+	
+	timerGame = setInterval(function(){ updatePlayersTime() }, 1000);
+}
+
+function updateHelpInfo()
+{
+	if (!bClientIsLogged)
+		$("#additionalInfo").html("Musisz być zalogowany, aby móc grać.");
+	else if (bClientIsLogged && !bTableIsFull && !bClientIsPlayer)
+		$("#additionalInfo").html("By zagrać wybierz kolor bierek klikając przycisk gracza.");
+	else if (bClientIsLogged && !bTableIsFull && bClientIsPlayer && !bClientIsInQueue)
+		$("#additionalInfo").html("Oczekiwanie, aż do stołu gry przysiądzie się drugi gracz.");
+	else if (bClientIsLogged && bTableIsFull && !bClientIsPlayer && !bClientIsInQueue)
+		$("#additionalInfo").html("Stół gry jest pełen. By zagrać wejdź do kolejki graczy.");
+	else
+		$("#additionalInfo").html(" ");
+}
+
+function manageStandUpBtns()
+{
+	if (bClientIsPlayer)
+	{
+		if (bClientIsWhitePlayer) 
 		{
-            timeoutId = setInterval(blink, 1000);
-            window.onmousemove = clear;
-        }
-    };
-}());
+			$("#standUpWhite").show();
+			$("#standUpWhite").attr("disabled", false);
+			$("#standUpWhite").html("Wstań");
+		}
+		else if (bClientIsBlackPlayer) 
+		{
+			$("#standUpBlack").show();
+			$("#standUpBlack").attr("disabled", false);
+			$("#standUpBlack").html("Wstań");
+		}
+		else
+		{
+			if (bClientIsWhitePlayer)
+			{
+				$("#standUpWhite").show();
+				$("#standUpWhite").attr("disabled", false);
+				$("#standUpWhite").html("Wyjdź");
+			}
+			else if (bClientIsBlackPlayer)
+			{
+				$("#standUpBlack").show();
+				$("#standUpBlack").attr("disabled", false);
+				$("#standUpBlack").html("Wyjdź");
+			}
+			else console.log("ERROR: bClientIsPlayer == true, but != white && black");
+		}
+	}
+	else //turn off btns
+	{
+		$("#standUpWhite").hide();
+		$("#standUpBlack").hide();
+		$("#standUpWhite").attr("disabled", false);
+		$("#standUpBlack").attr("disabled", false);
+	}
+}
+
+function showActivePlayerWithCSS()
+{
+	if (whoseTurn == "whiteTurn") 
+	{
+		$("#whitePlayerMiniBox").css('background-color', 'lightGreen'); 
+		$("#blackPlayerMiniBox").css('background-color', 'white'); 
+	}
+	else if (whoseTurn == "blackTurn")
+	{
+		$("#whitePlayerMiniBox").css('background-color', 'white'); 
+		$("#blackPlayerMiniBox").css('background-color', 'lightGreen'); 
+	}
+	else
+	{
+		$("#whitePlayerMiniBox").css('background-color', 'white'); 
+		$("#blackPlayerMiniBox").css('background-color', 'white'); 
+	}
+}
+
+function letPlayerMakeMoveIfItsHisTurn()
+{
+	if (bPlayerCanSendMove) $("#perspective").css('z-index', '10'); 
+	else $("#perspective").css('z-index', '8'); 
+}
 
 function disableAll()
 {
@@ -33,30 +171,6 @@ function disableAll()
 	$("#standUpBlack").attr("disabled", true);
 	$("#queuePlayer").attr("disabled", true);
 	$("#leaveQueue").attr("disabled", true);
-}
-
-var infoPTEval = "";
-var historyPTEval = "";
-var queuePTEval = "";
-var PTEtype = "infoPTE";
-
-function refreshActualClientPlainTextWindowValue()
-{
-	if (PTEtype == "infoPTE")
-	{
-		clientPlainTextWindow.value = infoPTEval;
-		clientPlainTextWindow.scrollTop = clientPlainTextWindow.scrollHeight;
-	}
-	else if (PTEtype == "historyPTE")
-	{
-		clientPlainTextWindow.value = historyPTEval;
-		clientPlainTextWindow.scrollTop = clientPlainTextWindow.scrollHeight;
-	}
-	else if (PTEtype == "queuePTE")
-	{
-		clientPlainTextWindow.value = queuePTEval;
-	}
-	else console.log("ERROR: refreshActualClientPlainTextWindowValue(): unknown PTEtype val = " + PTEtype);
 }
 
 var endOfGameVar = 
@@ -76,20 +190,13 @@ var endOfGameVar =
 
 function addMsgToClientPlainTextWindow(message, type)
 {
-	if (type == "info") 
-	{
-		infoPTEval += "> " + message + "\n";
-		if (message.indexOf("Koniec gry") != '-1')
-		{
-			$("#endOfGameDialog").html(message);
-			$("#endOfGameDialog").dialog(endOfGameVar).dialog("open");
-			showPromotions("-1");
-			addMsgToClientPlainTextWindow("-1", "history");
-			setTimeout(function() { $("#endOfGameDialog").dialog('close'); }, 10000)
-		}
-	}
+	if (type == "info") infoPTEval += "> " + message + "\n";
 	else if (type == "history") historyPTEval = historyInOneLineToHistoryPTE(message);
-	else if (type == "queue") queuePTEval = queueInOneLineToQueuePTE(message);
+	else if (type == "queue") 
+	{
+		$("#queuePTE").html("kolejka(" + queueSize(message) + ")");
+		queuePTEval = queueInOneLineToQueuePTE(message);
+	}
 	else console.log("ERROR: unknown type val in addMsgToClientPlainTextWindow");
 	
 	refreshActualClientPlainTextWindowValue();
@@ -130,14 +237,34 @@ function changePTEsource(PTEsource)
 		console.log("ERROR: unknown changePTEsource type"); 
 		break;
 	}
-	console.log("clicked btn: " + PTEsource);
+}
+
+var infoPTEval = "";
+var historyPTEval = "";
+var queuePTEval = "";
+var PTEtype = "infoPTE";
+function refreshActualClientPlainTextWindowValue()
+{
+	if (PTEtype == "infoPTE")
+	{
+		clientPlainTextWindow.value = infoPTEval;
+		clientPlainTextWindow.scrollTop = clientPlainTextWindow.scrollHeight;
+	}
+	else if (PTEtype == "historyPTE")
+	{
+		clientPlainTextWindow.value = historyPTEval;
+		clientPlainTextWindow.scrollTop = clientPlainTextWindow.scrollHeight;
+	}
+	else if (PTEtype == "queuePTE")
+		clientPlainTextWindow.value = queuePTEval;
+	else console.log("ERROR: refreshActualClientPlainTextWindowValue(): unknown PTEtype val = " + PTEtype);
 }
 
 function historyInOneLineToHistoryPTE(historyInOneLine)
 {
 	historyInOneLine = historyInOneLine.trim(); //remove whitespaces from both sides of a string
 	var historyPTETemp = "";
-	if (historyInOneLine != "-1")
+	if (historyInOneLine != "0")
 	{
 		var historyArray = historyInOneLine.split(" ");
 		if (historyArray.length > 0)
@@ -151,23 +278,27 @@ function historyInOneLineToHistoryPTE(historyInOneLine)
 			}
 		}
 	}
+	else historyPTETemp = "1. -"
 
 	return historyPTETemp;
 }
 
-function showPromotions(promotions)
+function queueInOneLineToQueuePTE(queueList)
 {
-	if (promotions == "-1") 
+	var queueListPlainText = "";
+	if (queueList != "0") 
 	{
-		$("#promotionContent").css('display','none');
-		$("#promotionContent").html("");
+		var queueListArr = queueList.split(" ");
+		var index;
+		for (index = 0; index < queueListArr.length; ++index) 
+		{
+			var indexPlainText = index + 1;
+			queueListPlainText += indexPlainText + ". " + queueListArr[index] + "\n";
+		}
 	}
-	else 
-	{
-		$("#promotionContent").css('display','block');
-		$("#promotionContent").html("&nbsp;<u>Promowane pionki:</u><br/><font size='4'>" 
-			+ promotionsInOneLineToPromotionsDIV(promotions) + "</font>");
-	}
+	else queueListPlainText = "Nie ma żadnych graczy w kolejce.";
+	
+	return queueListPlainText;
 }
 
 function promotionsInOneLineToPromotionsDIV(promotionsInOneLine)
@@ -199,44 +330,32 @@ function promotionsInOneLineToPromotionsDIV(promotionsInOneLine)
 	return promotionsInOneLine;
 }
 
-var timerStart = null;
-function turnOffStartTimerIfItsOn()
+function showPromotions(promotions)
 {
-	if (timerStart)
+	if (promotions == "0") 
 	{
-		clearInterval(timerStart);
-		timerStart = null;
+		$("#promotionContent").css('display','none');
+		$("#promotionContent").html("");
 	}
-}
-
-function closeStartGameDialogIfOpened()
-{
-	if ($("#startGameDialog").dialog(startGameVar).dialog('isOpen')) 
+	else 
 	{
-		console.log("startGameDialog is open. close it");
-		$("#startGameDialog").dialog(startGameVar).dialog('close'); 
+		$("#promotionContent").css('display','block');
+		$("#promotionContent").html("&nbsp;<u>Promowane pionki:</u><br/><font size='4'>" 
+			+ promotionsInOneLineToPromotionsDIV(promotions) + "</font>");
 	}
-	$("#startGameDialog").html("Wciśnij start, by rozpocząć grę. Pozostały czas: 120");
 }
 
 var startInfo;
-function showStartDialog(whiteClickedStart, blackClickedStart, startTime)
+function showStartDialog(startTime)
 {
 	turnOffStartTimerIfItsOn();
 	$("#startGameDialog").dialog(startGameVar).dialog("open"); 
-	var whitePlr = $("#whitePlayer").text(); //todo: dać gdzieś wyżej by tego używać globalnie
-	var blackPlr = $("#blackPlayer").text();
-	//todo: nie robić warunków, tylko niech z php wpada jakaś zmienna która decyduje
-	if ((whiteClickedStart == false && js_login == whitePlr) || (blackClickedStart == false && js_login == blackPlr))
+
+	if (bClientIsPlayer)
 	{
 		alertWindow();
 		reactBeep.play();
 		startInfo = "Wciśnij start, by rozpocząć grę. Pozostały czas: ";
-	}
-	else if ((whiteClickedStart == true && js_login == whitePlr) || (blackClickedStart == true && js_login == blackPlr))
-	{
-		startInfo = "Oczekiwanie, aż drugi gracz wciśnie start: ";
-		$("#startGameDialog").dialog(startGameVar).dialog("option", "buttons", {});
 	}
 	else
 	{
@@ -258,6 +377,23 @@ function showStartDialog(whiteClickedStart, blackClickedStart, startTime)
 		}, 1000); 
 	}
 	else console.log("ERROR: timerStart = true");
+}
+
+function closeStartGameDialogIfOpened()
+{
+	if ($("#startGameDialog").dialog(startGameVar).dialog('isOpen')) 
+		$("#startGameDialog").dialog(startGameVar).dialog('close'); 
+	$("#startGameDialog").html("Wciśnij start, by rozpocząć grę. Pozostały czas: 120");
+}
+
+var timerStart = null;
+function turnOffStartTimerIfItsOn()
+{
+	if (timerStart)
+	{
+		clearInterval(timerStart);
+		timerStart = null;
+	}
 }
 
 var timerGame2ndP = null;
@@ -289,24 +425,53 @@ var startGameVar =
 	}
 };
 
-function queueInOneLineToQueuePTE(queueList)
+var timerGame = null;
+function startGameTimers()
 {
-	var queueListPlainText = "";
-	if (queueList != "0") 
-	{
-		var queueListArr = queueList.split(" ");
-		var index;
-		for (index = 0; index < queueListArr.length; ++index) 
-		{
-			console.log(queueListArr[index]);
-			var indexPlainText = index + 1;
-			queueListPlainText += indexPlainText + ". " + queueListArr[index] + "\n";
-		}
-	}
-	else queueListPlainText = "Nie ma żadnych graczy w kolejce.";
-	
-	return queueListPlainText;
+	resetPlayersTimers();
+	if (!timerGame) timerGame = setInterval(function(){ updatePlayersTime() }, 1000);
+	closeStartGameDialogIfOpened();
 }
+
+function resetPlayersTimers()
+{
+	whiteTotalSeconds = 30*60;
+	blackTotalSeconds = 30*60;
+	$("#whiteTime").html("Gracz Biały: 30:00");
+	$("#blackTime").html("Gracz Czarny: 30:00");
+}
+
+function secondsToMinutesAndSeconds(time)
+{
+	if  (time < 0) time = 0;
+	secs = time % 60;
+	mins = parseInt(time / 60);
+	
+	var secsPrefix = (secs > 9 ? "" : "0");
+	var minsPrefix = (mins > 9 ? "" : "0");
+	
+	var minsAndSecs = minsPrefix + mins + ":" + secsPrefix + secs;
+	return minsAndSecs;
+}
+
+function updatePlayersTime()
+{
+	var secs;
+	var mins;
+	if (whoseTurn == "whiteTurn")
+	{
+		whiteTotalSeconds--;
+		$("#whiteTime").html("Gracz Biały: " + secondsToMinutesAndSeconds(whiteTotalSeconds));
+	}
+	else if (whoseTurn == "blackTurn")
+	{
+		blackTotalSeconds--;		
+		$("#blackTime").html("Gracz Czarny: " + secondsToMinutesAndSeconds(blackTotalSeconds));
+	}
+	else if (whoseTurn == "noTurn")
+		resetPlayersTimers();
+	else console.log("ERROR: updatePlayersTime(): unknown turn = " + whoseTurn);
+}		
 
 function queueSize(queueList)
 {
@@ -316,241 +481,6 @@ function queueSize(queueList)
 		return queueListArr.length;
 	}
 	else return 0;
-}
-
-var timerGame = null;
-function startWhiteTimerIfFirstTurn(whiteTimeLeft, blackTimeLeft)
-{
-	if (whiteTimeLeft == 30*60 && blackTimeLeft == 30*60)
-	{
-		resetPlayersTimers();
-		if (!timerGame) 
-		{
-			ajaxResponse(ajaxData); //todo: dlaczego tu wcześniej była deklaracja funkcji ajaxResponse?: "function "
-			timerGame = setInterval(function(){ updatePlayersTime() }, 1000);
-		}
-		closeStartGameDialogIfOpened();
-	}
-}
-
-var whiteTotalSeconds = "-1";
-var blackTotalSeconds = "-1";
-var whoseTurn = "-1";
-//todo: to moze przychodzić obliczone już z php'a?
-var bTableIsFull = false;
-var bClientIsLogged = false;
-var bClientIsPlayer = false;
-var bClientIsInQueue = false;
-var bPlayerCanSendMove = false;
-function ajaxResponse(ajaxData)
-{
-	//bTableIsFull, toddo: jest pełen gdy nie możemy wcisnąć buttona białego i czarnego
-	if (ajaxData[0] != '-1' && ajaxData[1] != '-1' ) 
-	{
-		if (ajaxData[0] != '0' && ajaxData[1] != '0')
-			bTableIsFull = true;
-		else bTableIsFull = false;
-	}
-	
-	//bClientIsLogged, todo: true jeżeli w skrócie da się wcisnąć którykolwiek z przycisków
-	//todo: zmiennej js_login da się w ogóle pozbyć z kodu
-	if (js_login === "") bClientIsLogged = false;
-	else bClientIsLogged = true;
-	
-	//bClientIsPlayer. true, gdy możemy wcisnąć standup/resign
-	if (ajaxData[9] == false || ajaxData[10] == false || ajaxData[12] == false)
-		bClientIsPlayer = true;
-	else bClientIsPlayer = false;
-	console.log("ajaxData[9]=" + ajaxData[9] + ", ajaxData[10]=" + ajaxData[10] + ", ajaxData[12]=" + ajaxData[12]);
-	
-
-	
-	if (ajaxData[0] == '-1') $('#whitePlayer').html("-");
-	else $('#whitePlayer').html(ajaxData[0]);
-	if (ajaxData[1] == '-1') $('#blackPlayer').html("-");
-	else $('#blackPlayer').html(ajaxData[1]);
-	
-	if (ajaxData[2] != '-1') console.log(ajaxData[2]);
-	if (ajaxData[3] != '-1') addMsgToClientPlainTextWindow(ajaxData[3], "info");
-	if (ajaxData[4] != '-1') otherOption(ajaxData[4]);
-	
-	if (ajaxData[5] != '-1') console.log(ajaxData[5]);
-	if (ajaxData[6] != '-1') addMsgToClientPlainTextWindow(ajaxData[6], "info");
-	
-	if (ajaxData[7] != '-1') $("#whitePlayer").attr("disabled", ajaxData[7]);
-	if (ajaxData[8] != '-1') $("#blackPlayer").attr("disabled", ajaxData[8]);
-	if (ajaxData[9] != '-1') $("#standUpWhite").attr("disabled", ajaxData[9]);
-	if (ajaxData[10] != '-1') $("#standUpBlack").attr("disabled", ajaxData[10]);
-	//if (ajaxData[11] == '1') console.log("start dialog should appear"); 
-	if (ajaxData[13] != '-1'); //todo: old #pieceFrom btn. code to remove  
-	if (ajaxData[14] != '-1'); //todo: old #pieceTo btn. code to remove  
-	if (ajaxData[15] != '-1'); //todo: old #movePieceButton btn. code to remove 
-	if (ajaxData[16] != '-1') $("#queuePlayer").attr("disabled", ajaxData[16]);
-	if (ajaxData[17] != '-1') 
-	{
-		$("#leaveQueue").attr("disabled", ajaxData[17]);
-		if (ajaxData[17] == false) bClientIsInQueue = true;
-		else bClientIsInQueue = false;
-	}
-	
-	//update queue info, todo: pack to function
-	if (ajaxData[18]!= '-1') 
-	{
-		var queued = "kolejka(" + queueSize(ajaxData[18]) + ")";
-		$("#queuePTE").html(queued); 
-		addMsgToClientPlainTextWindow(ajaxData[18], "queue");
-	}
-	
-	if (ajaxData[19] != '-1') whiteTotalSeconds = ajaxData[19]; 
-	if (ajaxData[20] != '-1') blackTotalSeconds = ajaxData[20];
-	if (ajaxData[21] != '-1') whoseTurn = ajaxData[21];
-	
-	//show start dialog if core waits for starts, todo: pack to function
-	if (ajaxData[22] != '-1' && ajaxData[23] != '-1' && ajaxData[24] != '-1' && ajaxData[0] != '0' && ajaxData[1] != '0') 
-		showStartDialog(ajaxData[22], ajaxData[23], ajaxData[24]); 
-	else 
-	{
-		console.log("ajaxData[22]:" + ajaxData[22] + ", ajaxData[23]:" + ajaxData[23] + ", ajaxData[24]:" + ajaxData[24]);
-		closeStartGameDialogIfOpened();
-	}
-	
-	if (ajaxData[25] != '-1') { addMsgToClientPlainTextWindow(ajaxData[25], "history"); }
-	if (ajaxData[26] != '-1') { showPromotions(ajaxData[26]); }
-	
-	
-	
-	//manage standUp/giveUp
-	if (bClientIsPlayer)
-	{
-		if (ajaxData[9] == false) 
-		{
-			$("#standUpWhite").show();
-			$("#standUpWhite").attr("disabled", false);
-			$("#standUpWhite").html("Wstań");
-		}
-		else if (ajaxData[10] == false) 
-		{
-			$("#standUpBlack").show();
-			$("#standUpBlack").attr("disabled", false);
-			$("#standUpBlack").html("Wstań");
-		}
-		else
-		{
-			//todo: ciągnąć z php
-			if (js_login == ajaxData[0]) //(you are white)
-			{
-				$("#standUpWhite").show();
-				$("#standUpWhite").attr("disabled", false);
-				$("#standUpWhite").html("Wyjdź");
-			}
-			else if (js_login == ajaxData[1]) //(you are black)
-			{
-				$("#standUpBlack").show();
-				$("#standUpBlack").attr("disabled", false);
-				$("#standUpBlack").html("Wyjdź");
-			}
-			else console.log("ERROR: bClientIsPlayer == true, but != white && black");
-		}
-	}
-	else //turn off btns
-	{
-		$("#standUpWhite").hide();
-		$("#standUpBlack").hide();
-		$("#standUpWhite").attr("disabled", false);
-		$("#standUpBlack").attr("disabled", false);
-	}
-	
-	if (whoseTurn != "-1" && whoseTurn != "NO_TURN") 
-		startWhiteTimerIfFirstTurn(whiteTotalSeconds, blackTotalSeconds);
-	
-	//show active player via changing div bg color, todo: pack to function
-	if (whoseTurn == "WHITE_TURN") 
-	{
-		$("#whitePlayerMiniBox").css('background-color', 'lightGreen'); 
-		$("#blackPlayerMiniBox").css('background-color', 'white'); 
-	}
-	else if (whoseTurn == "BLACK_TURN")
-	{
-		$("#whitePlayerMiniBox").css('background-color', 'white'); 
-		$("#blackPlayerMiniBox").css('background-color', 'lightGreen'); 
-	}
-	else
-	{
-		$("#whitePlayerMiniBox").css('background-color', 'white'); 
-		$("#blackPlayerMiniBox").css('background-color', 'white'); 
-	}
-	
-	//show active turn via changing div bg color, todo: pack to function
-	if ((whoseTurn == "WHITE_TURN" || whoseTurn == "BLACK_TURN") && ajaxData[2].includes("TABLE_DATA") == false) 
-	{
-		if (ajaxData[15] == false)
-		{
-			$("#perspective").css('z-index', '10'); 
-			bPlayerCanSendMove = true;
-		}
-		else
-		{
-			$("#perspective").css('z-index', '8'); 
-			bPlayerCanSendMove = false;
-		}
-	}
-	
-	//update players timers, todo: pack to function
-	if (whiteTotalSeconds != "-1" || blackTotalSeconds != "-1") 
-	{
-		if (whiteTotalSeconds != "-1") 
-		$("#whiteTime").html("Gracz Biały: " + secondsToMinutesAndSeconds(whiteTotalSeconds));
-		if (blackTotalSeconds != "-1") 
-		$("#blackTime").html("Gracz Czarny: " + secondsToMinutesAndSeconds(blackTotalSeconds));
-		
-		if (timerGame)
-		{
-			clearInterval(timerGame);
-			timerGame = null;
-		}
-		
-		timerGame = setInterval(function(){ updatePlayersTime() }, 1000);
-	}
-	
-	//todo: doszlifować to jeszcze
-	//update additionalInfo
-	console.log("bClientIsLogged=" + bClientIsLogged + ", bTableIsFull=" + bTableIsFull + ", bClientIsPlayer=" + bClientIsPlayer + 
-				", bClientIsInQueue=" + bClientIsInQueue);
-	if (!bClientIsLogged)
-		$("#additionalInfo").html("Musisz być zalogowany, aby móc grać.");
-	else if (bClientIsLogged && !bTableIsFull && !bClientIsPlayer)
-		$("#additionalInfo").html("By zagrać wybierz kolor bierek klikając przycisk gracza.");
-	else if (bClientIsLogged && !bTableIsFull && bClientIsPlayer && !bClientIsInQueue)
-		$("#additionalInfo").html("Oczekiwanie, aż do stołu gry przysiądzie się drugi gracz.");
-	else if (bClientIsLogged && bTableIsFull && !bClientIsPlayer && !bClientIsInQueue)
-		$("#additionalInfo").html("Stół gry jest pełen. By zagrać wejdź do kolejki graczy.");
-	else
-		$("#additionalInfo").html(" ");
-}
-
-function otherOption(othOpt) //todo: dać tu wuęcej funkcji, albo usunąć to i zrobić tak jak resztę
-{
-	var wsMsg;
-	if (othOpt.substr(0,6) == "wsSend")
-	{
-		wsMsg = othOpt.substr(7);
-		othOpt = "wsSend";
-	}
-	
-	switch (othOpt)
-	{
-		case 'promote':
-		$("#promoteDialog").dialog(promoteVar).dialog("open");
-		break;
-		
-		case 'wsSend':
-		websocket.send(wsMsg);
-		break;
-		
-		default:
-		console.log("ERROR: Unknown othOpt val.");
-		break;
-	}
 }
 
 var promoteVar = 
@@ -564,38 +494,33 @@ var promoteVar =
 		if (event.originalEvent) 
 		{
 			websocket.send("promoteTo:q"); //auto promote queen
-			console.log('auto promote: promoteTo:q');
 			addMsgToClientPlainTextWindow("Pion promowany na: hetman.", "info");
 			if ($(this).dialog('isOpen')) $(this).dialog('close');
 		}
 	},
 	buttons: 
-	{ //todo: mogę się kiedyś pokusić o zrobienie podziału koloru znaków na białe/czarne. białe: U+2655, U+2657, U+2658, U+2656.
+	{ //future: mogę się kiedyś pokusić o zrobienie podziału koloru znaków na białe/czarne. białe: U+2655, U+2657, U+2658, U+2656.
 		'\u265B': function() 
 		{
 			websocket.send("promoteTo:q"); //queen
-			console.log('clicked: promoteTo:q');
 			addMsgToClientPlainTextWindow("Pion promowany na: hetman.", "info");
 			if ($(this).dialog('isOpen')) $(this).dialog('close');
 		}, 
 		'\u265D': function() 
 		{
 			websocket.send("promoteTo:b"); //bishop
-			console.log('clicked: promoteTo:b');
 			addMsgToClientPlainTextWindow("Pion promowany na: goniec.", "info");
 			if ($(this).dialog('isOpen')) $(this).dialog('close');
 		}, 
 		'\u265E': function() 
 		{
 			websocket.send("promoteTo:n"); //knight
-			console.log('clicked: promoteTo:n');
 			addMsgToClientPlainTextWindow("Pion promowany na: skoczek.", "info");
 			if ($(this).dialog('isOpen')) $(this).dialog('close');
 		}, 
 		'\u265C': function() 
 		{
 			websocket.send("promoteTo:r"); //rook
-			console.log('clicked: promoteTo:r');
 			addMsgToClientPlainTextWindow("Pion promowany na: wieża.", "info");
 			if ($(this).dialog('isOpen')) $(this).dialog('close');
 		}
@@ -657,52 +582,10 @@ function confirmLogout()
 	else return false;   
 }
 
-function resetPlayersTimers()
-{
-	whiteTotalSeconds = 30*60;
-	blackTotalSeconds = 30*60;
-	$("#whiteTime").html("Gracz Biały: 30:00");
-	$("#blackTime").html("Gracz Czarny: 30:00");
-}
-
 function info()
 {
 	$("#info").html('mariusz.pak.89@gmail.com | <a href="index.php?a=logout" onclick="return deleteask();">Wyloguj się</a></center>');
-}
-
-function secondsToMinutesAndSeconds(time)
-{
-	if  (time < 0) time = 0;
-	secs = time % 60;
-	mins = parseInt(time / 60);
-	
-	var secsPrefix = (secs > 9 ? "" : "0");
-	var minsPrefix = (mins > 9 ? "" : "0");
-	
-	var minsAndSecs = minsPrefix + mins + ":" + secsPrefix + secs;
-	return minsAndSecs;
-}
-
-function updatePlayersTime()
-{
-	var secs;
-	var mins;
-	if (whoseTurn == "WHITE_TURN")
-	{
-		whiteTotalSeconds--;
-		$("#whiteTime").html("Gracz Biały: " + secondsToMinutesAndSeconds(whiteTotalSeconds));
-	}
-	else if (whoseTurn == "BLACK_TURN")
-	{
-		blackTotalSeconds--;		
-		$("#blackTime").html("Gracz Czarny: " + secondsToMinutesAndSeconds(blackTotalSeconds));
-	}
-	else if (whoseTurn == "NO_TURN")
-	{
-		resetPlayersTimers();
-	}
-	else console.log("ERROR: updatePlayersTime(): unknown turn = " + whoseTurn);
-}			
+}	
 
 function serverStatus(state)
 {
@@ -737,9 +620,7 @@ var moveFromTo = "";
 function clickBoardField(fieldPos)
 {
 	if (bClientIsPlayer && bPlayerCanSendMove) //additional conditions
-	{	
-		console.log("clickBoardField(): fieldPos = " + fieldPos.id);
-		
+	{			
 		if (fieldFromClicked == "0") 
 		{
 			fieldFromClicked = fieldPos;
@@ -752,7 +633,6 @@ function clickBoardField(fieldPos)
 			//$(fieldFromClicked).css("background-color", ""); 
 			$(fieldFromClicked).css("background", ""); 
 			moveFromTo = fieldFromClicked.id + fieldToClicked.id;
-			console.log("2 fields are clicked. move = " + moveFromTo + ", clear them now.");
 			movePiece(moveFromTo);
 			fieldFromClicked = "0";
 			fieldToClicked = "0";
@@ -785,3 +665,28 @@ function movePiece(fromTo)
 		//todo: co dalej z takim fantem robić? odświerzać stronę?
 	}
 }
+
+var reactBeep = new Audio('sounds/beep1.wav');
+alertWindow = (function () //todo: dlaczego ta funkcja jest odpalana na końcu?
+{
+	//future: nie umiem zmienić koloru zakładki na migający niebieski
+    var oldTitle = document.title;
+    var msg = "Oczekiwanie na gracza!";
+    var timeoutId;
+    var blink = function() { document.title = document.title == msg ? ' ' : msg; };
+    var clear = function() 
+	{
+        clearInterval(timeoutId);
+        document.title = oldTitle;
+        window.onmousemove = null;
+        timeoutId = null;
+    };
+    return function () 
+	{
+        if (!timeoutId) 
+		{
+            timeoutId = setInterval(blink, 1000);
+            window.onmousemove = clear;
+        }
+    };
+}());
