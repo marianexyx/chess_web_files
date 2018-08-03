@@ -1,5 +1,57 @@
 <?
 	if(!isset($_SESSION)) session_start();
+	
+	$TABLE_DATA = array
+	(
+		"NONE" => "0",
+		"ACTION" => "1",
+		"WHITE_PLAYER" => "2",
+		"BLACK_PLAYER" => "3",
+		"GAME_STATE" => "4",
+		"WHITE_TIME" => "5",
+		"BLACK_TYPE" => "6",
+		"QUEUE" => "7",
+		"START_TIME" => "8",
+		"HISTORY" => "9",
+		"PROMOTIONS" => "10",
+		"ERROR" => "11"
+	);
+	
+	$ACTION_TYPE = array
+	(
+		"NONE" => "0",
+		"NEW_WHITE_PLAYER" => "1",
+		"NEW_BLACK_PLAYER" => "2",
+		"NEW_GAME_STARTED" => "3",
+		"BAD_MOVE" => "4",
+		"RESET_COMPLITED" => "5",
+		"END_GAME_NONE" => "6", 	//error type. end_of_game can't be none
+		"END_GAME_NORMAL_WIN_WHITE" => "7",
+		"END_GAME_NORMAL_WIN_BLACK" => "8",
+		"END_GAME_DRAW" => "9",
+		"END_GAME_GIVE_UP_WHITE" => "10",
+		"END_GAME_GIVE_UP_BLACK" => "11",
+		"END_GAME_SOCKET_LOST_WHITE" => "12",
+		"END_GAME_SOCKET_LOST_BLACK" => "13",
+		"END_GAME_TIMEOUT_GAME_WHITE" => "14",
+		"END_GAME_TIMEOUT_GAME_BLACK" => "15", 
+		"END_GAME_ERROR" => "16",
+		"ERROR" => "99"
+	);
+	
+	$GAME_STATE = array
+	(
+		"ERROR" => "0",
+		"TURN_NONE_WAITING_FOR_PLAYERS" => "1",
+		"TURN_NONE_WAITING_FOR_START_CONFIRMS" => "2",
+		"TURN_NONE_RESETING" => "3",
+		"TURN_WHITE" => "4",
+		"TURN_WHITE_FIRST_TURN" => "5",
+		"TURN_WHITE_PROMOTE" => "6",
+		"TURN_BLACK" => "7",
+		"TURN_BLACK_PROMOTE" => "8"
+	);
+	
 	require_once('saveCoreData.php');
 	require_once('calcCoreData.php');
 	

@@ -90,7 +90,8 @@ textarea {
 #ytChat
 {
 	padding: 4px;
-	padding-top: 50px;
+	padding-top: 30px;
+	padding-left: 13px;
 }
 
 #playersBoxes
@@ -98,6 +99,7 @@ textarea {
 	display: flex;
 	padding: 4px;
 	padding-bottom: 20px;
+	padding-top: 10px;
 }
 
 #whitePlayerBox
@@ -137,7 +139,6 @@ textarea {
 #whitePlayer, #blackPlayer
 {
 	min-width:60px;
-	padding: 4px;
 }
 
 #resign
@@ -157,16 +158,20 @@ textarea {
 	padding: 1px;
 }
 
+#clientPTE
+{
+	padding-top: 5px;
+	padding-left: 13px;
+}
+
 #clientPlainTextWindow
 {
-	padding: 4px;
 	width:330px; 
 	height:160px;
 }
 
 #queuePlayer, #leaveQueue
 {
-	padding: 4px;
 	display: none;
 }
 

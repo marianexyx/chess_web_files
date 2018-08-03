@@ -15,8 +15,8 @@
 		<script src="http://code.jquery.com/jquery-latest.min.js"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script> 
 		<script src='https://www.google.com/recaptcha/api.js'></script>
-		<script src="swfobject.js"></script>
-		<!-- <script src="js/websocket.js"></script>  // todo: zmyślnie umieścić kod websocketów w zewnętrznym pliku -->
+		<script src="swfobject.js"></script> <!-- todo: to do wyrzucenia? -->
+		<script src="websockets.js"></script>
 		<script src="functions.js"></script>
 	</head>
 	<body>	
@@ -42,7 +42,7 @@
 							  </div>
 							  <script>$(function() { $("#additionalInfo").html(" "); });</script>
 							  '; 
-					//to będzie mogło być poza php'em jeżeli login; rejestracja nie będą w tabelach		  
+					//todo: to będzie mogło być poza php'em jeżeli login i rejestracja nie będą w tabelach		  
 					echo '
 					<div id="serverStatus">
 						|&nbsp;&nbsp;Serwer: 
@@ -57,104 +57,31 @@
 						case 'login': require_once('login.php'); break;
 						case 'register': require_once('register.php'); break;
 						case 'game': require_once('game.php'); break;
+						case 'doubleLogin': echo'<script> window.history.pushState("", "", "/index.php");
+						alert("Wylogowywanie: podwójny login"); </script>'; break;
 						case 'logout':
-						$_SESSION = array(); // czyszczenie sesji
-						session_destroy(); // niszczenie sesji. resetuje się na nowe //todo: czy msie rozni od session_unset?
-						header("Location: index.php"); //header przenosi na stronę główną
+						$_SESSION = array(); //czyszczenie sesji
+						session_destroy(); //niszczenie sesji. resetuje się na nowe //todo: czy msie rozni od session_unset?
+						if ($_GET['b'] == 'doubleLogin')
+							header("Location: index.php?a=doubleLogin");
+						else header("Location: index.php"); //header przenosi na stronę główną
 						break;
-						default: require_once('home.php'); break;
+						
+						default: require_once('home.php'); break; //todo: home jest pusty. niech tam będzie domyślne wyświetlanie paska info
 					}
-					ob_end_flush(); // wyrzygaj stronę
+					ob_end_flush(); //wyrzygaj stronę
 					?>
 			</div>
 			<div id="content">
-				<div id="game"><!-- todo: dlaczego wogle ten cały kod php/js poniżej jest w indexie? -->
-					<? 
-						$user = getUser($_SESSION['id']);
-						$_SESSION['login'] = $user['login'];   
-						echo '<script> var js_login = "'.$_SESSION['login'].'";</script>'; //todo: postarać się wyeleminować js_login z kodu
-					?>
-					
+				<div id="game"><!-- todo: dlaczego wogle ten cały kod php/js poniżej jest w indexie? -->					
 					<script> 
-						$(function()  //odpala funkcje dopiero po zaladowaniu sie strony 
-						{
-							var clientPlainTextWindow = $("#clientPlainTextWindow");
-							clientPlainTextWindow.value = "";
-						});
-						
-						var wsUri = "ws://89.72.9.69:1234"; 
-						var websocket = null; //osobne połączenia
-						
-						function initWebSocket() 
-						{
-							if ("WebSocket" in window) 
-							{
-								if (websocket == null) { websocket = new WebSocket(wsUri);} 
-								
-								websocket.onerror = function (evt) 
-								{
-									console.log('Weboscket error:', evt.data);
-									serverStatus("offline");
-								};
-								
-								websocket.onclose = function (evt) 
-								{
-									console.log('Socket is closed. Reconnect will be attempted in 1 second.', evt.reason);
-									serverStatus("offline");
-									websocket = null;
-									setTimeout(function() { initWebSocket(); }, 1000)
-								};
-								
-								websocket.onmessage = function (evt) 
-								{ 
-									if (evt.data != 'connectionOnline' && evt.data != 'logout:doubleLogin')
-									{
-										$.ajax(
-										{
-											url: "on_ws_msg.php",
-											type: "POST",			
-											dataType: "json",
-											data: { wsMsg: evt.data },
-											success: function (data) { ajaxResponse(data); },
-											error: function(xhr, status, error) 
-											{
-												var err = eval("(" + xhr.responseText + ")");
-												alert(err.Message);
-											}
-										});
-									}
-									else if (evt.data == 'logout:doubleLogin')
-									{
-										disableAll();
-										stopWebSocket(); //todo: to chyba robi blad. sockety same sie wylacza po wylogowaniu
-										setTimeout(function() { window.location.href = 'index.php?a=logout'; }, 5000) //todo: przetestować
-										alert("Wylogowywanie: podwójny login"); //todo: to musi być przekazywane jako parametr w gecie
-										window.location.href = 'index.php?a=logout';
-									}
-								};
-								
-								websocket.onopen = function (evt) 
-								{ 
-									var stateStr;
-									switch (websocket.readyState) 
-									{
-										case 0: { stateStr = "CONNECTING"; serverStatus("connecting"); break; }
-										case 1: { stateStr = "OPEN"; serverStatus("online"); break; }
-										case 2: { stateStr = "CLOSING";	serverStatus("offline"); break; }
-										case 3: { stateStr = "CLOSED"; serverStatus("offline"); break; }
-										default: { stateStr = "UNKNOW"; serverStatus("offline"); break; }
-									}
-									
-									<? if(isset($_SESSION['login']) && !empty($_SESSION['login'])) echo 'websocket.send("im '.$_SESSION['id'].'&'.$_SESSION['hash'].'");';
-									else echo 'websocket.send("getTableDataAsJSON");'; ?>
-								}
-							} else alert("WebSockets not supported on your browser.");
+						function sendFirstWsMsg() 
+						{  
+							<? if(isset($_SESSION['login']) && !empty($_SESSION['login'])) 
+								echo 'websocket.send("im '.$_SESSION['id'].'&'.$_SESSION['hash'].'");';
+						   else echo 'websocket.send("getTableDataAsJSON");'; ?>
 						}
-						
-						function stopWebSocket() { if (websocket) websocket.close(); }
-						
-						setInterval(function() { websocket.send("keepConnected"); }, 250000); //[ms]
-						
+												
 						initWebSocket(); //połącz z websocketami (ważne to jest tutaj by pobrać startowe wartości strony) 
 					</script> 	
 					

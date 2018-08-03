@@ -8,21 +8,7 @@
 	
 	function saveCoreDataInSessionVars($tableDataString)
 	{
-		$TABLE_DATA = array
-		(
-			"NONE" => "0x00",
-			"ACTION" => "0x01",
-			"WHITE_PLAYER" => "0x02",
-			"BLACK_PLAYER" => "0x03",
-			"GAME_STATE" => "0x04",
-			"WHITE_TIME" => "0x05",
-			"BLACK_TYPE" => "0x06",
-			"QUEUE" => "0x07",
-			"START_TIME" => "0x08",
-			"HISTORY" => "0x09",
-			"PROMOTIONS" => "0x0a",
-			"ERROR" => "0x0b"
-		);
+		global $TABLE_DATA;
 				
 		$tableDataStart = strpos($tableDataString, "{");
 		$tableDataStop = strpos($tableDataString, "}");
@@ -83,31 +69,15 @@
 	
 	function makeAction($action) //actions only set msgs in PTE
 	{
-		$ACTION_TYPE = array
-		(
-			"NONE" => "0x00",
-			"NEW_GAME_STARTED" => "0x01",
-			"BAD_MOVE" => "0x02",
-			"RESET_COMPLITED" => "0x03",
-			"END_GAME_NONE" => "0x04", 	//error type. end_of_game can't be none
-			"END_GAME_NORMAL_WIN_WHITE" => "0x05",
-			"END_GAME_NORMAL_WIN_BLACK" => "0x06",
-			"END_GAME_DRAW" => "0x07",
-			"END_GAME_GIVE_UP_WHITE" => "0x08",
-			"END_GAME_GIVE_UP_BLACK" => "0x09",
-			"END_GAME_SOCKET_LOST_WHITE" => "0x0a",
-			"END_GAME_SOCKET_LOST_BLACK" => "0x0b",
-			"END_GAME_TIMEOUT_GAME_WHITE" => "0x0c",
-			"END_GAME_TIMEOUT_GAME_BLACK" => "0x0d", 
-			"END_GAME_ERROR" => "0x0e",
-			"ERROR" => "0xff"
-		);
+		global $ACTION_TYPE;
 		
 		switch ($action)
 		{		
 			case $ACTION_TYPE["NONE"]:
+			case $ACTION_TYPE["NEW_WHITE_PLAYER"]:
+			case $ACTION_TYPE["NEW_BLACK_PLAYER"]:
 				break;
-		
+			
 			case $ACTION_TYPE["NEW_GAME_STARTED"]:
 				$_SESSION['textboxAjax'] = "Nowa gra rozpoczęta. Białe wykonują ruch."; 
 				break;
@@ -191,19 +161,8 @@
 	
 	function whoseTurnFromGameStatus($GS)
 	{
-		$GAME_STATE = array
-		(
-			"ERROR" => "0x00",
-			"TURN_NONE_WAITING_FOR_PLAYERS" => "0x01",
-			"TURN_NONE_WAITING_FOR_START_CONFIRMS" => "0x02",
-			"TURN_NONE_RESETING" => "0x03",
-			"TURN_WHITE" => "0x04",
-			"TURN_WHITE_FIRST_TURN" => "0x05",
-			"TURN_WHITE_PROMOTE" => "0x06",
-			"TURN_BLACK" => "0x07",
-			"TURN_BLACK_PROMOTE" => "0x08"
-		);
-		
+		global $GAME_STATE;
+				
 		switch($GS)
 		{
 		case $GAME_STATE["ERROR"]: return NO_TURN;
@@ -225,16 +184,15 @@
 	{	
 		//future: zapytanie może być wykonane tylo raz przy użyciu "OR", i mozna wyciągać tylko loginy z bazy, zamiast całych linii
 		if ($IDsList == "0")
-			return "-1";
+			return "0";
 		else
 		{
 			$IDsListArr = explode(" ", $IDsList);
 			$sqlQueryString = "SELECT * FROM users WHERE id = ";
 			$clientNamesList = "";
-			foreach ($IDsListArr as $value)
+			foreach ($IDsListArr as $sqlID)
 			{
-				$sqlQueryString = $sqlQueryString.' id = '.$value.' OR';
-				$sqlQueuedClient = row($sqlQueryString.$value);
+				$sqlQueuedClient = row($sqlQueryString.$sqlID);
 				$clientNamesList = $clientNamesList.$sqlQueuedClient['login'].' ';
 			}
 			$clientNamesList = trim($clientNamesList);

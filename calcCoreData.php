@@ -6,7 +6,10 @@
 	if(!isset($_SESSION)) session_start(); 
 		
 	function calculateDataFromSessionVars()
-	{
+	{	
+		global $ACTION_TYPE;
+		global $GAME_STATE;
+	
 		$clientIsLogged = !empty($_SESSION['id']);
 		$loggedPlayerIsOnAnyChair = false;
 		$loggedPlayerIsOnWhiteChair = false;
@@ -32,11 +35,12 @@
 			if (isChairEmpty(BLACK) && !isLoggedPlayerOnChair(WHITE)) $blackPlayerBtn = true;
 			if (are2playersAreOnChairs() && !isLoggedPlayerOnAnyChair() && !isClientInQueue()) $queuePlayerBtn = true;
 			else if (isClientInQueue()) $leaveQueueBtn = true;
+			if ($_SESSION['action'] == $ACTION_TYPE["NEW_WHITE_PLAYER"] || $_SESSION['action'] == $ACTION_TYPE["NEW_BLACK_PLAYER"]) printNewPlayerName();
 			if ($_SESSION['gameState'] == $GAME_STATE["NEW_GAME_STARTED"]) $specialOption = 'newGameStarted';
+			else if ($_SESSION['action'] == $ACTION_TYPE["BAD_MOVE"]) $specialOption = 'badMove';
 			else if (isPromotionConditionsMet()) $specialOption = 'promote';
 			else if (isGameStateAnEndType()) $specialOption = 'endOfGame';
 		}
-		else $_SESSION['consoleAjax'] .= 'ERROR: Empty session ID- client isnt logged | ';
 		
 		return array
 		(
@@ -138,6 +142,8 @@
 	
 	function isGameStateAnEndType()
 	{	
+		global $ACTION_TYPE;
+	
 		switch($_SESSION['action'])
 		{
 			case $ACTION_TYPE["END_GAME_NORMAL_WIN_WHITE"]:
@@ -152,5 +158,25 @@
 				return true;
 			default: return false;
 		}
+	}
+	
+	function printNewPlayerName()
+	{
+		global $ACTION_TYPE;
+		
+		if ($_SESSION['action'] == $ACTION_TYPE["NEW_WHITE_PLAYER"])
+		{
+			if ($_SESSION['whitePlayer'] == "-" || $_SESSION['whitePlayer'] == "-1" ||$_SESSION['whitePlayer'] == "0") 
+				$_SESSION['textboxAjax'] = "Gracz figur białych opuścił stół."; 
+			else $_SESSION['textboxAjax'] = "Nowy gracz figur białych: ".$_SESSION['whitePlayer'];
+		}
+		else if ($_SESSION['action'] == $ACTION_TYPE["NEW_BLACK_PLAYER"])
+		{
+			if ($_SESSION['blackPlayer'] == "-" || $_SESSION['blackPlayer'] == "-1" ||$_SESSION['blackPlayer'] == "0") 
+				$_SESSION['textboxAjax'] = "Gracz figur czarnych opuścił stół."; 
+			else $_SESSION['textboxAjax'] = "Nowy gracz figur czarnych: ".$_SESSION['blackPlayer'];
+		}
+		else $_SESSION['consoleAjax'] .= 'ERROR: action isnt white or black new player. its ='.$_SESSION['action']
+			.', $ACTION_TYPE[NEW_WHITE_PLAYER] ='.$ACTION_TYPE["NEW_WHITE_PLAYER"].' | ';
 	}
 ?>							

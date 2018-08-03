@@ -17,11 +17,21 @@
     cursor: pointer;
 }
 
+.black_square
+{
+	background-color: none;
+}
+
+.white_square 
+{
+	background-color: none;
+}
+
 .black_square:hover, .white_square:hover 
 {
 	background: radial-gradient(closest-side, white, transparent); 
-    width: calc((var(--side_width)/8) - 2px);
-    height: calc((var(--side_height)/8) - 2px);
+    width: calc((var(--side_width)/8));
+    height: calc((var(--side_height)/8));
 }
 
 .parent 

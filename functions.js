@@ -57,6 +57,8 @@ function otherOption(othOpt)
 {
 	if (othOpt == 'newGameStarted')
 		startGameTimers(); 
+	else if (othOpt == 'badMove')
+		badMove();
 	else if (othOpt == 'promote')
 		$("#promoteDialog").dialog(promoteVar).dialog("open");
 	else if (othOpt == 'endOfGame')
@@ -84,6 +86,8 @@ function updatePlayersTimers()
 
 function updateHelpInfo()
 {
+	$("#additionalInfo").css('color', 'black'); 
+	
 	if (!bClientIsLogged)
 		$("#additionalInfo").html("Musisz być zalogowany, aby móc grać.");
 	else if (bClientIsLogged && !bTableIsFull && !bClientIsPlayer)
@@ -93,7 +97,20 @@ function updateHelpInfo()
 	else if (bClientIsLogged && bTableIsFull && !bClientIsPlayer && !bClientIsInQueue)
 		$("#additionalInfo").html("Stół gry jest pełen. By zagrać wejdź do kolejki graczy.");
 	else
-		$("#additionalInfo").html(" ");
+		$("#additionalInfo").html("&nbsp");
+}
+
+var reactBeep = new Audio('sounds/beep1.wav');
+function badMove()
+{
+	reactBeep.play();
+	$("#additionalInfo").html("Błędne rządanie ruchu! Wybierz inny ruch.");
+	$("#additionalInfo").css('color', 'red'); 
+	setTimeout(function() 
+	{ 
+		$("#additionalInfo").html("&nbsp");
+		$("#additionalInfo").css('color', 'black'); 
+	}, 7000)
 }
 
 function manageStandUpBtns()
@@ -192,11 +209,7 @@ function addMsgToClientPlainTextWindow(message, type)
 {
 	if (type == "info") infoPTEval += "> " + message + "\n";
 	else if (type == "history") historyPTEval = historyInOneLineToHistoryPTE(message);
-	else if (type == "queue") 
-	{
-		$("#queuePTE").html("kolejka(" + queueSize(message) + ")");
-		queuePTEval = queueInOneLineToQueuePTE(message);
-	}
+	else if (type == "queue") queuePTEval = queueInOneLineToQueuePTE(message);
 	else console.log("ERROR: unknown type val in addMsgToClientPlainTextWindow");
 	
 	refreshActualClientPlainTextWindowValue();
@@ -238,6 +251,12 @@ function changePTEsource(PTEsource)
 		break;
 	}
 }
+
+$(function()  //odpala funkcje dopiero po zaladowaniu sie strony 
+{
+	var clientPlainTextWindow = $("#clientPlainTextWindow");
+	clientPlainTextWindow.value = "";
+});
 
 var infoPTEval = "";
 var historyPTEval = "";
@@ -286,9 +305,10 @@ function historyInOneLineToHistoryPTE(historyInOneLine)
 function queueInOneLineToQueuePTE(queueList)
 {
 	var queueListPlainText = "";
-	if (queueList != "0") 
+	if (queueList != "0" && queueList != "-1" && queueList != "" && queueList != "-") 
 	{
 		var queueListArr = queueList.split(" ");
+		$("#queuePTE").html("kolejka(" + queueListArr.length + ")");
 		var index;
 		for (index = 0; index < queueListArr.length; ++index) 
 		{
@@ -296,7 +316,11 @@ function queueInOneLineToQueuePTE(queueList)
 			queueListPlainText += indexPlainText + ". " + queueListArr[index] + "\n";
 		}
 	}
-	else queueListPlainText = "Nie ma żadnych graczy w kolejce.";
+	else 
+	{
+		queueListPlainText = "1. -";
+		$("#queuePTE").html("kolejka");
+	}
 	
 	return queueListPlainText;
 }
@@ -555,7 +579,18 @@ var giveUpVar =
 
 function giveUp() 
 {
-	$("#giveUpDialog").dialog(giveUpVar).dialog("open");
+	if (bClientIsPlayer) 
+	{
+		if (whoseTurn == "whiteTurn" || whoseTurn == "blackTurn")
+			$("#giveUpDialog").dialog(giveUpVar).dialog("open"); 
+		else
+		{
+			disableAll();
+			websocket.send("standUp"); 
+			if ($("#startGameDialog").dialog(startGameVar).dialog('isOpen')) 
+				$("#startGameDialog").dialog(startGameVar).dialog('close'); 
+		}
+	}
 }
 
 function clickedBtn(buttonType)
@@ -566,7 +601,7 @@ function clickedBtn(buttonType)
 	{
 		case "sitOnWhite": msgForCore = "sitOn White"; break; 
 		case "sitOnBlack": msgForCore = "sitOn Black"; break; 
-		case "standUp": if (bClientIsPlayer) giveUp(); break;
+		case "standUp": giveUp(); break;
 		case "queueMe": msgForCore = "queueMe"; break; 
 		case "leaveQueue": msgForCore = "leaveQueue"; break; 
 		default: console.log("ERROR: unknown buttonType type"); break;
@@ -654,8 +689,6 @@ function movePiece(fromTo)
 	jQuery.inArray(pieceFromLetter, squareLetters) != '-1' && jQuery.inArray(pieceToLetter, squareLetters) != '-1')
 	{
 		disableAll();
-		$("#whitePlayerMiniBox").css('background-color', 'white'); 
-		$("#blackPlayerMiniBox").css('background-color', 'white'); 
 		$("#perspective").css('z-index', '8'); 
 		websocket.send("move " + fromTo);
 	}
@@ -666,7 +699,6 @@ function movePiece(fromTo)
 	}
 }
 
-var reactBeep = new Audio('sounds/beep1.wav');
 alertWindow = (function () //todo: dlaczego ta funkcja jest odpalana na końcu?
 {
 	//future: nie umiem zmienić koloru zakładki na migający niebieski
