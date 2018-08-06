@@ -56,4 +56,27 @@
 
 		echo '<script> console.log( "Debug Objects: '.$output.'"); </script>';
 	}
+	
+	function getLiveStreamID($type)
+	{
+		$videoId = null;
+
+		$CHANNEL_ID = 'UCLVBCJh3oKqWR2qo58BVd-w';
+		if ($data = file_get_contents('https://www.youtube.com/embed/live_stream?channel='.$CHANNEL_ID))
+		{
+			// Find the video ID in there
+			if(preg_match('/\'VIDEO_ID\': \"(.*?)\"/', $data, $matches))
+				$videoId = $matches[1];
+			else $videoId = 'Couldn\'t find video ID';
+		}
+		else $videoId = 'Couldn\'t fetch data';
+
+		if ($type == "video") return 'https://www.youtube.com/embed/'.$videoId
+		.'?autoplay=1&enablejsapi=1controls=0&disablekb=0&fs=0&iv_load_policy=3&modestbranding=1&origin=http://budgames.pl&rel=0&showinfo=0';
+		else if ($type == "chat") return 'https://www.youtube.com/live_chat?v='.$videoId.'&embed_domain=budgames.pl';
+		else return $videoId;
+	} 
+	$liveStreamID = getLiveStreamID();
+	$liveStreamVideoLink = getLiveStreamID('video');
+	$liveStreamChatLink = getLiveStreamID('chat');
 ?>

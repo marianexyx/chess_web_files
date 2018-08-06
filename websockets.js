@@ -22,6 +22,7 @@ function initWebSocket()
 		
 		websocket.onmessage = function (evt) 
 		{ 
+			console.log('core msg received: ' + evt.data);
 			if (evt.data != 'connectionOnline' && evt.data != 'logout:doubleLogin')
 			{
 				$.ajax(
@@ -30,7 +31,12 @@ function initWebSocket()
 					type: "POST",			
 					dataType: "json",
 					data: { wsMsg: evt.data },
-					success: function (data) { ajaxResponse(data); },
+					success: function (data) 
+					{
+						/*if(typeof data == 'object') data = $.map(data, function(el) { return el; });
+						console.log('ajaxResponse msg received: ' + data);*/
+						ajaxResponse(data); 
+					},
 					error: function(xhr, status, error) 
 					{
 						var err = eval("(" + xhr.responseText + ")");

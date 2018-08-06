@@ -86,8 +86,8 @@
 					</script> 	
 					
 					<div id="video" class="parent">
-						<iframe id="ytplayer" type="text/html" width="854" height="480"
-						  src="https://www.youtube.com/embed/live_stream?channel=UCLVBCJh3oKqWR2qo58BVd-w&autoplay=1&enablejsapi=1&origin=http://example.com">
+						<iframe id="ytplayer" type="text/html" width="854" height="480" src="<?= $liveStreamVideoLink ?>">
+						  <!-- src="https://www.youtube.com/channel/UCLVBCJh3oKqWR2qo58BVd-w/live&autoplay=1&enablejsapi=1&origin=http://example.com"> -->
 						</iframe>
 						<div id="perspective">
 							<div id="chessboard">
@@ -222,7 +222,9 @@
 					<span id="startGameDialog" hidden="hidden">Wciśnij start, by rozpocząć grę. Pozostały czas: 120</span> 
 					<span id="endOfGameDialog" hidden="hidden">Koniec gry.</span> 
 					<div id="ytChat" align="center"> 
-						<iframe width="330px" height="420px" src="https://www.youtube.com/live_chat?v=i6EPyaxc-GI&embed_domain=budgames.pl">
+						<!-- <iframe width="330px" height="420px" src="https://www.youtube.com/live_chat?v=i6EPyaxc-GI&embed_domain=budgames.pl"> -->
+						<iframe width="330px" height="420px" src="<?= $liveStreamChatLink ?>">
+						
 						</iframe>
 					</div>
 				</div>
