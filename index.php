@@ -57,13 +57,17 @@
 						case 'login': require_once('login.php'); break;
 						case 'register': require_once('register.php'); break;
 						case 'game': require_once('game.php'); break;
-						case 'doubleLogin': echo'<script> window.history.pushState("", "", "/index.php");
-						alert("Wylogowywanie: podwójny login"); </script>'; break;
+						case 'doubleLogin': 
+							echo'<script> window.history.pushState("", "", "/index.php");
+							alert("Wylogowywanie: podwójny login"); </script>'; 
+							break;
 						case 'logout':
 						$_SESSION = array(); //czyszczenie sesji
 						session_destroy(); //niszczenie sesji. resetuje się na nowe //todo: czy msie rozni od session_unset?
 						if ($_GET['b'] == 'doubleLogin')
 							header("Location: index.php?a=doubleLogin");
+						else if ($_GET['b'] == 'wrongData')
+							header("Location: index.php?a=logout");
 						else header("Location: index.php"); //header przenosi na stronę główną
 						break;
 						

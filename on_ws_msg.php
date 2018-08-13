@@ -25,17 +25,19 @@
 		"NEW_GAME_STARTED" => "3",
 		"BAD_MOVE" => "4",
 		"RESET_COMPLITED" => "5",
-		"END_GAME_NONE" => "6", 	//error type. end_of_game can't be none
-		"END_GAME_NORMAL_WIN_WHITE" => "7",
-		"END_GAME_NORMAL_WIN_BLACK" => "8",
-		"END_GAME_DRAW" => "9",
-		"END_GAME_GIVE_UP_WHITE" => "10",
-		"END_GAME_GIVE_UP_BLACK" => "11",
-		"END_GAME_SOCKET_LOST_WHITE" => "12",
-		"END_GAME_SOCKET_LOST_BLACK" => "13",
-		"END_GAME_TIMEOUT_GAME_WHITE" => "14",
-		"END_GAME_TIMEOUT_GAME_BLACK" => "15", 
-		"END_GAME_ERROR" => "16",
+		"DOUBLE_LOGIN" => "6",
+		"REMOVE_AND_REFRESH_CLIENT" => "7",
+		"END_GAME_NONE" => "8", //error type. end_of_game can't be none
+		"END_GAME_NORMAL_WIN_WHITE" => "9",
+		"END_GAME_NORMAL_WIN_BLACK" => "10",
+		"END_GAME_DRAW" => "11",
+		"END_GAME_GIVE_UP_WHITE" => "12",
+		"END_GAME_GIVE_UP_BLACK" => "13",
+		"END_GAME_SOCKET_LOST_WHITE" => "14",
+		"END_GAME_SOCKET_LOST_BLACK" => "15",
+		"END_GAME_TIMEOUT_GAME_WHITE" => "15",
+		"END_GAME_TIMEOUT_GAME_BLACK" => "17", 
+		"END_GAME_ERROR" => "18",
 		"ERROR" => "99"
 	);
 	

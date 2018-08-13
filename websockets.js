@@ -22,34 +22,19 @@ function initWebSocket()
 		
 		websocket.onmessage = function (evt) 
 		{ 
-			console.log('core msg received: ' + evt.data);
-			if (evt.data != 'connectionOnline' && evt.data != 'logout:doubleLogin')
+			$.ajax(
 			{
-				$.ajax(
+				url: "on_ws_msg.php",
+				type: "POST",			
+				dataType: "json",
+				data: { wsMsg: evt.data },
+				success: function (data) { ajaxResponse(data); },
+				error: function(xhr, status, error) 
 				{
-					url: "on_ws_msg.php",
-					type: "POST",			
-					dataType: "json",
-					data: { wsMsg: evt.data },
-					success: function (data) 
-					{
-						/*if(typeof data == 'object') data = $.map(data, function(el) { return el; });
-						console.log('ajaxResponse msg received: ' + data);*/
-						ajaxResponse(data); 
-					},
-					error: function(xhr, status, error) 
-					{
-						var err = eval("(" + xhr.responseText + ")");
-						alert(err.Message);
-					}
-				});
-			}
-			else if (evt.data == 'logout:doubleLogin')
-			{
-				disableAll();
-				stopWebSocket();
-				window.location.href = 'index.php?a=logout&b=doubleLogin';
-			}
+					var err = eval("(" + xhr.responseText + ")");
+					alert(err.Message);
+				}
+			});
 		};
 		
 		websocket.onopen = function (evt) 

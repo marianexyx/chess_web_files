@@ -36,6 +36,8 @@
 			if (are2playersAreOnChairs() && !isLoggedPlayerOnAnyChair() && !isClientInQueue()) $queuePlayerBtn = true;
 			else if (isClientInQueue()) $leaveQueueBtn = true;
 			if ($_SESSION['action'] == $ACTION_TYPE["NEW_WHITE_PLAYER"] || $_SESSION['action'] == $ACTION_TYPE["NEW_BLACK_PLAYER"]) printNewPlayerName();
+			else if ($_SESSION['action'] == $ACTION_TYPE["DOUBLE_LOGIN"]) $specialOption = 'doubleLogin';
+			else if ($_SESSION['action'] == $ACTION_TYPE["REMOVE_AND_REFRESH_CLIENT"]) $specialOption = 'wrongData';
 			if ($_SESSION['gameState'] == $GAME_STATE["NEW_GAME_STARTED"]) $specialOption = 'newGameStarted';
 			else if ($_SESSION['action'] == $ACTION_TYPE["BAD_MOVE"]) $specialOption = 'badMove';
 			else if (isPromotionConditionsMet()) $specialOption = 'promote';

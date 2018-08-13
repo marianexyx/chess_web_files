@@ -67,6 +67,18 @@ function otherOption(othOpt)
 		$("#endOfGameDialog").dialog(endOfGameVar).dialog("open");
 		setTimeout(function() { $("#endOfGameDialog").dialog('close'); }, 7000)
 	}
+	else if (othOpt == 'doubleLogin')
+	{
+		disableAll();
+		stopWebSocket();
+		window.location.href = 'index.php?a=logout&b=doubleLogin';
+	}
+	else if (othOpt == 'wrongData')
+	{
+		disableAll();
+		stopWebSocket();
+		window.location.href = 'index.php?a=logout&b=wrongData';
+	}
 	else console.log("ERROR: Unknown othOpt val.");
 }
 
