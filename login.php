@@ -1,12 +1,11 @@
 <?php
-	//todo: sprawdzić logowanie i resejtrowanie
 	if(!empty($_SESSION['id'])) return header("Location: index.php?a=game"); // Jeśli gracz jest zalogowany to przejdź do strony gry      
 	
 	if (!empty($_POST)) //jak globalna zmienna nie jest pusta, tj. formularz poniżej był wysłany
 	{
 		if (!empty($_POST['login']) && !empty($_POST['password'])) //sprawdzamy czy w formularzu wypełniono login i hasło
 		{
-			//todo: $login = htmlentities($login, ENT_QUOTES, "UTF-8"); - hasło też. sprawdzić czy, jak i gdzie dodać to zabezpieczenie i jak to się ma do vtxt
+			//future: $login = htmlentities($login, ENT_QUOTES, "UTF-8"); - hasło też. sprawdzić czy, jak i gdzie dodać to zabezpieczenie i jak to się ma do vtxt
 			//sprintf
 			//https://youtu.be/Pp578w7C9hE?t=5764
 			$login = vtxt($_POST['login']); //powstaje zmienna login

@@ -1,6 +1,4 @@
 <?php
-	//todo: przywróć dane jeżeli wpisałem coś źle z tutoriala (oprócz tego co źle)  https://youtu.be/fMJw90n8M60?list=PLOYHgt8dIdox81dbm1JWXQbm2geG1V2uh&t=6843  
-	
 	$kapcza = "6Lf9PygUAAAAAMdD3z1hDGssDbz0obmT8aLJyHTj";
 	$check = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret='.$kapcza.'&response='.$_POST['g-recaptcha-response']);
 	$response = json_decode($check);
@@ -30,7 +28,7 @@
 				{
 					if (filter_var($email, FILTER_VALIDATE_EMAIL))
 					{
-						$pass = md5(sha1($pass)); //todo: pdoobno złamano md5 jakiś czas temu. 
+						$pass = md5(sha1($pass)); //future: podobno złamano md5 jakiś czas temu. 
 						//password_hash($pass, PASSWORD_DEFAULT) - nowa lepsza funkcja (z solą- ponad 3 znaki używać). 
 						$istnieje = row("SELECT id FROM users WHERE login ='$login' OR email = '$email'");
 						if ($istnieje) echo 'Istnieje już gracz o takim samym loginie lub adresie email.';

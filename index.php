@@ -15,7 +15,6 @@
 		<script src="http://code.jquery.com/jquery-latest.min.js"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script> 
 		<script src='https://www.google.com/recaptcha/api.js'></script>
-		<script src="swfobject.js"></script> <!-- todo: to do wyrzucenia? -->
 		<script src="websockets.js"></script>
 		<script src="functions.js"></script>
 	</head>
@@ -26,22 +25,25 @@
 					ob_start();
 					session_start(); 
 					require_once('include/inc.php');
-					require_once('calcCoreData.php'); //todo: raczej do wyjebania. koment na samym dole
 					
+					//todo: wyłączyć reportowanie w innych php'ach docelowo też
 					error_reporting( error_reporting() & ~E_NOTICE ); //wyłącz ostrzeżenie, że niezdefiniowana jest zmienna 'a' i inne tego typu
 					
 					if(empty($_SESSION['id'])) 
-						echo '<div id="info" align="center"> 
+						echo 
+							'<div id="info" align="center"> 
 								<a href="index.php?a=register">Zarejestruj się</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="index.php?a=login">Zaloguj się</a> 
-							  </div>
-							  <script>$(function() { $("#additionalInfo").html("Musisz być zalogowany, aby móc grać."); });</script>
-							  ';
+							</div>
+							<script>$("#additionalInfo").html("Musisz być zalogowany, aby móc grać.");</script>';
+							//<script>$(function() { $("#additionalInfo").html("Musisz być zalogowany, aby móc grać."); });</script>';
 					else 
-						echo '<div id="info" align="center">
+						echo 
+							'<div id="info" align="center">
 								<a href="#" onClick="return info();">Kontakt</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="index.php?a=logout" onclick="return confirmLogout();">Wyloguj się</a>
-							  </div>
-							  <script>$(function() { $("#additionalInfo").html(" "); });</script>
-							  '; 
+							</div>
+							<script>$("#additionalInfo").html(" ");</script>'; 
+							//<script>$(function() { $("#additionalInfo").html(" "); });</script>'; 
+					
 					//todo: to będzie mogło być poza php'em jeżeli login i rejestracja nie będą w tabelach		  
 					echo '
 					<div id="serverStatus">
@@ -53,7 +55,6 @@
 					
 					switch($_GET['a']) //zmienna w pasku ustalająca stronę po ob_end_flush; 'a' pobierane z "a href'ów"
 					{
-						case 'home': require_once('home.php'); break; //domyślny (todo: w takim razie po co tutaj?)
 						case 'login': require_once('login.php'); break;
 						case 'register': require_once('register.php'); break;
 						case 'game': require_once('game.php'); break;
@@ -62,22 +63,20 @@
 							alert("Wylogowywanie: podwójny login"); </script>'; 
 							break;
 						case 'logout':
-						$_SESSION = array(); //czyszczenie sesji
-						session_destroy(); //niszczenie sesji. resetuje się na nowe //todo: czy msie rozni od session_unset?
-						if ($_GET['b'] == 'doubleLogin')
-							header("Location: index.php?a=doubleLogin");
-						else if ($_GET['b'] == 'wrongData')
-							header("Location: index.php?a=logout");
-						else header("Location: index.php"); //header przenosi na stronę główną
-						break;
-						
-						default: require_once('home.php'); break; //todo: home jest pusty. niech tam będzie domyślne wyświetlanie paska info
+							$_SESSION = array(); //czyszczenie sesji
+							session_destroy(); //niszczenie sesji. resetuje się na nowe
+							if ($_GET['b'] == 'doubleLogin')
+								header("Location: index.php?a=doubleLogin");
+							else if ($_GET['b'] == 'wrongData')
+								header("Location: index.php?a=logout");
+							else header("Location: index.php"); //header przenosi na stronę główną
+							break;
 					}
 					ob_end_flush(); //wyrzygaj stronę
 					?>
 			</div>
 			<div id="content">
-				<div id="game"><!-- todo: dlaczego wogle ten cały kod php/js poniżej jest w indexie? -->					
+				<div id="game">				
 					<script> 
 						function sendFirstWsMsg() 
 						{  
@@ -86,13 +85,11 @@
 						   else echo 'websocket.send("getTableDataAsJSON");'; ?>
 						}
 												
-						initWebSocket(); //połącz z websocketami (ważne to jest tutaj by pobrać startowe wartości strony) 
+						initWebSocket();
 					</script> 	
 					
 					<div id="video" class="parent">
-						<iframe id="ytplayer" type="text/html" width="854" height="480" src="<?= $liveStreamVideoLink ?>">
-						  <!-- src="https://www.youtube.com/channel/UCLVBCJh3oKqWR2qo58BVd-w/live&autoplay=1&enablejsapi=1&origin=http://example.com"> -->
-						</iframe>
+						<iframe id="ytplayer" type="text/html" width="854" height="480" src="<?= $liveStreamVideoLink ?>"></iframe>
 						<div id="perspective">
 							<div id="chessboard">
 								<div>
@@ -191,14 +188,11 @@
 									</div>
 								</div>
 							</div> 
-							<div id="resign">
-								<div id="giveUpDialog" hidden="hidden">Czy chcesz opuścić grę?</div> <!-- todo: czy to tu musi być? czy to może być spanem? czy mozę być z resztą dialogów?-->
-							</div>
 							<div id="blackPlayerBox">
 								<div id="blackPlayerSign">&#9823;</div>
 								<div id='blackPlayerMiniBox'>
 									<div id="blackPlayerBtns">
-										<div id="blackTime">Gracz Czarny: 30:00</div>
+										<div id="blackTime">Gracz Czarny: 30:00</div> <!-- todo: naprawić css -->
 										<button id="blackPlayer" onClick="clickedBtn('sitOnBlack')" disabled>-</button> 
 										<button id="standUpBlack" onClick="clickedBtn('standUp')" hidden="hidden" disabled>Wstań</button> 
 									</div>	
@@ -221,15 +215,8 @@
 						&nbsp;&nbsp;<button id="queuePlayer" onClick="clickedBtn('queueMe')" disabled>kolejkuj</button>
 						<button id="leaveQueue" onClick="clickedBtn('leaveQueue')" disabled>opuść</button>
 					</div>
-					<!-- todo: sprawdzić czy mogę to wywalić gdzieś na granice kodu -->
-					<span id="promoteDialog"></span> <!-- bez tego nie chce mi działać dialog-promote-->
-					<span id="startGameDialog" hidden="hidden">Wciśnij start, by rozpocząć grę. Pozostały czas: 120</span> 
-					<span id="endOfGameDialog" hidden="hidden">Koniec gry.</span> 
 					<div id="ytChat" align="center"> 
-						<!-- <iframe width="330px" height="420px" src="https://www.youtube.com/live_chat?v=i6EPyaxc-GI&embed_domain=budgames.pl"> -->
-						<iframe width="330px" height="420px" src="<?= $liveStreamChatLink ?>">
-						
-						</iframe>
+						<iframe width="330px" height="420px" src="<?= $liveStreamChatLink ?>"></iframe>
 					</div>
 				</div>
 			</div>
@@ -237,7 +224,10 @@
 				<a href="http://cosinekitty.com/chenard/">Chess engine</a> by <a href="http://cosinekitty.com/">Don Cross</a>
 			</div>
 		</div>  
-				
-		<? calculateDataFromSessionVars(); /*TODO: TO TU DOBRZE? wystarczy wywołać chyba tylko js f: disableAll- a i to będzie aż nadto*/ ?>
+		
+		<span id="giveUpDialog" hidden="hidden">Czy chcesz opuścić grę?</span>
+		<span id="promoteDialog"></span>
+		<span id="startGameDialog" hidden="hidden">Wciśnij start, by rozpocząć grę. Pozostały czas: 120</span> 
+		<span id="endOfGameDialog" hidden="hidden">Koniec gry.</span> 
 	</body>
 </html>																									

@@ -1,4 +1,4 @@
-//todo: poupychać funkcje do osobnych plików
+//future: poupychać funkcje do osobnych plików
 
 var whiteTotalSeconds = "-1";
 var blackTotalSeconds = "-1";
@@ -201,6 +201,11 @@ function disableAll()
 	$("#queuePlayer").attr("disabled", true);
 	$("#leaveQueue").attr("disabled", true);
 }
+
+$(function()
+{
+	disableAll();
+});
 
 var endOfGameVar = 
 { 
@@ -704,14 +709,10 @@ function movePiece(fromTo)
 		$("#perspective").css('z-index', '8'); 
 		websocket.send("move " + fromTo);
 	}
-	else 
-	{
-		console.log("ERROR: movePiece(): fromTo string is in wrong format. it's == " + fromTo);
-		//todo: co dalej z takim fantem robić? odświerzać stronę?
-	}
+	else otherOption('wrongData');
 }
 
-alertWindow = (function () //todo: dlaczego ta funkcja jest odpalana na końcu?
+alertWindow = (function () //todo: testować działanie tej funkcji
 {
 	//future: nie umiem zmienić koloru zakładki na migający niebieski
     var oldTitle = document.title;

@@ -15,6 +15,8 @@
 		$tableDataJSON = substr($tableDataString, $tableDataStart, $tableDataStop+1);
 		$tableDataArr = json_decode($tableDataJSON, true);
 		
+		updateClientsNamesArray($tableDataArr);
+		
 		if (array_key_exists($TABLE_DATA["ACTION"], $tableDataArr))
 		{
 			$_SESSION['action'] = $tableDataArr[$TABLE_DATA["ACTION"]];
@@ -23,26 +25,15 @@
 		if (array_key_exists($TABLE_DATA["WHITE_PLAYER"], $tableDataArr))
 		{			
 			$whiteId = $tableDataArr[$TABLE_DATA["WHITE_PLAYER"]];
-			if ($whiteId == '0') 
-				$_SESSION['whitePlayer'] = '-1';
-			else
-			{
-				$queryWhite = row("SELECT * FROM users WHERE id = '$whiteId'");
-				if ($queryWhite) $_SESSION['whitePlayer'] = $queryWhite['login']; 
-				else $_SESSION['whitePlayer'] = "<ERROR>";
-			}
+			if ($whiteId == '0') $_SESSION['whitePlayer'] = '-1';
+			else $_SESSION['whitePlayer'] = $_SESSION['clientsArr'][$whiteId];
 		}
 		if (array_key_exists($TABLE_DATA["BLACK_PLAYER"], $tableDataArr))
 		{
 			$blackId = $tableDataArr[$TABLE_DATA["BLACK_PLAYER"]];
 			if ($blackId == '0')
 				$_SESSION['blackPlayer'] = '-1';
-			else
-			{
-				$queryBlack = row("SELECT * FROM users WHERE id = ".$blackId);
-				if ($queryBlack) $_SESSION['blackPlayer'] = $queryBlack['login'];
-				else $_SESSION['blackPlayer'] = "<ERROR>";
-			}
+			else $_SESSION['blackPlayer'] = $_SESSION['clientsArr'][$blackId];
 		}
 		if (array_key_exists($TABLE_DATA["GAME_STATE"], $tableDataArr)) 
 		{
@@ -54,7 +45,7 @@
 		if (array_key_exists($TABLE_DATA["BLACK_TYPE"], $tableDataArr)) 
 			$_SESSION['blackTime'] = $tableDataArr[$TABLE_DATA["BLACK_TYPE"]];
 		if (array_key_exists($TABLE_DATA["QUEUE"], $tableDataArr)) 
-			$_SESSION['queue'] = getClientNamesFromSqlIDs($tableDataArr[$TABLE_DATA["QUEUE"]]);
+			$_SESSION['queue'] = getQueuedClientsList($tableDataArr[$TABLE_DATA["QUEUE"]]);
 		if (array_key_exists($TABLE_DATA["START_TIME"], $tableDataArr))
 		{
 			$time = $tableDataArr[$TABLE_DATA["START_TIME"]];
@@ -65,6 +56,45 @@
 			$_SESSION['history'] = $tableDataArr[$TABLE_DATA["HISTORY"]];
 		if (array_key_exists($TABLE_DATA["PROMOTIONS"], $tableDataArr)) 
 			$_SESSION['promoted'] = $tableDataArr[$TABLE_DATA["PROMOTIONS"]];
+	}
+	
+	function updateClientsNamesArray($tableDataArray)
+	{
+		global $TABLE_DATA;
+		$sqlQueryString = "SELECT id, login FROM users WHERE id = ";
+		if (array_key_exists($TABLE_DATA["WHITE_PLAYER"], $tableDataArray) && $tableDataArray[$TABLE_DATA["WHITE_PLAYER"]] != "0") 
+		{
+			if (!array_key_exists($tableDataArray[$TABLE_DATA["WHITE_PLAYER"]], $_SESSION['clientsArr']))
+				$sqlQueryString .= array_key_exists($tableDataArray[$TABLE_DATA["WHITE_PLAYER"]]).' OR id = ';
+		}
+		if (array_key_exists($TABLE_DATA["BLACK_PLAYER"], $tableDataArray) && $tableDataArray[$TABLE_DATA["BLACK_PLAYER"]] != "0") 
+		{
+			if (!array_key_exists($tableDataArray[$TABLE_DATA["BLACK_PLAYER"]], $_SESSION['clientsArr']))
+				$sqlQueryString .= array_key_exists($tableDataArray[$TABLE_DATA["BLACK_PLAYER"]]).' OR id = ';
+		}
+		if (array_key_exists($TABLE_DATA["QUEUE"], $tableDataArray) && $tableDataArray[$TABLE_DATA["QUEUE"]] != "0")
+		{
+			$IDsCoreListArray = explode(" ", $TABLE_DATA["QUEUE"]);
+			foreach ($IDsCoreListArray as $sqlID)
+			{
+				if (!array_key_exists($sqlID, v))
+					$sqlQueryString .= array_key_exists($sqlID.' OR id = ';
+			}
+		}
+		$sqlQueryString = substr("abcdef", 0, -9); //removes last added ' OR id = '
+		$sqlQueryString = trim($sqlQueryString);
+		
+		if(preg_match('~[1-9]~', $sqlQueryString) === 1)
+		{
+			$sqlReturnArray = row($sqlQueryString);
+			foreach ($sqlReturnArray as $clientID => $clientName)
+				$_SESSION['clientsArr'][$clientID] = $clientName;
+		}
+		
+		$consoleString = '';
+		foreach ($_SESSION['clientsArr'] as $Key => $Value)
+			$consoleString .= $Key . '=' . $Value . ', ';
+		$_SESSION['consoleAjax'] .= 'freshiest clientsArray= '.$consoleString.' | ';
 	}
 	
 	function makeAction($action) //actions only set msgs in PTE
@@ -180,23 +210,16 @@
 		}
 	}
 	
-	function getClientNamesFromSqlIDs($IDsList)
-	{	
-		//future: zapytanie może być wykonane tylo raz przy użyciu "OR", i mozna wyciągać tylko loginy z bazy, zamiast całych linii
-		if ($IDsList == "0")
-			return "0";
-		else
+	function getQueuedClientsList($clientsIDsList)
+	{
+		$IDsListArr = explode(" ", $IDsList);
+		$clientNamesList = "";
+		foreach ($IDsListArr as $sqlID)
 		{
-			$IDsListArr = explode(" ", $IDsList);
-			$sqlQueryString = "SELECT * FROM users WHERE id = ";
-			$clientNamesList = "";
-			foreach ($IDsListArr as $sqlID)
-			{
-				$sqlQueuedClient = row($sqlQueryString.$sqlID);
-				$clientNamesList = $clientNamesList.$sqlQueuedClient['login'].' ';
-			}
-			$clientNamesList = trim($clientNamesList);
-			return $clientNamesList;
+			$sqlQueuedClient = $_SESSION['clientsArr'][$sqlID];
+			$clientNamesList = $sqlQueuedClient.' ';
 		}
+		$clientNamesList = trim($clientNamesList);
+		return $clientNamesList;
 	}
 ?>

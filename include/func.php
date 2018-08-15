@@ -9,11 +9,11 @@
 	
     function call($sql) // Wywołanie zapytania do bazy (użytkownik)
 	{
-        global $con; //to nie jest deklaracja, tylko odwołanie się do zmiennej globalnej, bo funkcję łapią zasięgiem bodajże tylko zmienne lokalne
+        global $con; //to nie jest deklaracja, tylko odwołanie się do zmiennej globalnej, bo funkcję łapią zasięgiem tylko zmienne lokalne
         return mysqli_query($con, $sql);
     }
      
-    function row($sql) // Funkcja wybierająca cały szereg danych wyciąganych z bazy
+    function row($sql) // Funkcja wybierająca szereg danych wyciąganych z bazy
 	{
         global $con;
         return @mysqli_fetch_assoc(mysqli_query($con, $sql)); //fetch_assoc- odwoływanie się do kolumn po ich nazwach
@@ -30,11 +30,6 @@
 	{
 		return row("SELECT * FROM users WHERE id = ".$id);
 	}
-	 
-    function getPlayer($table_id)
-	{
-        return row("SELECT * FROM chess WHERE table_id =" .$table_id);
-    }
 	
 	function checkUser($sid) // Funkcja weryfikująca stan gracza (czy zalogowany)        sid- session id
 	{
@@ -44,15 +39,17 @@
         } 
 		else  // Gdy ID sesji jest poprawne...
 		{
-            return $sid = (int)$sid; // ...zmiana lub utrzymanie stanu ID jako integer (postać numeryczna)
+            return $sid = (int)$sid; // ...zmiana lub utrzymanie stanu ID jako int
         }
 	 }
 	 
 	function debugToConsole($data) 
 	{
 		$output = $data;
-		if (is_array($output))
-        $output = implode(',', $output);
+		if (is_array($output)) 
+		{
+			$output = implode(',', $output);
+		}
 
 		echo '<script> console.log( "Debug Objects: '.$output.'"); </script>';
 	}

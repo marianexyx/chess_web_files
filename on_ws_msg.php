@@ -1,6 +1,11 @@
 <?
 	if(!isset($_SESSION)) session_start();
 	
+	if ($_SESSION['consoleAjax'] != '-1') 
+		$returnArray["consoleMsg"] = $_SESSION['consoleAjax'];
+	
+	$_SESSION['clientsArr'] = array();
+	
 	$TABLE_DATA = array
 	(
 		"NONE" => "0",
@@ -93,7 +98,7 @@
 		header('Content-type: application/json; charset=utf-8"');
 		echo json_encode($returnArray);
 	}
-	
+		
 	function resetSessionData()
 	{
 		$_SESSION['consoleAjax'] = '-1'; 
