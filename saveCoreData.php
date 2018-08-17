@@ -25,15 +25,14 @@
 		if (array_key_exists($TABLE_DATA["WHITE_PLAYER"], $tableDataArr))
 		{			
 			$whiteId = $tableDataArr[$TABLE_DATA["WHITE_PLAYER"]];
-			if ($whiteId == '0') $_SESSION['whitePlayer'] = '-1';
+			if (empty($whiteId) || $whiteId == '0' || $whiteId == '-' || $whiteId == '-1') $_SESSION['whitePlayer'] = '0';
 			else $_SESSION['whitePlayer'] = $_SESSION['clientsArr'][$whiteId];
 		}
 		if (array_key_exists($TABLE_DATA["BLACK_PLAYER"], $tableDataArr))
 		{
 			$blackId = $tableDataArr[$TABLE_DATA["BLACK_PLAYER"]];
-			if ($blackId == '0')
-				$_SESSION['blackPlayer'] = '-1';
-			else $_SESSION['blackPlayer'] = $_SESSION['clientsArr'][$blackId];
+			if (empty($blackId) || $blackId == '0' || $blackId == '-' || $blackId == '-1') $_SESSION['blackPlayer'] = '0';
+			else  $_SESSION['blackPlayer'] = $_SESSION['clientsArr'][$blackId];
 		}
 		if (array_key_exists($TABLE_DATA["GAME_STATE"], $tableDataArr)) 
 		{
@@ -62,39 +61,60 @@
 	{
 		global $TABLE_DATA;
 		$sqlQueryString = "SELECT id, login FROM users WHERE id = ";
-		if (array_key_exists($TABLE_DATA["WHITE_PLAYER"], $tableDataArray) && $tableDataArray[$TABLE_DATA["WHITE_PLAYER"]] != "0") 
+		if (array_key_exists($TABLE_DATA["WHITE_PLAYER"], $tableDataArray) && $tableDataArray[$TABLE_DATA["WHITE_PLAYER"]] != "0"
+			&& $tableDataArray[$TABLE_DATA["WHITE_PLAYER"]] != "-1" && $tableDataArray[$TABLE_DATA["WHITE_PLAYER"]] != "-") 
 		{
 			if (!array_key_exists($tableDataArray[$TABLE_DATA["WHITE_PLAYER"]], $_SESSION['clientsArr']))
-				$sqlQueryString .= array_key_exists($tableDataArray[$TABLE_DATA["WHITE_PLAYER"]]).' OR id = ';
+				$sqlQueryString .= $tableDataArray[$TABLE_DATA["WHITE_PLAYER"]].' OR id = ';
 		}
-		if (array_key_exists($TABLE_DATA["BLACK_PLAYER"], $tableDataArray) && $tableDataArray[$TABLE_DATA["BLACK_PLAYER"]] != "0") 
+		if (array_key_exists($TABLE_DATA["BLACK_PLAYER"], $tableDataArray) && $tableDataArray[$TABLE_DATA["BLACK_PLAYER"]] != "0"
+			&& $tableDataArray[$TABLE_DATA["BLACK_PLAYER"]] != "-1" && $tableDataArray[$TABLE_DATA["BLACK_PLAYER"]] != "-") 
 		{
 			if (!array_key_exists($tableDataArray[$TABLE_DATA["BLACK_PLAYER"]], $_SESSION['clientsArr']))
-				$sqlQueryString .= array_key_exists($tableDataArray[$TABLE_DATA["BLACK_PLAYER"]]).' OR id = ';
+				$sqlQueryString .= $tableDataArray[$TABLE_DATA["BLACK_PLAYER"]].' OR id = ';
 		}
 		if (array_key_exists($TABLE_DATA["QUEUE"], $tableDataArray) && $tableDataArray[$TABLE_DATA["QUEUE"]] != "0")
 		{
-			$IDsCoreListArray = explode(" ", $TABLE_DATA["QUEUE"]);
+			$IDsCoreListArray = explode(" ", $tableDataArray[$TABLE_DATA["QUEUE"]]);
 			foreach ($IDsCoreListArray as $sqlID)
 			{
-				if (!array_key_exists($sqlID, v))
-					$sqlQueryString .= array_key_exists($sqlID.' OR id = ';
+				if (!array_key_exists($sqlID, $_SESSION['clientsArr']))
+					$sqlQueryString .= $sqlID.' OR id = ';
 			}
 		}
-		$sqlQueryString = substr("abcdef", 0, -9); //removes last added ' OR id = '
-		$sqlQueryString = trim($sqlQueryString);
 		
-		if(preg_match('~[1-9]~', $sqlQueryString) === 1)
+		$sqlQueryString = substr($sqlQueryString, 0, -9); //removes last added ' OR id = '
+		$sqlQueryString = trim($sqlQueryString);
+		//$_SESSION['consoleAjax'] .= ', string for database= '.implode(' , ', $sqlQueryString).' | ';
+		
+		if(preg_match('~[1-9]~', $sqlQueryString) === 1) //database query string will containts some number, if it has sqlID in it
 		{
 			$sqlReturnArray = row($sqlQueryString);
-			foreach ($sqlReturnArray as $clientID => $clientName)
-				$_SESSION['clientsArr'][$clientID] = $clientName;
+			//$_SESSION['consoleAjax'] .= ', new clients to save in list: $sqlReturnArray = '.implode(' | ', $sqlReturnArray).' | ';
+			foreach ($sqlReturnArray as $clientID /*=> $clientName*/)
+			{
+				$_SESSION['clientsArr'][$sqlReturnArray['id']] = $sqlReturnArray['login'];
+				//$_SESSION['consoleAjax'] .= ' new name in clientsArray = '.$_SESSION['clientsArr'][$sqlReturnArray['login']].' with ID = '.$sqlReturnArray['id'].' | ';
+			}
 		}
+		//else $_SESSION['consoleAjax'] .= ', no new clients to save in list | ';
 		
-		$consoleString = '';
-		foreach ($_SESSION['clientsArr'] as $Key => $Value)
-			$consoleString .= $Key . '=' . $Value . ', ';
-		$_SESSION['consoleAjax'] .= 'freshiest clientsArray= '.$consoleString.' | ';
+		//$_SESSION['consoleAjax'] .= ' newest session clientsArray: '.http_build_query($_SESSION['clientsArr'], '', '; ').' | ';
+	}
+	
+	function getQueuedClientsList($clientsIDsList)
+	{
+		$clientsIDsList = explode(" ", $clientsIDsList);
+		$clientNamesList = "";
+		foreach ($clientsIDsList as $sqlID)
+		{
+			$sqlQueuedClient = $_SESSION['clientsArr'][$sqlID];
+			$clientNamesList .= $sqlQueuedClient.' ';
+		}
+		$clientNamesList = trim($clientNamesList);
+		//$_SESSION['consoleAjax'] .= ' queuedClientNamesList = '.$clientNamesList.' | ';
+		
+		return $clientNamesList;
 	}
 	
 	function makeAction($action) //actions only set msgs in PTE
@@ -208,18 +228,5 @@
 			$_SESSION['consoleAjax'] .= 'ERROR. whoseTurnFromGameStatus(): unknwon GAME_STATUS = '.$GS.' | ';
 			return NO_TURN;
 		}
-	}
-	
-	function getQueuedClientsList($clientsIDsList)
-	{
-		$IDsListArr = explode(" ", $IDsList);
-		$clientNamesList = "";
-		foreach ($IDsListArr as $sqlID)
-		{
-			$sqlQueuedClient = $_SESSION['clientsArr'][$sqlID];
-			$clientNamesList = $sqlQueuedClient.' ';
-		}
-		$clientNamesList = trim($clientNamesList);
-		return $clientNamesList;
 	}
 ?>

@@ -66,12 +66,14 @@
 		$chair = false;
 		if ($playerType == WHITE) 
 		{
-			if ($_SESSION['whitePlayer'] == "-1") $chair = true;
+			if (empty($_SESSION['whitePlayer']) || $_SESSION['whitePlayer'] == "-1" || $_SESSION['whitePlayer'] == "-" || $_SESSION['whitePlayer'] == "0")
+				$chair = true;
 			else $chair = false;
 		}
 		else if ($playerType == BLACK) 
 		{
-			if ($_SESSION['blackPlayer'] == "-1") $chair = true;
+			if (empty($_SESSION['blackPlayer']) || $_SESSION['blackPlayer'] == "-1" || $_SESSION['blackPlayer'] == "-" || $_SESSION['blackPlayer'] == "0")
+				$chair = true;
 			else $chair = false;
 		}
 		else $_SESSION['consoleAjax'] .= 'ERROR: function isChairEmpty(): unknown playerType: '.$playerType.' | ';
@@ -117,7 +119,7 @@
 	
 	function isClientInQueue()
 	{
-		$queueTempArr = explode(",", $_SESSION['queue']);
+		$queueTempArr = explode(" ", $_SESSION['queue']);
 		if (in_array($_SESSION['login'], $queueTempArr)) 
 			return true; 
 		else return false;

@@ -4,7 +4,8 @@
 	if ($_SESSION['consoleAjax'] != '-1') 
 		$returnArray["consoleMsg"] = $_SESSION['consoleAjax'];
 	
-	$_SESSION['clientsArr'] = array();
+	if(!isset($_SESSION['clientsArr']) || empty($_SESSION['clientsArr']))
+		$_SESSION['clientsArr'] = array();
 	
 	$TABLE_DATA = array
 	(

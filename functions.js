@@ -20,8 +20,8 @@ function ajaxResponse(ajaxData)
 	if (ajaxData.hasOwnProperty("consoleMsg")) console.log(ajaxData["consoleMsg"]);
 	if (ajaxData.hasOwnProperty("PTEmsg")) infoMsgPTE = ajaxData["PTEmsg"];
 	if (ajaxData.hasOwnProperty("whoseTurn")) whoseTurn = ajaxData["whoseTurn"];
-	if (ajaxData.hasOwnProperty("whitePlayerName")) $('#whitePlayer').html(ajaxData["whitePlayerName"]); else $('#whitePlayer').html("-");
-	if (ajaxData.hasOwnProperty("blackPlayerName")) $('#blackPlayer').html(ajaxData["blackPlayerName"]); else $('#blackPlayer').html("-");
+	if (ajaxData.hasOwnProperty("whitePlayerName")) setName("White", ajaxData["whitePlayerName"]);
+	if (ajaxData.hasOwnProperty("blackPlayerName")) setName("Black", ajaxData["blackPlayerName"]);
 	if (ajaxData.hasOwnProperty("whitePlayerTimeLeft")) whiteTotalSeconds = ajaxData["whitePlayerTimeLeft"];
 	if (ajaxData.hasOwnProperty("blackPlayerTimeLeft")) blackTotalSeconds = ajaxData["blackPlayerTimeLeft"];
 	if (ajaxData.hasOwnProperty("startTimeLeft")) startTimeVar = ajaxData["startTimeLeft"];
@@ -51,6 +51,29 @@ function ajaxResponse(ajaxData)
 	if (startTimeVar > 0) showStartDialog(ajaxData["startTimeLeft"]); 
 	if (ajaxData.hasOwnProperty("specialOption")) otherOption(otherOptionVar);
 	letPlayerMakeMoveIfItsHisTurn();
+}
+
+function setName(playerType, name)
+{
+	if (playerType == "White")
+	{
+		if (!name || name == "0" || name == "-1" || name == "-")
+		{
+			$('#whitePlayer').html("-");
+			console.log("function setName: white name is empty. name =" + name);
+		}
+		else 
+		{
+			$('#whitePlayer').html(name);
+			console.log("function setName: white name isn't empty. name =" + name);
+		}
+	}
+	else if (playerType == "Black")
+	{
+		if (!name || name == "0" || name == "-1" || name == "-")
+			$('#blackPlayer').html("-");
+		else $('#blackPlayer').html(name);
+	}
 }
 
 function otherOption(othOpt)
@@ -129,19 +152,22 @@ function manageStandUpBtns()
 {
 	if (bClientIsPlayer)
 	{
-		if (bClientIsWhitePlayer) 
+		if (whoseTurn == 'noTurn')
 		{
-			$("#standUpWhite").show();
-			$("#standUpWhite").attr("disabled", false);
-			$("#standUpWhite").html("Wstań");
+			if (bClientIsWhitePlayer) 
+			{
+				$("#standUpWhite").show();
+				$("#standUpWhite").attr("disabled", false);
+				$("#standUpWhite").html("Wstań");
+			}
+			else if (bClientIsBlackPlayer) 
+			{
+				$("#standUpBlack").show();
+				$("#standUpBlack").attr("disabled", false);
+				$("#standUpBlack").html("Wstań");
+			}
 		}
-		else if (bClientIsBlackPlayer) 
-		{
-			$("#standUpBlack").show();
-			$("#standUpBlack").attr("disabled", false);
-			$("#standUpBlack").html("Wstań");
-		}
-		else
+		else if (whoseTurn == 'whiteTurn' || whoseTurn == 'blackTurn')
 		{
 			if (bClientIsWhitePlayer)
 			{
