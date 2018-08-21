@@ -76,4 +76,38 @@
 	$liveStreamID = getLiveStreamID();
 	$liveStreamVideoLink = getLiveStreamID('video');
 	$liveStreamChatLink = getLiveStreamID('chat');
+	
+	function checkForLogout($GET_String)
+	{
+		ob_start();	
+			if ($GET_String == 'logout' || $GET_String == 'doubleLogin' || $GET_String == 'wrongData')
+			{
+				$_SESSION = array();
+				session_destroy();
+				if ($GET_String == 'doubleLogin')
+					header("Location: index.php?a=doubleLoginAlert");
+				else header("Location: index.php");
+			}
+			else if ($GET_String == 'doubleLoginAlert')
+			{			
+				echo'
+					<script> 
+						window.history.pushState("", "", "/index.php");
+						alert("Wylogowywanie: podwójny login"); 
+					</script>
+				'; 
+			}
+			
+		ob_end_flush();
+	}
+	
+	function checkForLoginOrRegister($GET_String)
+	{
+		
+	}
+	
+	function setHeaderForClient()
+	{
+		
+	}
 ?>

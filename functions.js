@@ -1,4 +1,31 @@
+//todo: wszystkie problemy typu "future" usunąć z kodu i dać je jako "issues" na githubie
 //future: poupychać funkcje do osobnych plików
+//future: resetCoreMsgsArr() jeżeli przy sukcesie ajaxu nie będzie dozwolonego wyniku albo przez np. 10 sekund nie będzie odblokowana flaga blokująca pętle kontenera na wiadomości z core'a
+
+function doAjaxCall()
+{
+	if (coreMsgsArr != undefined && coreMsgsArr.length > 0)
+	{
+		bSiteIsProcessingCoreMsg = true;
+		
+		$.ajax(
+		{
+			url: "on_ws_msg.php",
+			type: "POST",			
+			dataType: "json",
+			data: { wsMsg: coreMsgsArr.shift() },
+			success: function (data) { ajaxResponse(data); },
+			error: function(xhr, status, error) { resetCoreMsgsArr(); }
+		});
+	}
+}
+
+function resetCoreMsgsArr()
+{
+	coreMsgsArr = [];
+	bSiteIsProcessingCoreMsg = false;
+	sendFirstWsMsg();
+}
 
 var whiteTotalSeconds = "-1";
 var blackTotalSeconds = "-1";
@@ -40,7 +67,6 @@ function ajaxResponse(ajaxData)
 	if (ajaxData.hasOwnProperty("queuePlayerBtn")) $("#queuePlayer").attr("disabled", !ajaxData["queuePlayerBtn"]);
 	if (ajaxData.hasOwnProperty("leaveQueueBtn")) $("#leaveQueue").attr("disabled", !bClientIsInQueue);
 	if (ajaxData.hasOwnProperty("specialOption")) otherOptionVar = ajaxData["specialOption"];
-	else closeStartGameDialogIfOpened();
 	
 	//needed to save above params before using some of this functions below, to avoid using non-updated global vars
 	if (ajaxData.hasOwnProperty("PTEmsg")) addMsgToClientPlainTextWindow(infoMsgPTE, "info");
@@ -49,8 +75,12 @@ function ajaxResponse(ajaxData)
 	manageStandUpBtns();
 	showActivePlayerWithCSS();
 	if (startTimeVar > 0) showStartDialog(ajaxData["startTimeLeft"]); 
+	else closeStartGameDialogIfOpened();
 	if (ajaxData.hasOwnProperty("specialOption")) otherOption(otherOptionVar);
 	letPlayerMakeMoveIfItsHisTurn();
+	
+	if (coreMsgsArr != undefined && coreMsgsArr.length > 0) doAjaxCall();
+	else bSiteIsProcessingCoreMsg = false;
 }
 
 function setName(playerType, name)
@@ -58,15 +88,8 @@ function setName(playerType, name)
 	if (playerType == "White")
 	{
 		if (!name || name == "0" || name == "-1" || name == "-")
-		{
 			$('#whitePlayer').html("-");
-			console.log("function setName: white name is empty. name =" + name);
-		}
-		else 
-		{
-			$('#whitePlayer').html(name);
-			console.log("function setName: white name isn't empty. name =" + name);
-		}
+		else $('#whitePlayer').html(name);
 	}
 	else if (playerType == "Black")
 	{
@@ -90,17 +113,18 @@ function otherOption(othOpt)
 		$("#endOfGameDialog").dialog(endOfGameVar).dialog("open");
 		setTimeout(function() { $("#endOfGameDialog").dialog('close'); }, 7000)
 	}
+	//todo: close it in 1 if
 	else if (othOpt == 'doubleLogin')
 	{
 		disableAll();
 		stopWebSocket();
-		window.location.href = 'index.php?a=logout&b=doubleLogin';
+		window.location.href = 'index.php?a=doubleLogin';
 	}
 	else if (othOpt == 'wrongData')
 	{
 		disableAll();
 		stopWebSocket();
-		window.location.href = 'index.php?a=logout&b=wrongData';
+		window.location.href = 'index.php?a=wrongData';
 	}
 	else console.log("ERROR: Unknown othOpt val.");
 }
@@ -373,12 +397,11 @@ function promotionsInOneLineToPromotionsDIV(promotionsInOneLine)
 	promotionsInOneLine = promotionsInOneLine.trim(); 
 	promotionsInOneLine = promotionsInOneLine.replace(/\s/g, '\xa0\xa0\xa0');
 		
-	var oneLineMaxLength = 26;
+	var oneLineMaxLength = 78;
 	var lines = 1;
 	var totalLength = 0;
 	do
 	{
-		//todo: nie przycina perfekcyjnie, ale to naprawde mały problem
 		totalLength = oneLineMaxLength * lines;
 		if (promotionsInOneLine.length > totalLength)
 			promotionsInOneLine = promotionsInOneLine.substr(0,totalLength) + "<br/>" + promotionsInOneLine.substr(totalLength);
@@ -407,7 +430,7 @@ function showPromotions(promotions)
 	else 
 	{
 		$("#promotionContent").css('display','block');
-		$("#promotionContent").html("&nbsp;<u>Promowane pionki:</u><br/><font size='4'>" 
+		$("#promotionContent").html("&nbsp;<u>Promowane pionki:</u><br/><font size='5'>" 
 			+ promotionsInOneLineToPromotionsDIV(promotions) + "</font>");
 	}
 }
@@ -449,8 +472,10 @@ function showStartDialog(startTime)
 function closeStartGameDialogIfOpened()
 {
 	if ($("#startGameDialog").dialog(startGameVar).dialog('isOpen')) 
+	{
+		$("#startGameDialog").html("Wciśnij start, by rozpocząć grę. Pozostały czas: 120");
 		$("#startGameDialog").dialog(startGameVar).dialog('close'); 
-	$("#startGameDialog").html("Wciśnij start, by rozpocząć grę. Pozostały czas: 120");
+	}
 }
 
 var timerStart = null;
@@ -736,6 +761,22 @@ function movePiece(fromTo)
 		websocket.send("move " + fromTo);
 	}
 	else otherOption('wrongData');
+}
+
+function showHeaderType(type, clientName)
+{
+	if (type == "logging")
+	{
+		$("#loggingSection").html('<a href=index.php?a=register">Zarejestruj się</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="index.php?a=login">Zaloguj się</a>');
+		$("#user").html("&nbsp");
+		$("#additionalInfo").html('Musisz być zalogowany, aby móc grać.');
+	}
+	else if (type == "logged")
+	{
+		$("#loggingSection").html('<a href="index.php?a=logout" onclick="return confirmLogout();">Wyloguj się</a>');
+		$("#user").html("<b>Użytkownik:</b>&nbsp" + clientName);
+		$("#additionalInfo").html("&nbsp");
+	}
 }
 
 alertWindow = (function () //todo: testować działanie tej funkcji

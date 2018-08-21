@@ -17,7 +17,7 @@
 				$loginLength = strlen($login);
 				echo "login.length=$loginLength , login=$login)";
 			}
-			elseif (strlen($pass) < 6 || strlen($pass) > 20) echo 'Hasło nie mieści się w danym zakresie.';
+			elseif (strlen($pass) < 1 || strlen($pass) > 20) echo 'Hasło nie mieści się w danym zakresie.';
 			elseif (strlen($email) < 8 || strlen($pass) > 50) echo 'Adres e-mail nie mieści się w danym zakresie.';
 			elseif ($login == $pass) echo 'Login nie może być taki sam jak hasło.';
 			elseif ($pass != $_POST['pass2']) echo 'Podane hasła nie zgadzają się.';
@@ -48,36 +48,40 @@
 	}
 ?>
 
-<br/><p>REJESTRACJA</p>
+<br/>
+<br/>
 <form action="index.php?a=register" method="POST">
-	<table align="center">
-		<tr>
-			<td><b>Login użytkownika:</b></td>
-			<td style ="pading: 10px"><input type="text" name="login"/></td>
-			<td>(Od 3 do 25 znaków. )</td>
-		</tr>
-		<tr>
-			<td><b>Hasło:</b></td>
-			<td style ="pading: 10px"><input type="password" name="pass"/></td>
-			<td>(Od 6 do 20 znaków)</td>
-		</tr>
-		<tr>
-			<td><b>Powtórz hasło:</b></td>
-			<td style ="pading: 10px"><input type="password" name="pass2"/></td>
-			<td></td>
-		</tr>
-		<tr>
-			<td><b>E-mail:</b></td>
-			<td style ="pading: 10px"><input type="text" name="email"/></td>
-			<td>(Od 8 do 50 znaków)</td>
-		</tr>
-		<tr>
-			<td></td>
-			<td colspan="2"><div class="g-recaptcha" data-sitekey="6Lf9PygUAAAAAEPWjrGrWkXqkKbK6_uxtW64eKDj"></div>
-		</tr>
-		<tr>
-			<td></td>
-			<td><center><input type="submit" style="width: 100px" value="Zarejestruj się"/></center></td>
-		</tr>
-	</table>
+<div class="divTable">
+	<div class="divTableBody">
+		<div class="divTableRow">
+			<div class="divTableCell">&nbsp;</div>
+			<div class="divTableCell" style="font-size: 150%">REJESTRACJA</div>
+			<div class="divTableCell">&nbsp;</div>
+		</div>
+		<div class="divTableRow">
+			<div class="divTableCell"><b>Login użytkownika:</b></div>
+			<div class="divTableCell"><input type="text" name="login"/>&nbsp;&nbsp;&nbsp;(od 3 do 25 znaków)</div>
+		</div>
+		<div class="divTableRow">
+			<div class="divTableCell"><b>Hasło:</b></div>
+			<div class="divTableCell"><input type="password" name="pass"/>&nbsp;&nbsp;&nbsp;(od 1 do 20 znaków)</div>
+		</div>
+		<div class="divTableRow">
+			<div class="divTableCell"><b>Powtórz hasło:</b></div>
+			<div class="divTableCell"><input type="password" name="pass2"/></div>
+		</div>
+		<div class="divTableRow">
+			<div class="divTableCell"><b>E-mail:</b></div>
+			<div class="divTableCell"><input type="text" name="email"/>&nbsp;&nbsp;&nbsp;(od 8 do 50 znaków)</div>
+		</div>
+		<div class="divTableRow">
+			<div class="divTableCell">&nbsp;</div>
+			<div class="divTableCell"><div class="g-recaptcha" data-sitekey="6Lf9PygUAAAAAEPWjrGrWkXqkKbK6_uxtW64eKDj"></div></div>
+		</div>
+		<div class="divTableRow">
+			<div class="divTableCell">&nbsp;</div>
+			<div class="divTableCell"><input type="submit" style="width: 100px" value="Zarejestruj się"/></div>
+		</div>
+	</div>
+</div>
 </form>

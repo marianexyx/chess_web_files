@@ -1,3 +1,6 @@
+var bSiteIsProcessingCoreMsg = false;
+var coreMsgsArr = []; 
+
 var wsUri = "ws://89.72.9.69:1234"; 
 var websocket = null;
 
@@ -5,11 +8,13 @@ function initWebSocket()
 {
 	if ("WebSocket" in window) 
 	{
-		if (websocket == null) { websocket = new WebSocket(wsUri);} 
+		if (websocket == null) 
+			websocket = new WebSocket(wsUri); 
 		
 		websocket.onerror = function (evt) 
 		{
-			console.log('Weboscket error:', evt.data);
+			coreMsgsArr = [];
+			bSiteIsProcessingCoreMsg = false;
 			serverStatus("offline");
 		};
 		
@@ -17,28 +22,24 @@ function initWebSocket()
 		{
 			serverStatus("offline");
 			websocket = null;
+			coreMsgsArr = []; 
+			bSiteIsProcessingCoreMsg = false;
 			setTimeout(function() { initWebSocket(); }, 1000)
 		};
 		
 		websocket.onmessage = function (evt) 
 		{ 
-			$.ajax(
-			{
-				url: "on_ws_msg.php",
-				type: "POST",			
-				dataType: "json",
-				data: { wsMsg: evt.data },
-				success: function (data) { ajaxResponse(data); },
-				error: function(xhr, status, error) 
-				{
-					var err = eval("(" + xhr.responseText + ")");
-					alert(err.Message);
-				}
-			});
+			console.log("websocket.onmessage = " + evt.data);
+			coreMsgsArr.push(evt.data);
+			if (bSiteIsProcessingCoreMsg == false)
+				doAjaxCall();
 		};
 		
 		websocket.onopen = function (evt) 
 		{ 
+			coreMsgsArr = []; 
+			bSiteIsProcessingCoreMsg = false;
+		
 			var stateStr;
 			switch (websocket.readyState) 
 			{

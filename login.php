@@ -1,5 +1,5 @@
 <?php
-	if(!empty($_SESSION['id'])) return header("Location: index.php?a=game"); // Jeśli gracz jest zalogowany to przejdź do strony gry      
+	if(!empty($_SESSION['id'])) return header("Location: index.php"); // Jeśli gracz jest zalogowany to przejdź do strony gry      
 	
 	if (!empty($_POST)) //jak globalna zmienna nie jest pusta, tj. formularz poniżej był wysłany
 	{
@@ -19,7 +19,7 @@
 					$_SESSION['id'] = $zapytanie['id']; // i przypisujemy superglobalną numerem gracza z bazy
 					$_SESSION['login'] = $zapytanie['login'];
 					$_SESSION['hash'] = $zapytanie['hash'];
-					header('Location: index.php?a=game'); //posiadając gracza wszędzie tam gdzie jest "session_start()" przechodzimy do indexu. skrypt tu się urywa
+					header('Location: index.php'); //posiadając gracza wszędzie tam gdzie jest "session_start()" przechodzimy do indexu. skrypt tu się urywa
 				} 
 				else echo 'Taki gracz nie istnieje lub hasło jest niepoprawne.';
 			}
@@ -31,20 +31,29 @@
 	if ($_GET['registered'] == true) echo 'Zarejestrowano poprawnie.';
 ?>
 
-<br/><p>LOGOWANIE</p>
+<br/>
+<br/>
 <form action="index.php?a=login" method="POST"> 
-	<table align="center">
-		<tr>
-			<td><b>Login użytkownika:</b></td>
-			<td style="padding: 10px"><input type ="text" name="login"/></td>
-		</tr>
-		<tr>
-			<td><b>Hasło:</b></td>
-			<td style="padding: 10px"><input type ="password" name="password"/></td>
-		</tr>
-		<tr>
-			<td></td>
-			<td><center><input type="submit" style="width: 100px" value="Zaloguj się"/></center></td>
-		</tr>
-	</table>
+<div class="divTable">
+	<div class="divTableBody">
+		<div class="divTableRow">
+			<div class="divTableCell">&nbsp;</div>
+			<div class="divTableCell" style="font-size: 150%">LOGOWANIE</div>
+		</div>
+		
+		<div class="divTableRow">
+			<div class="divTableCell"><b>Login użytkownika:</b></div>
+			<div class="divTableCell"><input type ="text" name="login"/></div>
+		</div>
+		<div class="divTableRow">
+			<div class="divTableCell"><b>Hasło:</b></div>
+			<div class="divTableCell"><input type ="password" name="password"/></div>
+		</div>
+		<div class="divTableRow">
+			<div class="divTableCell">&nbsp;</div>
+			<div class="divTableCell"><input type="submit" style="width: 100px" value="Zaloguj się"/></div>
+		</div>
+		
+	</div>
+</div>
 </form>
