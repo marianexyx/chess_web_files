@@ -4,7 +4,7 @@
 	define('BLACK', 'Black');
 
 	if(!isset($_SESSION)) session_start();
-	require_once('include/inc.php'); //needed for sql query
+	require_once('include/inc.php');
 	
 	function saveCoreDataInSessionVars($tableDataString)
 	{
@@ -83,7 +83,7 @@
 			}
 		}
 		
-		$sqlQueryString = substr($sqlQueryString, 0, -9); //removes last added ' OR id = '
+		$sqlQueryString = substr($sqlQueryString, 0, -9); //removes last added: ' OR id = '
 		$sqlQueryString = trim($sqlQueryString);
 		//$_SESSION['consoleAjax'] .= ', string for database= '.implode(' , ', $sqlQueryString).' | ';
 		
@@ -126,6 +126,9 @@
 			case $ACTION_TYPE["NONE"]:
 			case $ACTION_TYPE["NEW_WHITE_PLAYER"]:
 			case $ACTION_TYPE["NEW_BLACK_PLAYER"]:
+			case $ACTION_TYPE["DOUBLE_LOGIN"]:
+			case $ACTION_TYPE["REMOVE_AND_REFRESH_CLIENT"]:
+			case $ACTION_TYPE["SYNCHRONIZED"]:
 				break;
 			
 			case $ACTION_TYPE["NEW_GAME_STARTED"]:

@@ -29,23 +29,57 @@
 			ob_start();	
 			if ($_GET['a'] == 'logout' || $_GET['a'] == 'doubleLogin' || $_GET['a'] == 'wrongData')
 			{
-				$_SESSION = array();
+				echo '<script> console.log("fucking session data1: login ='.$_SESSION['login'].', id = '.$_SESSION['id'].', hash = '.$_SESSION['hash'].'"); </script>';
+				unset($_SESSION['login']);
+				echo '<script> console.log("fucking session data2: login ='.$_SESSION['login'].', id = '.$_SESSION['id'].', hash = '.$_SESSION['hash'].'"); </script>';
+				unset($_SESSION['id']);
+				echo '<script> console.log("fucking session data3: login ='.$_SESSION['login'].', id = '.$_SESSION['id'].', hash = '.$_SESSION['hash'].'"); </script>';
+				unset($_SESSION['hash']);
+				echo '<script> console.log("fucking session data4: login ='.$_SESSION['login'].', id = '.$_SESSION['id'].', hash = '.$_SESSION['hash'].'"); </script>';
+				session_unset();
+				echo '<script> console.log("fucking session data5: login ='.$_SESSION['login'].', id = '.$_SESSION['id'].', hash = '.$_SESSION['hash'].'"); </script>';
 				session_destroy();
+				echo '<script> console.log("fucking session data6: login ='.$_SESSION['login'].', id = '.$_SESSION['id'].', hash = '.$_SESSION['hash'].'"); </script>';
+				session_write_close();
+				echo '<script> console.log("fucking session data7: login ='.$_SESSION['login'].', id = '.$_SESSION['id'].', hash = '.$_SESSION['hash'].'"); </script>';
+				setcookie(session_name(),'',0,'/');
+				echo '<script> console.log("fucking session data8: login ='.$_SESSION['login'].', id = '.$_SESSION['id'].', hash = '.$_SESSION['hash'].'"); </script>';
+				session_regenerate_id(true);
+				echo '<script> console.log("fucking session data9: login ='.$_SESSION['login'].', id = '.$_SESSION['id'].', hash = '.$_SESSION['hash'].'"); </script>';
 				if ($_GET['a'] == 'doubleLogin')
 					header("Location: index.php?a=doubleLoginAlert");
 				else header("Location: index.php");
 			}
 			else if ($_GET['a'] == 'doubleLoginAlert')
-			{			
+			{
+				echo '<script> console.log("fucking session data1: login ='.$_SESSION['login'].', id = '.$_SESSION['id'].', hash = '.$_SESSION['hash'].'"); </script>';
+				unset($_SESSION['login']);
+				echo '<script> console.log("fucking session data2: login ='.$_SESSION['login'].', id = '.$_SESSION['id'].', hash = '.$_SESSION['hash'].'"); </script>';
+				unset($_SESSION['id']);
+				echo '<script> console.log("fucking session data3: login ='.$_SESSION['login'].', id = '.$_SESSION['id'].', hash = '.$_SESSION['hash'].'"); </script>';
+				unset($_SESSION['hash']);
+				echo '<script> console.log("fucking session data4: login ='.$_SESSION['login'].', id = '.$_SESSION['id'].', hash = '.$_SESSION['hash'].'"); </script>';
+				session_unset();
+				echo '<script> console.log("fucking session data5: login ='.$_SESSION['login'].', id = '.$_SESSION['id'].', hash = '.$_SESSION['hash'].'"); </script>';
+				session_destroy();
+				echo '<script> console.log("fucking session data6: login ='.$_SESSION['login'].', id = '.$_SESSION['id'].', hash = '.$_SESSION['hash'].'"); </script>';
+				session_write_close();
+				echo '<script> console.log("fucking session data7: login ='.$_SESSION['login'].', id = '.$_SESSION['id'].', hash = '.$_SESSION['hash'].'"); </script>';
+				setcookie(session_name(),'',0,'/');
+				echo '<script> console.log("fucking session data8: login ='.$_SESSION['login'].', id = '.$_SESSION['id'].', hash = '.$_SESSION['hash'].'"); </script>';
+				session_regenerate_id(true);
+				echo '<script> console.log("fucking session data9: login ='.$_SESSION['login'].', id = '.$_SESSION['id'].', hash = '.$_SESSION['hash'].'"); </script>';
 				echo'
 					<script> 
 						window.history.pushState("", "", "/index.php");
+						console.log("session data should be empty here. login, id, hash = '.$_SESSION['login'].', '.$_SESSION['id'].', '.$_SESSION['hash'].'"); //todo: remove it
 						alert("Wylogowywanie: podwójny login"); 
+						console.log("session data should be empty here. login, id, hash = '.$_SESSION['login'].', '.$_SESSION['id'].', '.$_SESSION['hash'].'"); //todo: remove it
 					</script>
 				'; 
 			}
-			
-		ob_end_flush();
+			ob_end_flush();
+						
 			/*ob_start();	
 			if ($_GET['a'] == 'logout')
 			{
@@ -71,16 +105,8 @@
 					</div>
 					<div id="user">&nbsp;</div>
 				</div>
-				<?
-				if(empty($_SESSION['id'])) 
-					echo '<script> $(function(){ showHeaderType("logging"," "); });</script>';
-				else 
-				{
-					$user = getUser($_SESSION['id']);
-					echo '<script> $(function(){ showHeaderType("logged","'.$user['login'].'"); });</script>';
-				}
-				
-				ob_start();								
+				<?				
+				ob_start();
 				if ($_GET['a'] == 'login')
 					require_once('login.php');
 				else if ($_GET['a'] == 'register')
@@ -91,14 +117,21 @@
 			<div id="content" align="center">
 				<div id="game">				
 					<script> 
-						function sendFirstWsMsg() //todo: ajax?
+						function checkForLogin() //todo: ajax?
 						{  
 							<? if(isset($_SESSION['login']) && !empty($_SESSION['login'])) 
+							{
+								echo 'console.log("send to core: im (...). login = '.$_SESSION['login'].', id = '.$_SESSION['id'].', hash = '.$_SESSION['hash'].'");';
 								echo 'websocket.send("im '.$_SESSION['id'].'&'.$_SESSION['hash'].'");';
-						   else echo 'websocket.send("getTableDataAsJSON");'; ?>
+							}
+						   else 
+						   {
+							   echo 'console.log("client not logged");';
+							   //echo 'console.log("send to core: getTableDataAsJSON");';
+							   //echo 'websocket.send("getTableDataAsJSON");'; 
+						   }
+							?>
 						}
-												
-						initWebSocket();
 					</script> 	
 					
 					<div id="video" class="parent">
@@ -161,5 +194,7 @@
 		<span id="promoteDialog"></span>
 		<span id="startGameDialog" hidden="hidden">Wciśnij start, by rozpocząć grę. Pozostały czas: 120</span> 
 		<span id="endOfGameDialog" hidden="hidden">Koniec gry.</span> 
+		
+		<script> $(function(){ initWebSocket(); });</script>
 	</body>
 </html>																									

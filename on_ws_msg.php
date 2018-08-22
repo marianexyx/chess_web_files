@@ -7,6 +7,9 @@
 	if(!isset($_SESSION['clientsArr']) || empty($_SESSION['clientsArr']))
 		$_SESSION['clientsArr'] = array();
 	
+	if(!isset($_SESSION['synchronized']))
+		$_SESSION['synchronized'] = false;
+	
 	$TABLE_DATA = array
 	(
 		"NONE" => "0",
@@ -26,24 +29,25 @@
 	$ACTION_TYPE = array
 	(
 		"NONE" => "0",
-		"NEW_WHITE_PLAYER" => "1",
-		"NEW_BLACK_PLAYER" => "2",
-		"NEW_GAME_STARTED" => "3",
-		"BAD_MOVE" => "4",
-		"RESET_COMPLITED" => "5",
-		"DOUBLE_LOGIN" => "6",
-		"REMOVE_AND_REFRESH_CLIENT" => "7",
-		"END_GAME_NONE" => "8", //error type. end_of_game can't be none
-		"END_GAME_NORMAL_WIN_WHITE" => "9",
-		"END_GAME_NORMAL_WIN_BLACK" => "10",
-		"END_GAME_DRAW" => "11",
-		"END_GAME_GIVE_UP_WHITE" => "12",
-		"END_GAME_GIVE_UP_BLACK" => "13",
-		"END_GAME_SOCKET_LOST_WHITE" => "14",
-		"END_GAME_SOCKET_LOST_BLACK" => "15",
-		"END_GAME_TIMEOUT_GAME_WHITE" => "15",
-		"END_GAME_TIMEOUT_GAME_BLACK" => "17", 
-		"END_GAME_ERROR" => "18",
+		"SYNCHRONIZED" => "1",
+		"NEW_WHITE_PLAYER" => "2",
+		"NEW_BLACK_PLAYER" => "3",
+		"NEW_GAME_STARTED" => "4",
+		"BAD_MOVE" => "5",
+		"RESET_COMPLITED" => "6",
+		"DOUBLE_LOGIN" => "7",
+		"REMOVE_AND_REFRESH_CLIENT" => "8",
+		"END_GAME_NONE" => "9", //error type. end_of_game can't be none
+		"END_GAME_NORMAL_WIN_WHITE" => "10",
+		"END_GAME_NORMAL_WIN_BLACK" => "11",
+		"END_GAME_DRAW" => "12",
+		"END_GAME_GIVE_UP_WHITE" => "13",
+		"END_GAME_GIVE_UP_BLACK" => "14",
+		"END_GAME_SOCKET_LOST_WHITE" => "15",
+		"END_GAME_SOCKET_LOST_BLACK" => "16",
+		"END_GAME_TIMEOUT_GAME_WHITE" => "17",
+		"END_GAME_TIMEOUT_GAME_BLACK" => "18", 
+		"END_GAME_ERROR" => "19",
 		"ERROR" => "99"
 	);
 	
@@ -66,7 +70,6 @@
 	if(isset($_POST['wsMsg']))
 	{	
 		resetSessionData();
-		
 		saveCoreDataInSessionVars($_POST['wsMsg']);
 		$calculatedDataArr = calculateDataFromSessionVars(); 
 		
@@ -83,6 +86,8 @@
 		if ($_SESSION['promoted'] != '-1') $returnArray["promotedPawnsList"] = $_SESSION['promoted'];
 		if ($_SESSION['queue'] != '-1') $returnArray["queuedPlayers"] = $_SESSION['queue'];
 		$returnArray["clientIsLogged"] = $calculatedDataArr["clientIsLogged"];
+		$returnArray["clientIsSynchronized"] = $calculatedDataArr["clientIsSynchronized"];
+		if (isset($_SESSION['login']) && !empty($_SESSION['login']) != '-1' && $_SESSION['login'] != '-1') $returnArray["clientName"] = $_SESSION['login'];
 		$returnArray["loggedPlayerIsOnAnyChair"] = $calculatedDataArr["loggedPlayerIsOnAnyChair"];
 		$returnArray["loggedPlayerIsOnWhiteChair"] = $calculatedDataArr["loggedPlayerIsOnWhiteChair"];
 		$returnArray["loggedPlayerIsOnBlackChair"] = $calculatedDataArr["loggedPlayerIsOnBlackChair"];
@@ -94,11 +99,13 @@
 		$returnArray["queuePlayerBtn"] = $calculatedDataArr["queuePlayerBtn"];
 		$returnArray["leaveQueueBtn"] = $calculatedDataArr["leaveQueueBtn"];
 		if ($calculatedDataArr["specialOption"] != '-1') $returnArray["specialOption"] = $calculatedDataArr["specialOption"];
+		else $returnArray["consoleMsg"] .= " wtf, calculatedDataArr = -1??: ".$calculatedDataArr["specialOption"]; ///tests.......................
 		
 		foreach($returnArray as &$value) { if (is_null($value)) { $value = '-1'; }} unset($value);
 		header('Content-type: application/json; charset=utf-8"');
 		echo json_encode($returnArray);
 	}
+	//else 
 		
 	function resetSessionData()
 	{

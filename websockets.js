@@ -29,14 +29,18 @@ function initWebSocket()
 		
 		websocket.onmessage = function (evt) 
 		{ 
-			console.log("websocket.onmessage = " + evt.data);
 			coreMsgsArr.push(evt.data);
 			if (bSiteIsProcessingCoreMsg == false)
+			{
+				console.log("websocket.onmessage = " + evt.data + ", bSiteIsProcessingCoreMsg = false");
 				doAjaxCall();
+			}
+			else console.log("websocket.onmessage = " + evt.data + ", bSiteIsProcessingCoreMsg = true");
 		};
 		
 		websocket.onopen = function (evt) 
 		{ 
+			console.log("websocket.onopen");
 			coreMsgsArr = []; 
 			bSiteIsProcessingCoreMsg = false;
 		
@@ -50,11 +54,11 @@ function initWebSocket()
 				default: { stateStr = "UNKNOW"; serverStatus("offline"); break; }
 			}
 			
-			sendFirstWsMsg();
+			//$(function() { sendFirstWsMsg(); });
 		}
 	} else alert("WebSockets not supported on your browser.");
 }
 
-function stopWebSocket() { if (websocket) websocket.close(); }
+function stopWebSocket() { if (websocket) websocket.close(); } //todo: add flag that will stop JS from restoring connection automatically
 
 setInterval(function() { websocket.send("keepConnected"); }, 250000);
