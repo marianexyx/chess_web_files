@@ -12,8 +12,6 @@
 		global $ACTION_TYPE;
 		global $GAME_STATE;
 	
-		$clientIsLogged = !empty($_SESSION['id']);
-		$clientIsSynchronized = false;
 		$loggedPlayerIsOnAnyChair = false;
 		$loggedPlayerIsOnWhiteChair = false;
 		$loggedPlayerIsOnBlackChair = false;
@@ -25,57 +23,62 @@
 		$queuePlayerBtn = false;
 		$leaveQueueBtn = false;
 		$specialOption = '-1';
-		
-		if ($_SESSION['action'] == $ACTION_TYPE["SYNCHRONIZED"])
-			$_SESSION['synchronized'] = true;
-		
-		if (!$clientIsLogged)
+			
+		if (empty($_SESSION['id']))
 			$_SESSION['synchronized'] = false;
 			
-		if ($clientIsLogged && $_SESSION['synchronized'])
-		{			
-			if ($_SESSION['action'] != $ACTION_TYPE["DOUBLE_LOGIN"] && $_SESSION['action'] != $ACTION_TYPE["REMOVE_AND_REFRESH_CLIENT"])
+		//todo: maybe it would be better if logout actions be as synchronized tabla_data options?
+		if ($_SESSION['action'] != $ACTION_TYPE["DOUBLE_LOGIN"] && $_SESSION['action'] != $ACTION_TYPE["REMOVE_AND_REFRESH_CLIENT"])	
+		{	
+			if ($_SESSION['synchronized'])
 			{
-				$clientIsSynchronized = true;
 				$loggedPlayerIsOnAnyChair = isLoggedPlayerOnAnyChair();
 				$tableIsFull = are2playersAreOnChairs();
 				$clientIsInQueue = isClientInQueue();
 				$loggedPlayerIsOnWhiteChair = isLoggedPlayerOnChair(WHITE);
 				$loggedPlayerIsOnBlackChair = isLoggedPlayerOnChair(BLACK);
 				$playerCanMakeMove = isPlayerAllowedToMakeMove();
-				if (isChairEmpty(WHITE) && !isLoggedPlayerOnChair(BLACK)) $whitePlayerBtn = true;
-				if (isChairEmpty(BLACK) && !isLoggedPlayerOnChair(WHITE)) $blackPlayerBtn = true;
-				if (are2playersAreOnChairs() && !isLoggedPlayerOnAnyChair() && !isClientInQueue()) $queuePlayerBtn = true;
-				else if (isClientInQueue()) $leaveQueueBtn = true;
-				if ($_SESSION['action'] == $ACTION_TYPE["NEW_WHITE_PLAYER"] || $_SESSION['action'] == $ACTION_TYPE["NEW_BLACK_PLAYER"]) printNewPlayerName();
-				if ($_SESSION['gameState'] == $GAME_STATE["NEW_GAME_STARTED"]) $specialOption = 'newGameStarted';
-				else if ($_SESSION['action'] == $ACTION_TYPE["BAD_MOVE"]) $specialOption = 'badMove';
-				else if (isPromotionConditionsMet()) $specialOption = 'promote';
-				else if (isGameStateAnEndType()) $specialOption = 'endOfGame';
+				if (isChairEmpty(WHITE) && !isLoggedPlayerOnChair(BLACK)) 
+					$whitePlayerBtn = true;
+				if (isChairEmpty(BLACK) && !isLoggedPlayerOnChair(WHITE)) 
+					$blackPlayerBtn = true;
+				
+				if (are2playersAreOnChairs() && !isLoggedPlayerOnAnyChair() && !isClientInQueue()) 
+					$queuePlayerBtn = true;
+				else if (isClientInQueue()) 
+					$leaveQueueBtn = true;
+				
+				if ($_SESSION['action'] == $ACTION_TYPE["NEW_WHITE_PLAYER"] || $_SESSION['action'] == $ACTION_TYPE["NEW_BLACK_PLAYER"])
+					printNewPlayerName();
+				
+				if ($_SESSION['gameState'] == $GAME_STATE["NEW_GAME_STARTED"]) 
+					$specialOption = 'newGameStarted';
+				else if ($_SESSION['action'] == $ACTION_TYPE["BAD_MOVE"]) 
+					$specialOption = 'badMove';
+				else if (isPromotionConditionsMet()) 
+					$specialOption = 'promote';
+				else if (isGameStateAnEndType()) 
+					$specialOption = 'endOfGame';
 			}
-			else
-			{
-				/*unset($_SESSION['login']);
-				unset($_SESSION['id']);
-				unset($_SESSION['hash']);
-				//session_start();
-				session_unset();
-				session_destroy();
-				session_write_close();
-				setcookie(session_name(),'',0,'/');
-				session_regenerate_id(true);*/
-				if ($_SESSION['action'] == $ACTION_TYPE["DOUBLE_LOGIN"]) $specialOption = 'doubleLogin';
-				else if ($_SESSION['action'] == $ACTION_TYPE["REMOVE_AND_REFRESH_CLIENT"]) $specialOption = 'wrongData';
-				/*if ($_SESSION['action'] == $ACTION_TYPE["DOUBLE_LOGIN"]) header("Location: index.php?a=doubleLogin");
-				else if ($_SESSION['action'] == $ACTION_TYPE["REMOVE_AND_REFRESH_CLIENT"]) header("Location: index.php");*/
-			}
+			else if (!empty($_SESSION['id']) && !empty($_SESSION['hash'])) //don't remove this
+				$specialOption = 'checkForLogin im '.$_SESSION['id'].'&'.$_SESSION['hash'] ;
 		}
-		else $specialOption = 'checkForLogin';
+		else if ($_SESSION['action'] == $ACTION_TYPE["DOUBLE_LOGIN"] || $_SESSION['action'] == $ACTION_TYPE["REMOVE_AND_REFRESH_CLIENT"])
+		{
+			unset($_SESSION['login']);
+			unset($_SESSION['id']);
+			unset($_SESSION['hash']);
+			if ($_SESSION['action'] == $ACTION_TYPE["DOUBLE_LOGIN"]) 
+				$specialOption = 'doubleLogin';
+			else if ($_SESSION['action'] == $ACTION_TYPE["REMOVE_AND_REFRESH_CLIENT"]) 
+				$specialOption = 'wrongData';
+			/*if ($_SESSION['action'] == $ACTION_TYPE["DOUBLE_LOGIN"]) header("Location: index.php?a=doubleLogin"); //todo: check it
+			else if ($_SESSION['action'] == $ACTION_TYPE["REMOVE_AND_REFRESH_CLIENT"]) header("Location: index.php");*/
+		}
 		
 		return array
 		(
-			"clientIsLogged" => $clientIsLogged,
-			"clientIsSynchronized" => $clientIsSynchronized,
+			"clientIsLogged" => $_SESSION['synchronized'],
 			"loggedPlayerIsOnAnyChair" => $loggedPlayerIsOnAnyChair,
 			"loggedPlayerIsOnWhiteChair" => $loggedPlayerIsOnWhiteChair,
 			"loggedPlayerIsOnBlackChair" => $loggedPlayerIsOnBlackChair,

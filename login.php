@@ -28,7 +28,7 @@
 		else echo '<center><b>Wypełnij pola poprawnie.</b></center>';
 	}
 	
-	if ($_GET['registered'] == true) echo 'Zarejestrowano poprawnie.';
+	if ($_GET['registered'] == true) echo '<br/><br/>Zarejestrowano poprawnie.';
 ?>
 
 <br/>

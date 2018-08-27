@@ -30,11 +30,10 @@ function resetCoreMsgsArr()
 
 var whiteTotalSeconds = "-1";
 var blackTotalSeconds = "-1";
+var clientName = "-1";
 var whoseTurn = "-1";
 var bTableIsFull = false;
 var bClientIsLogged = false;
-var bClientIsSynchronized = false;
-var clientName = "";
 var bClientIsPlayer = false;
 var bClientIsWhitePlayer = false;
 var bClientIsBlackPlayer = false;
@@ -51,6 +50,7 @@ function ajaxResponse(ajaxData)
 
 	if (ajaxData.hasOwnProperty("consoleMsg")) console.log(ajaxData["consoleMsg"]);
 	if (ajaxData.hasOwnProperty("PTEmsg")) infoMsgPTE = ajaxData["PTEmsg"];
+	if (ajaxData.hasOwnProperty("name")) clientName = ajaxData["name"];
 	if (ajaxData.hasOwnProperty("whoseTurn")) whoseTurn = ajaxData["whoseTurn"];
 	if (ajaxData.hasOwnProperty("whitePlayerName")) setName("White", ajaxData["whitePlayerName"]);
 	if (ajaxData.hasOwnProperty("blackPlayerName")) setName("Black", ajaxData["blackPlayerName"]);
@@ -61,8 +61,6 @@ function ajaxResponse(ajaxData)
 	if (ajaxData.hasOwnProperty("promotedPawnsList")) showPromotions(ajaxData["promotedPawnsList"]);
 	if (ajaxData.hasOwnProperty("queuedPlayers")) addMsgToClientPlainTextWindow(ajaxData["queuedPlayers"], "queue");
 	if (ajaxData.hasOwnProperty("clientIsLogged")) bClientIsLogged = ajaxData["clientIsLogged"];
-	if (ajaxData.hasOwnProperty("clientIsSynchronized")) bClientIsSynchronized = ajaxData["clientIsSynchronized"];
-	if (ajaxData.hasOwnProperty("clientName")) clientName = ajaxData["clientName"];
 	if (ajaxData.hasOwnProperty("loggedPlayerIsOnAnyChair")) bClientIsPlayer = ajaxData["loggedPlayerIsOnAnyChair"];
 	if (ajaxData.hasOwnProperty("loggedPlayerIsOnWhiteChair")) bClientIsWhitePlayer = ajaxData["loggedPlayerIsOnWhiteChair"];
 	if (ajaxData.hasOwnProperty("loggedPlayerIsOnBlackChair")) bClientIsBlackPlayer = ajaxData["loggedPlayerIsOnBlackChair"];
@@ -77,17 +75,20 @@ function ajaxResponse(ajaxData)
 	
 	//needed to save above params before using some of this functions below, to avoid using non-updated global vars
 	if (ajaxData.hasOwnProperty("PTEmsg")) addMsgToClientPlainTextWindow(infoMsgPTE, "info");
-	manageHeaderDiv();
+	manageHeaderDiv(ajaxData["specialOption"]);
 	updatePlayersTimers();
 	updateHelpInfo();
 	manageStandUpBtns();
 	showActivePlayerWithCSS();
-	if (startTimeVar > 0) showStartDialog(ajaxData["startTimeLeft"]); 
+	if (startTimeVar > 0) 
+		showStartDialog(ajaxData["startTimeLeft"]); 
 	else closeStartGameDialogIfOpened();
-	if (ajaxData.hasOwnProperty("specialOption")) otherOption(otherOptionVar);
+	if (ajaxData.hasOwnProperty("specialOption"))
+		otherOption(otherOptionVar);
 	letPlayerMakeMoveIfItsHisTurn();
 	
-	if (coreMsgsArr != undefined && coreMsgsArr.length > 0) doAjaxCall();
+	if (coreMsgsArr != undefined && coreMsgsArr.length > 0) 
+		doAjaxCall();
 	else bSiteIsProcessingCoreMsg = false;
 }
 
@@ -121,20 +122,48 @@ function otherOption(othOpt)
 		$("#endOfGameDialog").dialog(endOfGameVar).dialog("open");
 		setTimeout(function() { $("#endOfGameDialog").dialog('close'); }, 7000)
 	}
-	else if (othOpt == 'doubleLogin') window.location.href = 'index.php?a=doubleLogin';
-	else if (othOpt == 'wrongData') window.location.href = 'index.php?a=wrongData';
-	else if (othOpt == 'checkForLogin') checkForLogin();
+	else if (othOpt == 'doubleLogin' || othOpt == 'wrongData')
+	{
+		bForceStopWS = true;
+		stopWebSocket();
+		window.location.href = 'index.php?a=' + othOpt;
+	}
+	else if (othOpt.substring(0,13) == 'checkForLogin') 
+	{
+		if (websocket)
+			websocket.send(othOpt.substring(14));
+		else wrongData();
+	}
 	else console.log("ERROR: Unknown othOpt val.");
 }
 
-function manageHeaderDiv()
+function wrongData()
 {
-	if (bClientIsSynchronized)
-		showHeaderType("logging"," ");
-	else showHeaderType("logged", clientName);
+	bForceStopWS = true;
+	stopWebSocket();
+	window.location.href = 'index.php?a=wrongData';
 }
 
-$(function(){ manageHeaderDiv() }); //set logging header div for start
+function manageHeaderDiv(specOpt)
+{
+	if (specOpt !=null && specOpt.substring(0,13) == 'checkForLogin')
+		return;
+	
+	if (bClientIsLogged == false)
+	{
+		$("#loggingSection").html('<a href="index.php?a=register">Zarejestruj się</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="index.php?a=login">Zaloguj się</a>&nbsp;&nbsp;|');
+		$("#user").html("&nbsp");
+		$("#additionalInfo").html('Musisz być zalogowany, aby móc grać.');
+	}
+	else  
+	{
+		$("#loggingSection").html('<a href="index.php?a=logout" onclick="return confirmLogout();">Wyloguj się</a>&nbsp;&nbsp;|');
+		$("#user").html("<b>Użytkownik:</b>&nbsp" + clientName);
+		$("#additionalInfo").html("&nbsp");
+	}
+}
+
+
 //todo: make special file for scripts tkat shpuld be executed after page is loaded?
 
 function updatePlayersTimers()
@@ -769,22 +798,6 @@ function movePiece(fromTo)
 		websocket.send("move " + fromTo);
 	}
 	else otherOption('wrongData');
-}
-
-function showHeaderType(type, name)
-{
-	if (type == "logging")
-	{
-		$("#loggingSection").html('<a href=index.php?a=register">Zarejestruj się</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="index.php?a=login">Zaloguj się</a>');
-		$("#user").html("&nbsp");
-		$("#additionalInfo").html('Musisz być zalogowany, aby móc grać.');
-	}
-	else if (type == "logged")
-	{
-		$("#loggingSection").html('<a href="index.php?a=logout" onclick="return confirmLogout();">Wyloguj się</a>');
-		$("#user").html("<b>Użytkownik:</b>&nbsp" + name);
-		$("#additionalInfo").html("&nbsp");
-	}
 }
 
 alertWindow = (function () //todo: testować działanie tej funkcji

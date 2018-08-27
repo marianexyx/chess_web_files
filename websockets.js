@@ -1,4 +1,5 @@
 var bSiteIsProcessingCoreMsg = false;
+var bForceStopWS = false;
 var coreMsgsArr = []; 
 
 var wsUri = "ws://89.72.9.69:1234"; 
@@ -24,11 +25,18 @@ function initWebSocket()
 			websocket = null;
 			coreMsgsArr = []; 
 			bSiteIsProcessingCoreMsg = false;
-			setTimeout(function() { initWebSocket(); }, 1000)
+			if (!bForceStopWS)
+				setTimeout(function() { initWebSocket(); }, 1000)
 		};
 		
 		websocket.onmessage = function (evt) 
 		{ 
+			if (bForceStopWS)
+			{
+				stopWebSocket();
+				return;
+			}
+			
 			coreMsgsArr.push(evt.data);
 			if (bSiteIsProcessingCoreMsg == false)
 			{
@@ -54,11 +62,20 @@ function initWebSocket()
 				default: { stateStr = "UNKNOW"; serverStatus("offline"); break; }
 			}
 			
-			//$(function() { sendFirstWsMsg(); });
+			if (bForceStopWS)
+			{
+				stopWebSocket();
+				return;
+			}
 		}
 	} else alert("WebSockets not supported on your browser.");
 }
 
-function stopWebSocket() { if (websocket) websocket.close(); } //todo: add flag that will stop JS from restoring connection automatically
+function stopWebSocket() 
+{ 
+	bForceStopWS = true;
+	if (websocket) 
+		websocket.close(); 
+}
 
 setInterval(function() { websocket.send("keepConnected"); }, 250000);

@@ -17,6 +17,8 @@
 		
 		updateClientsNamesArray($tableDataArr);
 		
+		if (array_key_exists($TABLE_DATA["SYNCHRONIZED"], $tableDataArr))
+			$_SESSION['synchronized'] = $tableDataArr[$TABLE_DATA["SYNCHRONIZED"]];
 		if (array_key_exists($TABLE_DATA["ACTION"], $tableDataArr))
 		{
 			$_SESSION['action'] = $tableDataArr[$TABLE_DATA["ACTION"]];
@@ -128,7 +130,6 @@
 			case $ACTION_TYPE["NEW_BLACK_PLAYER"]:
 			case $ACTION_TYPE["DOUBLE_LOGIN"]:
 			case $ACTION_TYPE["REMOVE_AND_REFRESH_CLIENT"]:
-			case $ACTION_TYPE["SYNCHRONIZED"]:
 				break;
 			
 			case $ACTION_TYPE["NEW_GAME_STARTED"]:

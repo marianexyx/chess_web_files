@@ -48,6 +48,8 @@
 	}
 ?>
 
+<script> console.log("inside register.php"); </script>
+
 <br/>
 <br/>
 <form action="index.php?a=register" method="POST">

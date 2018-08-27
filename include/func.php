@@ -80,34 +80,35 @@
 	function checkForLogout($GET_String)
 	{
 		ob_start();	
-			if ($GET_String == 'logout' || $GET_String == 'doubleLogin' || $GET_String == 'wrongData')
-			{
-				$_SESSION = array();
-				session_destroy();
-				if ($GET_String == 'doubleLogin')
-					header("Location: index.php?a=doubleLoginAlert");
-				else header("Location: index.php");
-			}
-			else if ($GET_String == 'doubleLoginAlert')
-			{			
-				echo'
-					<script> 
-						window.history.pushState("", "", "/index.php");
-						alert("Wylogowywanie: podwójny login"); 
-					</script>
-				'; 
-			}
-			
+		if ($GET_String == 'logout' || $GET_String == 'doubleLogin' || $GET_String == 'wrongData')
+		{
+			unset($_SESSION['login']);
+			unset($_SESSION['id']);
+			unset($_SESSION['hash']);
+			unset($_SESSION['synchronized']);
+			if ($GET_String == 'doubleLogin')
+				header("Location: index.php?a=doubleLoginAlert");
+			else header("Location: index.php");
+		}
+		else if ($GET_String == 'doubleLoginAlert')
+		{
+			echo'
+				<script> 
+					window.history.pushState("", "", "/index.php");
+					alert("Wylogowywanie: podwójny login"); 
+				</script>
+			'; 
+		}
 		ob_end_flush();
 	}
 	
-	function checkForLoginOrRegister($GET_String)
+	function checkForLoginOrRegisterDIV($GET_String)
 	{
-		
-	}
-	
-	function setHeaderForClient()
-	{
-		
+		ob_start();
+		if ($GET_String == 'register')
+			require_once('register.php');
+		else if ($GET_String == 'login')
+			require_once('login.php');
+		ob_end_flush();
 	}
 ?>
