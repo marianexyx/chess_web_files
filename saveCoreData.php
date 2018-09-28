@@ -128,8 +128,6 @@
 			case $ACTION_TYPE["NONE"]:
 			case $ACTION_TYPE["NEW_WHITE_PLAYER"]:
 			case $ACTION_TYPE["NEW_BLACK_PLAYER"]:
-			case $ACTION_TYPE["DOUBLE_LOGIN"]:
-			case $ACTION_TYPE["REMOVE_AND_REFRESH_CLIENT"]:
 				break;
 			
 			case $ACTION_TYPE["NEW_GAME_STARTED"]:
@@ -181,7 +179,7 @@
 				}
 				else if ($whoLost == NONE) 
 					$_SESSION['textboxAjax'] = 'Koniec gry: Remis.';
-				else $_SESSION['consoleAjax'] .= 'ERROR: undefined player type = '.$whoLost.' | ';
+				else $_SESSION['synchronized'] = $SYNCHRONIZATION_TYPE["REMOVE_AND_REFRESH_CLIENT"]; //error: undefined player type = '.$whoLost.' | ';
 				if ($whoLost == WHITE || $whoLost == BLACK)
 				{
 					switch($action)
@@ -208,7 +206,7 @@
 				break;
 	
 			default: 
-				$_SESSION['consoleAjax'] .= 'ERROR: unnormal ACTION_TYPE = '.$action.' | ';
+				$_SESSION['synchronized'] = $SYNCHRONIZATION_TYPE["REMOVE_AND_REFRESH_CLIENT"]; //error: unnormal ACTION_TYPE = '.$action.' | ';
 				break;
 		}
 	}
@@ -229,7 +227,7 @@
 		case $GAME_STATE["TURN_BLACK"]: return BLACK_TURN;
 		case $GAME_STATE["TURN_BLACK_PROMOTE"]: return BLACK_TURN;
 		default:
-			$_SESSION['consoleAjax'] .= 'ERROR. whoseTurnFromGameStatus(): unknwon GAME_STATUS = '.$GS.' | ';
+			$_SESSION['synchronized'] = $SYNCHRONIZATION_TYPE["REMOVE_AND_REFRESH_CLIENT"]; //error: whoseTurnFromGameStatus(): unknwon GAME_STATUS = '.$GS.' | ';
 			return NO_TURN;
 		}
 	}

@@ -33,23 +33,16 @@
 	
 	function checkUser($sid) // Funkcja weryfikująca stan gracza (czy zalogowany)        sid- session id
 	{
-        if(empty($sid)) // Jeżeli puste ID sesji...
-		{
+        if(empty($sid)) 
             return header("Location: index.php?a=login"); // ...przejście do strony logowania
-        } 
-		else  // Gdy ID sesji jest poprawne...
-		{
-            return $sid = (int)$sid; // ...zmiana lub utrzymanie stanu ID jako int
-        }
+		else return $sid = (int)$sid;
 	 }
 	 
 	function debugToConsole($data) 
 	{
 		$output = $data;
 		if (is_array($output)) 
-		{
 			$output = implode(',', $output);
-		}
 
 		echo '<script> console.log( "Debug Objects: '.$output.'"); </script>';
 	}

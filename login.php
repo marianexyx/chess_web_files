@@ -34,7 +34,7 @@
 <br/>
 <br/>
 <form action="index.php?a=login" method="POST"> 
-<div class="divTable">
+<div id="register" class="divTable">
 	<div class="divTableBody">
 		<div class="divTableRow">
 			<div class="divTableCell">&nbsp;</div>

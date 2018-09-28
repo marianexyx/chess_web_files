@@ -1,6 +1,4 @@
 <?
-	//todo: destroy/clear client/session if error occurs
-
 	define('NONE', 'None');
 	define('WHITE', 'White');
 	define('BLACK', 'Black');
@@ -9,6 +7,7 @@
 		
 	function calculateDataFromSessionVars()
 	{	
+		global $SYNCHRONIZATION_TYPE;
 		global $ACTION_TYPE;
 		global $GAME_STATE;
 	
@@ -25,21 +24,45 @@
 		$specialOption = '-1';
 			
 		if (empty($_SESSION['id']))
-			$_SESSION['synchronized'] = false;
+			$_SESSION['synchronized'] = $SYNCHRONIZATION_TYPE["DESYNCHRONIZED"];
 			
-		//todo: maybe it would be better if logout actions be as synchronized tabla_data options?
-		if ($_SESSION['action'] != $ACTION_TYPE["DOUBLE_LOGIN"] && $_SESSION['action'] != $ACTION_TYPE["REMOVE_AND_REFRESH_CLIENT"])	
-		{	
-			if ($_SESSION['synchronized'])
+
+		if ($_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["DESYNCHRONIZED"] && !empty($_SESSION['id']) && !empty($_SESSION['hash'])) //don't remove this 2nd part: it's checking if player is logged in php
+			$specialOption = 'checkForLogin im '.$_SESSION['id'].'&'.$_SESSION['hash'] ;
+		else if ($_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["DOUBLE_LOGIN"] || $_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["REMOVE_AND_REFRESH_CLIENT"])
+		{
+			unset($_SESSION['login']);
+			unset($_SESSION['id']);
+			unset($_SESSION['hash']);
+			if ($_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["DOUBLE_LOGIN"]) 
+				$specialOption = 'doubleLogin';
+			else if ($_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["REMOVE_AND_REFRESH_CLIENT"]) 
+				$specialOption = 'wrongData';
+		}
+		else
+		{
+			$tableIsFull = are2playersAreOnChairs(); //only logged players can make use of this flag, but maybe in future this might be usable, so always return this proper value to everyone
+			
+			if ($_SESSION['action'] == $ACTION_TYPE["NEW_WHITE_PLAYER"] || $_SESSION['action'] == $ACTION_TYPE["NEW_BLACK_PLAYER"])
+				printNewPlayerName(); //everyone needs to see new players names
+			
+			//everyone needs to see start & end pop up dialogs and infos
+			if ($_SESSION['gameState'] == $GAME_STATE["NEW_GAME_STARTED"]) 
+				$specialOption = 'newGameStarted'; 
+			else if (isGameStateAnEndType()) 
+				$specialOption = 'endOfGame';
+			
+			//below vars will always be false/unset for unlogged clients
+			if ($_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["SYNCHRONIZED"])
 			{
 				$loggedPlayerIsOnAnyChair = isLoggedPlayerOnAnyChair();
-				$tableIsFull = are2playersAreOnChairs();
 				$clientIsInQueue = isClientInQueue();
 				$loggedPlayerIsOnWhiteChair = isLoggedPlayerOnChair(WHITE);
 				$loggedPlayerIsOnBlackChair = isLoggedPlayerOnChair(BLACK);
 				$playerCanMakeMove = isPlayerAllowedToMakeMove();
+				
 				if (isChairEmpty(WHITE) && !isLoggedPlayerOnChair(BLACK)) 
-					$whitePlayerBtn = true;
+				$whitePlayerBtn = true;
 				if (isChairEmpty(BLACK) && !isLoggedPlayerOnChair(WHITE)) 
 					$blackPlayerBtn = true;
 				
@@ -48,32 +71,12 @@
 				else if (isClientInQueue()) 
 					$leaveQueueBtn = true;
 				
-				if ($_SESSION['action'] == $ACTION_TYPE["NEW_WHITE_PLAYER"] || $_SESSION['action'] == $ACTION_TYPE["NEW_BLACK_PLAYER"])
-					printNewPlayerName();
-				
-				if ($_SESSION['gameState'] == $GAME_STATE["NEW_GAME_STARTED"]) 
-					$specialOption = 'newGameStarted';
-				else if ($_SESSION['action'] == $ACTION_TYPE["BAD_MOVE"]) 
+				//unlogged clients won't have ability to badMove info and promote pop up dialog
+				if ($_SESSION['action'] == $ACTION_TYPE["BAD_MOVE"]) 
 					$specialOption = 'badMove';
 				else if (isPromotionConditionsMet()) 
 					$specialOption = 'promote';
-				else if (isGameStateAnEndType()) 
-					$specialOption = 'endOfGame';
 			}
-			else if (!empty($_SESSION['id']) && !empty($_SESSION['hash'])) //don't remove this
-				$specialOption = 'checkForLogin im '.$_SESSION['id'].'&'.$_SESSION['hash'] ;
-		}
-		else if ($_SESSION['action'] == $ACTION_TYPE["DOUBLE_LOGIN"] || $_SESSION['action'] == $ACTION_TYPE["REMOVE_AND_REFRESH_CLIENT"])
-		{
-			unset($_SESSION['login']);
-			unset($_SESSION['id']);
-			unset($_SESSION['hash']);
-			if ($_SESSION['action'] == $ACTION_TYPE["DOUBLE_LOGIN"]) 
-				$specialOption = 'doubleLogin';
-			else if ($_SESSION['action'] == $ACTION_TYPE["REMOVE_AND_REFRESH_CLIENT"]) 
-				$specialOption = 'wrongData';
-			/*if ($_SESSION['action'] == $ACTION_TYPE["DOUBLE_LOGIN"]) header("Location: index.php?a=doubleLogin"); //todo: check it
-			else if ($_SESSION['action'] == $ACTION_TYPE["REMOVE_AND_REFRESH_CLIENT"]) header("Location: index.php");*/
 		}
 		
 		return array
@@ -108,7 +111,6 @@
 				$chair = true;
 			else $chair = false;
 		}
-		else $_SESSION['consoleAjax'] .= 'ERROR: function isChairEmpty(): unknown playerType: '.$playerType.' | ';
 		
 		return $chair;
 	}
@@ -126,7 +128,6 @@
 			if ($_SESSION['blackPlayer'] == $_SESSION['login']) $loggedPlayerOnChair = true;
 			else $loggedPlayerOnChair = false;
 		}
-		else $_SESSION['consoleAjax'] .= 'ERROR: function isLoggedPlayerOnChair(): unknown playerType: '.$playerType.' | ';
 		
 		return $loggedPlayerOnChair;
 	}
@@ -170,6 +171,7 @@
 	
 	function isPromotionConditionsMet()
 	{
+		global $GAME_STATE;
 		if (($_SESSION['gameState'] == $GAME_STATE["TURN_WHITE_PROMOTE"] && isLoggedPlayerOnChair(WHITE)) ||
 			($_SESSION['gameState'] == $GAME_STATE["TURN_BLACK_PROMOTE"] && isLoggedPlayerOnChair(BLACK)))
 			return true;
@@ -212,7 +214,5 @@
 				$_SESSION['textboxAjax'] = "Gracz figur czarnych opuścił stół."; 
 			else $_SESSION['textboxAjax'] = "Nowy gracz figur czarnych: ".$_SESSION['blackPlayer'];
 		}
-		else $_SESSION['consoleAjax'] .= 'ERROR: action isnt white or black new player. its ='.$_SESSION['action']
-			.', $ACTION_TYPE[NEW_WHITE_PLAYER] ='.$ACTION_TYPE["NEW_WHITE_PLAYER"].' | ';
 	}
 ?>							

@@ -25,7 +25,7 @@ function resetCoreMsgsArr()
 	console.log("ERROR: resetCoreMsgsArr()");
 	coreMsgsArr = [];
 	bSiteIsProcessingCoreMsg = false;
-	websocket.send("getTableDataAsJSON");
+	websocket.send("getTableData");
 }
 
 var whiteTotalSeconds = "-1";
@@ -42,8 +42,6 @@ var bPlayerCanSendMove = false;
 var infoMsgPTE = "";
 function ajaxResponse(ajaxData)
 {
-	console.log("ajaxResponse = "); console.log(ajaxData);
-	
 	disableAll();
 	var startTimeVar = 0;
 	var otherOptionVar = "";
@@ -83,8 +81,7 @@ function ajaxResponse(ajaxData)
 	if (startTimeVar > 0) 
 		showStartDialog(ajaxData["startTimeLeft"]); 
 	else closeStartGameDialogIfOpened();
-	if (ajaxData.hasOwnProperty("specialOption"))
-		otherOption(otherOptionVar);
+	otherOption(otherOptionVar);
 	letPlayerMakeMoveIfItsHisTurn();
 	
 	if (coreMsgsArr != undefined && coreMsgsArr.length > 0) 
@@ -110,16 +107,21 @@ function setName(playerType, name)
 
 function otherOption(othOpt)
 {
+	if (othOpt == 'promote')
+		$("#promoteDialog").dialog(promoteVar).dialog('open');
+	else if ($("#promoteDialog").dialog(promoteVar).dialog('isOpen'))
+		$("#promoteDialog").dialog(promoteVar).dialog('close'); 
+	
 	if (othOpt == 'newGameStarted')
 		startGameTimers(); 
 	else if (othOpt == 'badMove')
 		badMove();
-	else if (othOpt == 'promote')
-		$("#promoteDialog").dialog(promoteVar).dialog("open");
 	else if (othOpt == 'endOfGame')
 	{
+		alertWindow();
+		reactBeep.play();
 		$("#endOfGameDialog").html(infoMsgPTE); 
-		$("#endOfGameDialog").dialog(endOfGameVar).dialog("open");
+		$("#endOfGameDialog").dialog(endOfGameVar).dialog('open');
 		setTimeout(function() { $("#endOfGameDialog").dialog('close'); }, 7000)
 	}
 	else if (othOpt == 'doubleLogin' || othOpt == 'wrongData')
@@ -134,7 +136,6 @@ function otherOption(othOpt)
 			websocket.send(othOpt.substring(14));
 		else wrongData();
 	}
-	else console.log("ERROR: Unknown othOpt val.");
 }
 
 function wrongData()
@@ -146,7 +147,7 @@ function wrongData()
 
 function manageHeaderDiv(specOpt)
 {
-	if (specOpt !=null && specOpt.substring(0,13) == 'checkForLogin')
+	if (specOpt != null && specOpt.substring(0,13) == 'checkForLogin')
 		return;
 	
 	if (bClientIsLogged == false)
@@ -164,7 +165,7 @@ function manageHeaderDiv(specOpt)
 }
 
 
-//todo: make special file for scripts tkat shpuld be executed after page is loaded?
+//todo: make special file for scripts tkat should be executed after page is loaded?
 
 function updatePlayersTimers()
 {
@@ -275,7 +276,11 @@ function showActivePlayerWithCSS()
 
 function letPlayerMakeMoveIfItsHisTurn()
 {
-	if (bPlayerCanSendMove) $("#perspective").css('z-index', '10'); 
+	if (bPlayerCanSendMove)
+	{
+		alertWindow();
+		$("#perspective").css('z-index', '10'); 
+	}
 	else $("#perspective").css('z-index', '8'); 
 }
 
@@ -800,8 +805,12 @@ function movePiece(fromTo)
 	else otherOption('wrongData');
 }
 
-alertWindow = (function () //todo: testować działanie tej funkcji
+var focused = true;
+alertWindow = (function ()
 {
+	checkForFocus();
+	if (!focused) return;
+	
 	//future: nie umiem zmienić koloru zakładki na migający niebieski
     var oldTitle = document.title;
     var msg = "Oczekiwanie na gracza!";
@@ -823,3 +832,18 @@ alertWindow = (function () //todo: testować działanie tej funkcji
         }
     };
 }());
+
+function checkForFocus()
+{
+	//future: this is (or will be) depricated: https://stackoverflow.com/questions/7389328/detect-if-browser-tab-has-focus
+	if (/*@cc_on!@*/false) // check for Internet Explorer
+	{ 
+		document.onfocusin = function() { focused = true; };
+		document.onfocusout = function() { focused = false; };
+	} 
+	else 
+	{
+		window.onfocus = function() { focused = true; };
+		window.onblur = function() { focused = false; };
+	}
+}

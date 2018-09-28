@@ -8,10 +8,7 @@
 		$_SESSION['clientsArr'] = array();
 	
 	if(!isset($_SESSION['synchronized']))
-	{
-		$_SESSION['consoleAjax'] .= ', $_SESSION["synchronized" = !isset';
-		$_SESSION['synchronized'] = false;
-	}
+		$_SESSION['synchronized'] = $SYNCHRONIZATION_TYPE["DESYNCHRONIZED"];;
 	
 	$TABLE_DATA = array
 	(
@@ -29,6 +26,14 @@
 		"ERROR" => "11"
 	);
 	
+	$SYNCHRONIZATION_TYPE = array
+	(
+		"DESYNCHRONIZED" => "0",
+		"SYNCHRONIZED" => "1",
+		"DOUBLE_LOGIN" => "2",
+		"REMOVE_AND_REFRESH_CLIENT" => "3"
+	);
+	
 	$ACTION_TYPE = array
 	(
 		"NONE" => "0",
@@ -37,19 +42,17 @@
 		"NEW_GAME_STARTED" => "3",
 		"BAD_MOVE" => "4",
 		"RESET_COMPLITED" => "5",
-		"DOUBLE_LOGIN" => "6",
-		"REMOVE_AND_REFRESH_CLIENT" => "7",
-		"END_GAME_NONE" => "8", //it's error type. end_of_game can't be none
-		"END_GAME_NORMAL_WIN_WHITE" => "9",
-		"END_GAME_NORMAL_WIN_BLACK" => "10",
-		"END_GAME_DRAW" => "11",
-		"END_GAME_GIVE_UP_WHITE" => "12",
-		"END_GAME_GIVE_UP_BLACK" => "13",
-		"END_GAME_SOCKET_LOST_WHITE" => "14",
-		"END_GAME_SOCKET_LOST_BLACK" => "15",
-		"END_GAME_TIMEOUT_GAME_WHITE" => "16",
-		"END_GAME_TIMEOUT_GAME_BLACK" => "17", 
-		"END_GAME_ERROR" => "18",
+		"END_GAME_NONE" => "6", //it's error type. end_of_game can't be none
+		"END_GAME_NORMAL_WIN_WHITE" => "7",
+		"END_GAME_NORMAL_WIN_BLACK" => "8",
+		"END_GAME_DRAW" => "9",
+		"END_GAME_GIVE_UP_WHITE" => "10",
+		"END_GAME_GIVE_UP_BLACK" => "11",
+		"END_GAME_SOCKET_LOST_WHITE" => "12",
+		"END_GAME_SOCKET_LOST_BLACK" => "13",
+		"END_GAME_TIMEOUT_GAME_WHITE" => "14",
+		"END_GAME_TIMEOUT_GAME_BLACK" => "15", 
+		"END_GAME_ERROR" => "16",
 		"ERROR" => "99"
 	);
 	
@@ -78,7 +81,7 @@
 		$returnArray = array();
 		if ($_SESSION['consoleAjax'] != '-1') $returnArray["consoleMsg"] = $_SESSION['consoleAjax'];
 		if ($_SESSION['textboxAjax'] != '-1') $returnArray["PTEmsg"] = $_SESSION['textboxAjax'];
-		if ($_SESSION['synchronized'] && !empty($_SESSION['id'])) $returnArray["name"] = $_SESSION['login'];
+		if ($_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["SYNCHRONIZED"] && !empty($_SESSION['id'])) $returnArray["name"] = $_SESSION['login'];
 		if ($_SESSION['turn'] != '-1') $returnArray["whoseTurn"] = $_SESSION['turn'];
 		if ($_SESSION['whitePlayer'] != '-1') $returnArray["whitePlayerName"] = $_SESSION['whitePlayer'];
 		if ($_SESSION['blackPlayer'] != '-1') $returnArray["blackPlayerName"] = $_SESSION['blackPlayer'];

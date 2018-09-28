@@ -39,16 +39,11 @@ function initWebSocket()
 			
 			coreMsgsArr.push(evt.data);
 			if (bSiteIsProcessingCoreMsg == false)
-			{
-				console.log("websocket.onmessage = " + evt.data + ", bSiteIsProcessingCoreMsg = false");
 				doAjaxCall();
-			}
-			else console.log("websocket.onmessage = " + evt.data + ", bSiteIsProcessingCoreMsg = true");
 		};
 		
 		websocket.onopen = function (evt) 
 		{ 
-			console.log("websocket.onopen");
 			coreMsgsArr = []; 
 			bSiteIsProcessingCoreMsg = false;
 		
@@ -78,4 +73,4 @@ function stopWebSocket()
 		websocket.close(); 
 }
 
-setInterval(function() { websocket.send("keepConnected"); }, 250000);
+setInterval(function() { websocket.send("getTableData"); }, 250000); //future: send query every minute, when done with testing
