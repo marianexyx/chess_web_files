@@ -3,6 +3,7 @@ var bForceStopWS = false;
 var coreMsgsArr = []; 
 
 var wsUri = "ws://89.72.9.69:1234"; 
+
 var websocket = null;
 
 function initWebSocket() 

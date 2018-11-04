@@ -10,6 +10,7 @@
 		<link rel="stylesheet" type="text/css" href="css/chessboardOnVideo.css">
 		<link rel="stylesheet" type="text/css" href="css/dialogNoClose.css">
 		<link rel="stylesheet" type="text/css" href="css/logins.css">
+		<link rel="stylesheet" type="text/css" href="css/tooltip.css">
 		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"> 
 		
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -17,6 +18,7 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script> 
 		<script src='https://www.google.com/recaptcha/api.js'></script>
 		<script src="websockets.js"></script>
+		<script src="headerText.js"></script>
 		<script src="functions.js"></script>
 	</head>
 	<body>	
@@ -29,17 +31,22 @@
 		
 		<div id="mainDiv">
 			<div id ="menu">
-				<div id="info">
-					<div id="contact"><a href="#" onClick="return info();">Kontakt</a>&nbsp;&nbsp;|</div>
+				<div id="header">
+					<div id="mainPage"><a href="#" onClick="return headerText('mainPage');">Strona główna</a>&nbsp;&nbsp;|</div>
+					<div id="info"><a href="#" onClick="return headerText('info');">Informacje</a>&nbsp;&nbsp;|</div>
+					<div id="contact"><a href="#" onClick="return headerText('contact');">Kontakt</a>&nbsp;&nbsp;|</div>
+					<div id="reportBug"><a href="index.php?a=report">Zgłoś błąd</a>&nbsp;&nbsp;|</div>
 					<div id="loggingSection"></div>
 					<div id="serverStatus">
 						Serwer: 
 						<span id="serverCSSCircleStatus" class="dot"></span> 
 						<span id="serverStatusInfo">ŁĄCZENIE...</span>
 					</div>
+					<div id="playAsGuest"><button id="playAsGuestBtn" onClick="clickedBtn('sitOnNone')" hidden="hidden" disabled>Graj jako gość</button></div>
 					<div id="user">&nbsp;</div>
 				</div>
-				<? checkForLoginOrRegisterDIV($_GET['a']); ?>
+				<div id="headerText"></div>
+				<? checkForRequireOnce($_GET['a']); ?>
 			</div>
 			<div id="content" align="center">
 				<div id="game">						
@@ -56,7 +63,7 @@
 								<div id="whitePlayerSign">&#9817;</div>
 								<div id='whitePlayerMiniBox'>
 									<div id="whitePlayerBtns">
-										<div id="whiteTime">Gracz Biały: 30:00</div>
+										<div id="whiteTime">Gracz Biały:&nbsp;&nbsp;-:--&nbsp;&nbsp;|&nbsp;&nbsp;30:00</div>
 										<button id="whitePlayer" onClick="clickedBtn('sitOnWhite')" disabled>-</button> 
 										<button id="standUpWhite" onClick="clickedBtn('standUp')" hidden="hidden" disabled>Wstań</button> 
 									</div>
@@ -66,7 +73,7 @@
 								<div id="blackPlayerSign">&#9823;</div>
 								<div id='blackPlayerMiniBox'>
 									<div id="blackPlayerBtns">
-										<div id="blackTime">Gracz Czarny: 30:00</div>
+										<div id="blackTime">Gracz Czarny:&nbsp;&nbsp;-:--&nbsp;&nbsp;|&nbsp;&nbsp;30:00</div>
 										<button id="blackPlayer" onClick="clickedBtn('sitOnBlack')" disabled>-</button> 
 										<button id="standUpBlack" onClick="clickedBtn('standUp')" hidden="hidden" disabled>Wstań</button> 
 									</div>	
@@ -86,7 +93,10 @@
 						<button id="infoPTE" onClick="changePTEsource('infoPTE')" disabled>stół</button> 
 						<button id="historyPTE" onClick="changePTEsource('historyPTE')">historia</button> 
 						<button id="queuePTE" onClick="changePTEsource('queuePTE')">kolejka</button> 
-						&nbsp;&nbsp;<button id="queuePlayer" onClick="clickedBtn('queueMe')" disabled>kolejkuj</button>
+						&nbsp;&nbsp;
+						<span class="tooltip"><button id="queuePlayer" onClick="clickedBtn('queueMe')" disabled>kolejkuj</button>
+							<span class="tooltiptext">Kolejkować mogą się tylko zalogowani gracze, podczas gdy stół nie jest pełen.</span>
+							</span>
 						<button id="leaveQueue" onClick="clickedBtn('leaveQueue')" disabled>opuść</button>
 					</div>
 					<div id="ytChat" align="center"> 

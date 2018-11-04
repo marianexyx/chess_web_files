@@ -95,13 +95,15 @@
 		ob_end_flush();
 	}
 	
-	function checkForLoginOrRegisterDIV($GET_String)
+	function checkForRequireOnce($GET_String)
 	{
 		ob_start();
 		if ($GET_String == 'register')
 			require_once('register.php');
 		else if ($GET_String == 'login')
 			require_once('login.php');
+		else if ($GET_String == 'report')
+			require_once('report.php');
 		ob_end_flush();
 	}
 ?>

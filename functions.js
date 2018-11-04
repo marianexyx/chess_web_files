@@ -30,6 +30,8 @@ function resetCoreMsgsArr()
 
 var whiteTotalSeconds = "-1";
 var blackTotalSeconds = "-1";
+var turnTimeSeconds = "-1";
+var timeToMove = 3*60;
 var clientName = "-1";
 var whoseTurn = "-1";
 var bTableIsFull = false;
@@ -43,7 +45,7 @@ var infoMsgPTE = "";
 function ajaxResponse(ajaxData)
 {
 	disableAll();
-	var startTimeVar = 0;
+	var startTimeSeconds = 0;
 	var otherOptionVar = "";
 
 	if (ajaxData.hasOwnProperty("consoleMsg")) console.log(ajaxData["consoleMsg"]);
@@ -54,7 +56,8 @@ function ajaxResponse(ajaxData)
 	if (ajaxData.hasOwnProperty("blackPlayerName")) setName("Black", ajaxData["blackPlayerName"]);
 	if (ajaxData.hasOwnProperty("whitePlayerTimeLeft")) whiteTotalSeconds = ajaxData["whitePlayerTimeLeft"];
 	if (ajaxData.hasOwnProperty("blackPlayerTimeLeft")) blackTotalSeconds = ajaxData["blackPlayerTimeLeft"];
-	if (ajaxData.hasOwnProperty("startTimeLeft")) startTimeVar = ajaxData["startTimeLeft"];
+	if (ajaxData.hasOwnProperty("startTimeLeft")) startTimeSeconds = ajaxData["startTimeLeft"];
+	if (ajaxData.hasOwnProperty("turnTimeLeft")) turnTimeSeconds = ajaxData["turnTimeLeft"];
 	if (ajaxData.hasOwnProperty("historyOfMoves")) addMsgToClientPlainTextWindow(ajaxData["historyOfMoves"], "history");
 	if (ajaxData.hasOwnProperty("promotedPawnsList")) showPromotions(ajaxData["promotedPawnsList"]);
 	if (ajaxData.hasOwnProperty("queuedPlayers")) addMsgToClientPlainTextWindow(ajaxData["queuedPlayers"], "queue");
@@ -78,8 +81,8 @@ function ajaxResponse(ajaxData)
 	updateHelpInfo();
 	manageStandUpBtns();
 	showActivePlayerWithCSS();
-	if (startTimeVar > 0) 
-		showStartDialog(ajaxData["startTimeLeft"]); 
+	if (startTimeSeconds > 0) 
+		showStartDialog(startTimeSeconds); 
 	else closeStartGameDialogIfOpened();
 	otherOption(otherOptionVar);
 	letPlayerMakeMoveIfItsHisTurn();
@@ -94,13 +97,13 @@ function setName(playerType, name)
 	if (playerType == "White")
 	{
 		if (!name || name == "0" || name == "-1" || name == "-")
-			$('#whitePlayer').html("-");
+			$('#whitePlayer').html(">GRAJ<");
 		else $('#whitePlayer').html(name);
 	}
 	else if (playerType == "Black")
 	{
 		if (!name || name == "0" || name == "-1" || name == "-")
-			$('#blackPlayer').html("-");
+			$('#blackPlayer').html(">GRAJ<");
 		else $('#blackPlayer').html(name);
 	}
 }
@@ -150,17 +153,30 @@ function manageHeaderDiv(specOpt)
 	if (specOpt != null && specOpt.substring(0,13) == 'checkForLogin')
 		return;
 	
-	if (bClientIsLogged == false)
+	if (!bClientIsLogged)
 	{
 		$("#loggingSection").html('<a href="index.php?a=register">Zarejestruj się</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="index.php?a=login">Zaloguj się</a>&nbsp;&nbsp;|');
-		$("#user").html("&nbsp");
-		$("#additionalInfo").html('Musisz być zalogowany, aby móc grać.');
+		$("#user").html("&nbsp;");
+		if (!bTableIsFull)
+		{
+			$("#playAsGuestBtn").show();
+			$("#playAsGuestBtn").attr("disabled", false);
+			$("#playAsGuestBtn").html("Graj jako gość");
+		}
+		else
+		{
+			$("#playAsGuestBtn").hide();
+			$("#playAsGuestBtn").attr("disabled", true);
+			$("#playAsGuestBtn").html("&nbsp;");
+		}
 	}
 	else  
 	{
-		$("#loggingSection").html('<a href="index.php?a=logout" onclick="return confirmLogout();">Wyloguj się</a>&nbsp;&nbsp;|');
-		$("#user").html("<b>Użytkownik:</b>&nbsp" + clientName);
-		$("#additionalInfo").html("&nbsp");
+		$("#loggingSection").html('<a href="index.php?a=logout" onClick="return confirmLogout();">Wyloguj się</a>&nbsp;&nbsp;|');
+		$("#user").html("<b>Użytkownik:</b>&nbsp;" + clientName);
+		$("#playAsGuestBtn").hide();
+		$("#playAsGuestBtn").attr("disabled", true);
+		$("#playAsGuestBtn").html("&nbsp;");
 	}
 }
 
@@ -169,8 +185,25 @@ function manageHeaderDiv(specOpt)
 
 function updatePlayersTimers()
 {
-	$("#whiteTime").html("Gracz Biały: " + secondsToMinutesAndSeconds(whiteTotalSeconds));
-	$("#blackTime").html("Gracz Czarny: " + secondsToMinutesAndSeconds(blackTotalSeconds));
+	var whiteTimeForMove, blackTimeForMove;
+	if (whoseTurn == "whiteTurn") 
+	{
+		whiteTimeForMove = secondsToMinutesAndSeconds(turnTimeSeconds);
+		blackTimeForMove = "-:--";
+	}
+	else if (whoseTurn == "blackTurn")
+	{
+		whiteTimeForMove = "-:--";
+		blackTimeForMove = secondsToMinutesAndSeconds(turnTimeSeconds);
+	}
+	else
+	{
+		whiteTimeForMove = "-:--";
+		blackTimeForMove = "-:--";
+	}
+	
+	$("#whiteTime").html("Gracz Biały:&nbsp;&nbsp;" + whiteTimeForMove + "&nbsp;&nbsp;|&nbsp;&nbsp;" + secondsToMinutesAndSeconds(whiteTotalSeconds));
+	$("#blackTime").html("Gracz Czarny:&nbsp;&nbsp;" + blackTimeForMove + "&nbsp;&nbsp;|&nbsp;&nbsp;" + secondsToMinutesAndSeconds(blackTotalSeconds));
 	
 	if (timerGame)
 	{
@@ -185,16 +218,13 @@ function updateHelpInfo()
 {
 	$("#additionalInfo").css('color', 'black'); 
 	
-	if (!bClientIsLogged)
-		$("#additionalInfo").html("Musisz być zalogowany, aby móc grać.");
-	else if (bClientIsLogged && !bTableIsFull && !bClientIsPlayer)
-		$("#additionalInfo").html("By zagrać wybierz kolor bierek klikając przycisk gracza.");
+	if (!bTableIsFull && !bClientIsPlayer)
+		$("#additionalInfo").html("By zagrać wybierz kolor bierek klikając przycisk >GRAJ<.");
 	else if (bClientIsLogged && !bTableIsFull && bClientIsPlayer && !bClientIsInQueue)
 		$("#additionalInfo").html("Oczekiwanie, aż do stołu gry przysiądzie się drugi gracz.");
 	else if (bClientIsLogged && bTableIsFull && !bClientIsPlayer && !bClientIsInQueue)
 		$("#additionalInfo").html("Stół gry jest pełen. By zagrać wejdź do kolejki graczy.");
-	else
-		$("#additionalInfo").html("&nbsp");
+	else $("#additionalInfo").html("&nbsp");
 }
 
 var reactBeep = new Audio('sounds/beep1.wav');
@@ -292,6 +322,7 @@ function disableAll()
 	$("#standUpBlack").attr("disabled", true);
 	$("#queuePlayer").attr("disabled", true);
 	$("#leaveQueue").attr("disabled", true);
+	$("#playAsGuestBtn").attr("disabled", true);
 }
 
 $(function()
@@ -571,8 +602,9 @@ function resetPlayersTimers()
 {
 	whiteTotalSeconds = 30*60;
 	blackTotalSeconds = 30*60;
-	$("#whiteTime").html("Gracz Biały: 30:00");
-	$("#blackTime").html("Gracz Czarny: 30:00");
+	timeToMove = 3*60;
+	$("#whiteTime").html("Gracz Biały:&nbsp;&nbsp;-:--&nbsp;&nbsp;|&nbsp;&nbsp;30:00");
+	$("#blackTime").html("Gracz Czarny:&nbsp;&nbsp;-:--&nbsp;&nbsp;|&nbsp;&nbsp;30:00");
 }
 
 function secondsToMinutesAndSeconds(time)
@@ -595,12 +627,16 @@ function updatePlayersTime()
 	if (whoseTurn == "whiteTurn")
 	{
 		whiteTotalSeconds--;
-		$("#whiteTime").html("Gracz Biały: " + secondsToMinutesAndSeconds(whiteTotalSeconds));
+		turnTimeSeconds--;
+		$("#whiteTime").html("Gracz Biały:&nbsp;&nbsp;" + secondsToMinutesAndSeconds(turnTimeSeconds) 
+			+ "&nbsp;&nbsp;|&nbsp;&nbsp;" + secondsToMinutesAndSeconds(whiteTotalSeconds));
 	}
 	else if (whoseTurn == "blackTurn")
 	{
-		blackTotalSeconds--;		
-		$("#blackTime").html("Gracz Czarny: " + secondsToMinutesAndSeconds(blackTotalSeconds));
+		blackTotalSeconds--;	
+		turnTimeSeconds--;		
+		$("#blackTime").html("Gracz Czarny:&nbsp;&nbsp;" + secondsToMinutesAndSeconds(turnTimeSeconds) 
+			+ "&nbsp;&nbsp;|&nbsp;&nbsp;" + secondsToMinutesAndSeconds(blackTotalSeconds));
 	}
 	else if (whoseTurn == "noTurn")
 		resetPlayersTimers();
@@ -709,6 +745,7 @@ function clickedBtn(buttonType)
 	var msgForCore;
 	switch(buttonType)
 	{
+		case "sitOnNone": msgForCore = "sitOn None"; break; //todo: it would be way better if clicking this just login client on site side as guest
 		case "sitOnWhite": msgForCore = "sitOn White"; break; 
 		case "sitOnBlack": msgForCore = "sitOn Black"; break; 
 		case "standUp": giveUp(); break;
@@ -727,11 +764,6 @@ function confirmLogout()
 	else return false;   
 }
 
-function info()
-{
-	$("#info").html('mariusz.pak.89@gmail.com | <a href="index.php?a=logout" onclick="return deleteask();">Wyloguj się</a></center>');
-}	
-
 function serverStatus(state)
 {
 	switch (state)
@@ -743,7 +775,7 @@ function serverStatus(state)
 		
 		case "online": 
 		$("#serverCSSCircleStatus").css("background-color", "green");
-		$("#serverStatusInfo").html("ONLINE");
+		$("#serverStatusInfo").html("ONLINE&nbsp;&nbsp;");
 		break;
 		
 		case "offline":

@@ -16,17 +16,17 @@
 		$loggedPlayerIsOnBlackChair = false;
 		$tableIsFull = false;
 		$clientIsInQueue = false;
+		$clientIsLogged = false;
 		$whitePlayerBtn = false;
 		$blackPlayerBtn = false;
 		$playerCanMakeMove = false;
 		$queuePlayerBtn = false;
 		$leaveQueueBtn = false;
 		$specialOption = '-1';
-			
+		
 		if (empty($_SESSION['id']))
 			$_SESSION['synchronized'] = $SYNCHRONIZATION_TYPE["DESYNCHRONIZED"];
 			
-
 		if ($_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["DESYNCHRONIZED"] && !empty($_SESSION['id']) && !empty($_SESSION['hash'])) //don't remove this 2nd part: it's checking if player is logged in php
 			$specialOption = 'checkForLogin im '.$_SESSION['id'].'&'.$_SESSION['hash'] ;
 		else if ($_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["DOUBLE_LOGIN"] || $_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["REMOVE_AND_REFRESH_CLIENT"])
@@ -39,7 +39,7 @@
 			else if ($_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["REMOVE_AND_REFRESH_CLIENT"]) 
 				$specialOption = 'wrongData';
 		}
-		else
+		else //every1, even not logged
 		{
 			$tableIsFull = are2playersAreOnChairs(); //only logged players can make use of this flag, but maybe in future this might be usable, so always return this proper value to everyone
 			
@@ -52,19 +52,20 @@
 			else if (isGameStateAnEndType()) 
 				$specialOption = 'endOfGame';
 			
-			//below vars will always be false/unset for unlogged clients
-			if ($_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["SYNCHRONIZED"])
-			{
-				$loggedPlayerIsOnAnyChair = isLoggedPlayerOnAnyChair();
-				$clientIsInQueue = isClientInQueue();
-				$loggedPlayerIsOnWhiteChair = isLoggedPlayerOnChair(WHITE);
-				$loggedPlayerIsOnBlackChair = isLoggedPlayerOnChair(BLACK);
-				$playerCanMakeMove = isPlayerAllowedToMakeMove();
-				
-				if (isChairEmpty(WHITE) && !isLoggedPlayerOnChair(BLACK)) 
+			$loggedPlayerIsOnWhiteChair = isLoggedPlayerOnChair(WHITE);
+			$loggedPlayerIsOnBlackChair = isLoggedPlayerOnChair(BLACK);
+			$loggedPlayerIsOnAnyChair = isLoggedPlayerOnAnyChair();
+			if (isChairEmpty(WHITE) && !isLoggedPlayerOnChair(BLACK)) 
 				$whitePlayerBtn = true;
-				if (isChairEmpty(BLACK) && !isLoggedPlayerOnChair(WHITE)) 
-					$blackPlayerBtn = true;
+			if (isChairEmpty(BLACK) && !isLoggedPlayerOnChair(WHITE)) 
+				$blackPlayerBtn = true;
+			
+			//below vars will always be false/unset for unlogged clients
+			if ($_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["SYNCHRONIZED"] || $_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["GUEST1"] 
+				|| $_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["GUEST2"]) //only for correctly logged
+			{
+				$clientIsInQueue = isClientInQueue();
+				$playerCanMakeMove = isPlayerAllowedToMakeMove();
 				
 				if (are2playersAreOnChairs() && !isLoggedPlayerOnAnyChair() && !isClientInQueue()) 
 					$queuePlayerBtn = true;
@@ -79,9 +80,13 @@
 			}
 		}
 		
+		if ($_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["SYNCHRONIZED"] || $_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["GUEST1"]
+			|| $_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["GUEST2"])
+				$clientIsLogged = true;
+		
 		return array
 		(
-			"clientIsLogged" => $_SESSION['synchronized'],
+			"clientIsLogged" => $clientIsLogged,
 			"loggedPlayerIsOnAnyChair" => $loggedPlayerIsOnAnyChair,
 			"loggedPlayerIsOnWhiteChair" => $loggedPlayerIsOnWhiteChair,
 			"loggedPlayerIsOnBlackChair" => $loggedPlayerIsOnBlackChair,
@@ -159,8 +164,8 @@
 	}
 	
 	function isPlayerAllowedToMakeMove()
-	{		
-		if (isGameInProgress)
+	{			
+		if (isGameInProgress())
 		{
 			if ($_SESSION['turn'] == WHITE_TURN && isLoggedPlayerOnChair(WHITE)) return true;
 			else if ($_SESSION['turn'] == BLACK_TURN && isLoggedPlayerOnChair(BLACK)) return true;

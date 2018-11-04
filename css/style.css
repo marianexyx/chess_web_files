@@ -1,9 +1,9 @@
-#login, #register
+#login, #register, #email
 {
 	margin: 0 auto;
 }
 
-#info
+#header
 {
 	padding: 4px;
 }
@@ -30,10 +30,20 @@
 	border: 1px solid;
 }
 
-#contact, #loggingSection, #serverStatus
+#mainPage, #info, #contact, #reportBug, #loggingSection, #serverStatus
 {
 	padding: 4px;
-	float:left;
+	float: left;
+}
+
+#playAsGuest
+{
+	float: left;
+}
+
+#headerText
+{
+	clear: both;
 }
 
 .dot 
@@ -48,14 +58,14 @@
 #content
 {
 	overflow: hidden;
-	clear:both; 
+	clear: both; 
 	display: flex;
 	border-right: 1px solid;
 }
 
 #game
 {
-	float:left;
+	float: left;
 	border-left: 1px solid;
 }
 
@@ -104,8 +114,8 @@ textarea {
 
 #whitePlayerBox, #blackPlayerBox
 {
-	float:left; 
-	width:33.3%; 
+	float: left; 
+	width: 33.3%; 
 	display: flex;
 	padding: 1px;
 	margin: 0 auto;
@@ -117,8 +127,8 @@ textarea {
 	padding: 4px;
 	width: 320px;
 	display:flex;
-	justify-content:center;
-	align-items:center;
+	justify-content: center;
+	align-items: center;
 }
 
 #whitePlayerSign, #blackPlayerSign
@@ -130,24 +140,24 @@ textarea {
 
 #whitePlayerBtns, #blackPlayerBtns
 {
-	float:left; 
+	float: left; 
 	padding: 4px;
 	padding-top: 10px;
-	height:auto;
-	text-align:center;
+	height: auto;
+	text-align: center;
 }
 
 #whitePlayer, #blackPlayer
 {
-	min-width:60px;
+	min-width: 60px;
 }
 
 #resign
 {
 	padding: 4px;
-	float:left; 
+	float: left; 
 	width: 33.3%; 
-	text-align:center;
+	text-align: center;
 }
 
 #clientPTE
@@ -158,8 +168,8 @@ textarea {
 
 #clientPlainTextWindow
 {
-	width:330px; 
-	height:160px;
+	width: 330px; 
+	height: 160px;
 }
 
 #queuePlayer, #leaveQueue

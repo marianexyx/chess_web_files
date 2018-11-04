@@ -18,12 +18,13 @@
 		"BLACK_PLAYER" => "3",
 		"GAME_STATE" => "4",
 		"WHITE_TIME" => "5",
-		"BLACK_TYPE" => "6",
-		"QUEUE" => "7",
-		"START_TIME" => "8",
-		"HISTORY" => "9",
-		"PROMOTIONS" => "10",
-		"ERROR" => "11"
+		"BLACK_TIME" => "6",
+		"TURN_TIME" => "7",
+		"QUEUE" => "8",
+		"START_TIME" => "9",
+		"HISTORY" => "10",
+		"PROMOTIONS" => "11",
+		"ERROR" => "12"
 	);
 	
 	$SYNCHRONIZATION_TYPE = array
@@ -31,7 +32,9 @@
 		"DESYNCHRONIZED" => "0",
 		"SYNCHRONIZED" => "1",
 		"DOUBLE_LOGIN" => "2",
-		"REMOVE_AND_REFRESH_CLIENT" => "3"
+		"REMOVE_AND_REFRESH_CLIENT" => "3",
+		"GUEST1" => "4",
+		"GUEST2" => "5"
 	);
 	
 	$ACTION_TYPE = array
@@ -81,13 +84,15 @@
 		$returnArray = array();
 		if ($_SESSION['consoleAjax'] != '-1') $returnArray["consoleMsg"] = $_SESSION['consoleAjax'];
 		if ($_SESSION['textboxAjax'] != '-1') $returnArray["PTEmsg"] = $_SESSION['textboxAjax'];
-		if ($_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["SYNCHRONIZED"] && !empty($_SESSION['id'])) $returnArray["name"] = $_SESSION['login'];
+		if (($_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["SYNCHRONIZED"] || $_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["GUEST1"] 
+		    || $_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["GUEST2"]) && !empty($_SESSION['id'])) $returnArray["name"] = $_SESSION['login'];
 		if ($_SESSION['turn'] != '-1') $returnArray["whoseTurn"] = $_SESSION['turn'];
 		if ($_SESSION['whitePlayer'] != '-1') $returnArray["whitePlayerName"] = $_SESSION['whitePlayer'];
 		if ($_SESSION['blackPlayer'] != '-1') $returnArray["blackPlayerName"] = $_SESSION['blackPlayer'];
 		if ($_SESSION['whiteTime'] != '-1') $returnArray["whitePlayerTimeLeft"] = $_SESSION['whiteTime'];
 		if ($_SESSION['blackTime'] != '-1') $returnArray["blackPlayerTimeLeft"] = $_SESSION['blackTime'];
 		if ($_SESSION['startTime'] != '-1') $returnArray["startTimeLeft"] = $_SESSION['startTime'];
+		if ($_SESSION['turnTime'] != '-1') $returnArray["turnTimeLeft"] = $_SESSION['turnTime'];
 		if ($_SESSION['history'] != '-1') $returnArray["historyOfMoves"] = $_SESSION['history'];
 		if ($_SESSION['promoted'] != '-1') $returnArray["promotedPawnsList"] = $_SESSION['promoted'];
 		if ($_SESSION['queue'] != '-1') $returnArray["queuedPlayers"] = $_SESSION['queue'];
@@ -119,6 +124,7 @@
 		$_SESSION['whiteTime'] = '-1';
 		$_SESSION['blackTime'] = '-1';
 		$_SESSION['startTime'] = '-1';
+		$_SESSION['turnTime'] = '-1';
 		$_SESSION['history'] = '-1';
 		$_SESSION['promoted'] = '-1';
 		$_SESSION['queue'] = '-1';

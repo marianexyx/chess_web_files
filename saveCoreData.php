@@ -3,12 +3,14 @@
 	define('WHITE', 'White');
 	define('BLACK', 'Black');
 
-	if(!isset($_SESSION)) session_start();
+	if(!isset($_SESSION)) 
+		session_start();
 	require_once('include/inc.php');
 	
 	function saveCoreDataInSessionVars($tableDataString)
 	{
 		global $TABLE_DATA;
+		global $SYNCHRONIZATION_TYPE;
 				
 		$tableDataStart = strpos($tableDataString, "{");
 		$tableDataStop = strpos($tableDataString, "}");
@@ -18,7 +20,28 @@
 		updateClientsNamesArray($tableDataArr);
 		
 		if (array_key_exists($TABLE_DATA["SYNCHRONIZED"], $tableDataArr))
+		{
 			$_SESSION['synchronized'] = $tableDataArr[$TABLE_DATA["SYNCHRONIZED"]];
+			
+			if (($_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["GUEST1"] && $_SESSION['id'] != 1)
+					|| ($_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["GUEST2"] && $_SESSION['id'] != 2))
+			{
+				$query;
+				if ($_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["GUEST1"]) 
+					$query = row("SELECT * FROM users WHERE id = 1"); 
+				else $query = row("SELECT * FROM users WHERE id = 2"); 
+				$_SESSION['id'] = $query['id'];
+				$_SESSION['login'] = $query['login'];
+				$_SESSION['hash'] = $query['hash'];
+			}
+			else if (($_SESSION['synchronized'] != $SYNCHRONIZATION_TYPE["GUEST1"] && $_SESSION['id'] == 1)
+						|| ($_SESSION['synchronized'] != $SYNCHRONIZATION_TYPE["GUEST2"] && $_SESSION['id'] == 2))
+			{
+				unset($_SESSION['login']);
+				unset($_SESSION['id']);
+				unset($_SESSION['hash']);
+			}
+		}
 		if (array_key_exists($TABLE_DATA["ACTION"], $tableDataArr))
 		{
 			$_SESSION['action'] = $tableDataArr[$TABLE_DATA["ACTION"]];
@@ -27,14 +50,16 @@
 		if (array_key_exists($TABLE_DATA["WHITE_PLAYER"], $tableDataArr))
 		{			
 			$whiteId = $tableDataArr[$TABLE_DATA["WHITE_PLAYER"]];
-			if (empty($whiteId) || $whiteId == '0' || $whiteId == '-' || $whiteId == '-1') $_SESSION['whitePlayer'] = '0';
+			if (empty($whiteId) || $whiteId == '0' || $whiteId == '-' || $whiteId == '-1') 
+				$_SESSION['whitePlayer'] = '0';
 			else $_SESSION['whitePlayer'] = $_SESSION['clientsArr'][$whiteId];
 		}
 		if (array_key_exists($TABLE_DATA["BLACK_PLAYER"], $tableDataArr))
 		{
 			$blackId = $tableDataArr[$TABLE_DATA["BLACK_PLAYER"]];
-			if (empty($blackId) || $blackId == '0' || $blackId == '-' || $blackId == '-1') $_SESSION['blackPlayer'] = '0';
-			else  $_SESSION['blackPlayer'] = $_SESSION['clientsArr'][$blackId];
+			if (empty($blackId) || $blackId == '0' || $blackId == '-' || $blackId == '-1') 
+				$_SESSION['blackPlayer'] = '0';
+			else $_SESSION['blackPlayer'] = $_SESSION['clientsArr'][$blackId];
 		}
 		if (array_key_exists($TABLE_DATA["GAME_STATE"], $tableDataArr)) 
 		{
@@ -43,8 +68,10 @@
 		}
 		if (array_key_exists($TABLE_DATA["WHITE_TIME"], $tableDataArr)) 
 			$_SESSION['whiteTime'] = $tableDataArr[$TABLE_DATA["WHITE_TIME"]];
-		if (array_key_exists($TABLE_DATA["BLACK_TYPE"], $tableDataArr)) 
-			$_SESSION['blackTime'] = $tableDataArr[$TABLE_DATA["BLACK_TYPE"]];
+		if (array_key_exists($TABLE_DATA["BLACK_TIME"], $tableDataArr)) 
+			$_SESSION['blackTime'] = $tableDataArr[$TABLE_DATA["BLACK_TIME"]];
+		if (array_key_exists($TABLE_DATA["TURN_TIME"], $tableDataArr)) 
+			$_SESSION['turnTime'] = $tableDataArr[$TABLE_DATA["TURN_TIME"]];
 		if (array_key_exists($TABLE_DATA["QUEUE"], $tableDataArr)) 
 			$_SESSION['queue'] = getQueuedClientsList($tableDataArr[$TABLE_DATA["QUEUE"]]);
 		if (array_key_exists($TABLE_DATA["START_TIME"], $tableDataArr))
@@ -89,11 +116,11 @@
 		$sqlQueryString = trim($sqlQueryString);
 		//$_SESSION['consoleAjax'] .= ', string for database= '.implode(' , ', $sqlQueryString).' | ';
 		
-		if(preg_match('~[1-9]~', $sqlQueryString) === 1) //database query string will containts some number, if it has sqlID in it
+		if (preg_match('~[1-9]~', $sqlQueryString) === 1) //there is at least 1 new client in list (database query string will containts some number, if it has sqlID in it)
 		{
 			$sqlReturnArray = row($sqlQueryString);
 			//$_SESSION['consoleAjax'] .= ', new clients to save in list: $sqlReturnArray = '.implode(' | ', $sqlReturnArray).' | ';
-			foreach ($sqlReturnArray as $clientID /*=> $clientName*/)
+			foreach ($sqlReturnArray as $clientID)
 			{
 				$_SESSION['clientsArr'][$sqlReturnArray['id']] = $sqlReturnArray['login'];
 				//$_SESSION['consoleAjax'] .= ' new name in clientsArray = '.$_SESSION['clientsArr'][$sqlReturnArray['login']].' with ID = '.$sqlReturnArray['id'].' | ';
