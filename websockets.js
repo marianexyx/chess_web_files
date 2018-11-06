@@ -40,7 +40,7 @@ function initWebSocket()
 			
 			coreMsgsArr.push(evt.data);
 			if (bSiteIsProcessingCoreMsg == false)
-				doAjaxCall();
+				doCoreAjaxCall();
 		};
 		
 		websocket.onopen = function (evt) 

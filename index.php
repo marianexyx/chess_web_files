@@ -35,7 +35,7 @@
 					<div id="mainPage"><a href="#" onClick="return headerText('mainPage');">Strona główna</a>&nbsp;&nbsp;|</div>
 					<div id="info"><a href="#" onClick="return headerText('info');">Informacje</a>&nbsp;&nbsp;|</div>
 					<div id="contact"><a href="#" onClick="return headerText('contact');">Kontakt</a>&nbsp;&nbsp;|</div>
-					<div id="reportBug"><a href="index.php?a=report">Zgłoś błąd</a>&nbsp;&nbsp;|</div>
+					<div id="reportBug"><a href="#" onClick="return headerText('report');">Zgłoś błąd</a>&nbsp;&nbsp;|</div>
 					<div id="loggingSection"></div>
 					<div id="serverStatus">
 						Serwer: 

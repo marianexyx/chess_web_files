@@ -2,7 +2,7 @@
 //future: poupychać funkcje do osobnych plików
 //future: resetCoreMsgsArr() jeżeli przy sukcesie ajaxu nie będzie dozwolonego wyniku albo przez np. 10 sekund nie będzie odblokowana flaga blokująca pętle kontenera na wiadomości z core'a
 
-function doAjaxCall()
+function doCoreAjaxCall()
 {
 	if (coreMsgsArr != undefined && coreMsgsArr.length > 0)
 	{
@@ -14,7 +14,7 @@ function doAjaxCall()
 			type: "POST",			
 			dataType: "json",
 			data: { wsMsg: coreMsgsArr.shift() },
-			success: function (data) { ajaxResponse(data); },
+			success: function (data) { executeCoreAjaxResponse(data); },
 			error: function(xhr, status, error) { resetCoreMsgsArr(); }
 		});
 	}
@@ -42,7 +42,7 @@ var bClientIsBlackPlayer = false;
 var bClientIsInQueue = false;
 var bPlayerCanSendMove = false;
 var infoMsgPTE = "";
-function ajaxResponse(ajaxData)
+function executeCoreAjaxResponse(ajaxData)
 {
 	disableAll();
 	var startTimeSeconds = 0;
@@ -88,7 +88,7 @@ function ajaxResponse(ajaxData)
 	letPlayerMakeMoveIfItsHisTurn();
 	
 	if (coreMsgsArr != undefined && coreMsgsArr.length > 0) 
-		doAjaxCall();
+		doCoreAjaxCall();
 	else bSiteIsProcessingCoreMsg = false;
 }
 

@@ -9,15 +9,18 @@
 	{
 		if(!empty($_POST['login']) && !empty($_POST['pass']) && !empty($_POST['pass2']) && !empty($_POST['email']))
 		{
+			require_once('illegalNicknames.php');
+			
 			$login = vtxt($_POST['login']);
 			$pass = vtxt($_POST['pass']);
 			$email = vtxt($_POST['email']);
 			if (strlen($login) < 3 || strlen($login) > 25) echo '<script>$("#registerConsole").html("<br/>Login nie mieści się w danym zakresie.")</script>';
-			elseif (strlen($pass) < 1 || strlen($pass) > 20) echo '<script>$("#registerConsole").html("<br/>Hasło nie mieści się w danym zakresie.")</script>';
-			elseif (strlen($email) < 8 || strlen($pass) > 50) echo '<script>$("#registerConsole").html("<br/>Adres e-mail nie mieści się w danym zakresie.")</script>';
-			elseif ($login == $pass) echo '<script>$("#registerConsole").html("<br/>Login nie może być taki sam jak hasło.")</script>';
-			elseif ($pass != $_POST['pass2']) echo '<script>$("#registerConsole").html("<br/>Podane hasła nie zgadzają się.")</script>';
-			elseif (!($response->success)) echo '<script>$("#registerConsole").html("<br/>Potwierdź, że nie jesteś botem.")</script>';
+			else if (isLoginIllegal($login) == true) echo '<script>$("#registerConsole").html("<br/>Istnieje już gracz o takim samym loginie.")</script>';
+			else if (strlen($pass) < 1 || strlen($pass) > 20) echo '<script>$("#registerConsole").html("<br/>Hasło nie mieści się w danym zakresie.")</script>';
+			else if (strlen($email) < 8 || strlen($pass) > 50) echo '<script>$("#registerConsole").html("<br/>Adres e-mail nie mieści się w danym zakresie.")</script>';
+			else if ($login == $pass) echo '<script>$("#registerConsole").html("<br/>Login nie może być taki sam jak hasło.")</script>';
+			else if ($pass != $_POST['pass2']) echo '<script>$("#registerConsole").html("<br/>Podane hasła nie zgadzają się.")</script>';
+			else if (!($response->success)) echo '<script>$("#registerConsole").html("<br/>Potwierdź, że nie jesteś botem.")</script>';
 			else 
 			{
 				if (ctype_alnum($login))
