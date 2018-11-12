@@ -4,14 +4,14 @@
     $host = 'xxx'; // Nazwa hosta (serwera) bazy danych
     $db = 'xxx'; // Nazwa naszej bazy danych
 	
-	$con = @new mysqli($host, $user, $pass, $db) or die ("Error " .mysqli_error($con));
+	$mySqlConnection = @new mysqli($host, $user, $pass, $db) or die ("Error " .mysqli_error($mySqlConnection));
  
-	if ($con->connect_error) 
+	if ($mySqlConnection->connect_error) 
 	{
-		die("Connection failed: " . $con->connect_errno);
+		die("Connection failed: " . $mySqlConnection->connect_errno);
 	} 
 	
-	$con-> query("SET NAMES 'utf8' COLLATE 'utf8_polish_ci'");	
+	$mySqlConnection-> query("SET NAMES 'utf8' COLLATE 'utf8_polish_ci'");	
 	require_once('func.php');
 
 	//sexowny koid m.zelenta który mi nei zadzia³a³
@@ -19,14 +19,14 @@
 	
 	try
 	{
-		$con = new mysqli($host, $user, $pass, $db) or die ("Error " .mysqli_error($con));
-		if ($con->connect_erro!=0) 
+		$mySqlConnection = new mysqli($host, $user, $pass, $db) or die ("Error " .mysqli_error($mySqlConnection));
+		if ($mySqlConnection->connect_erro!=0) 
 		{
 			throw new Exception(mysqli_connect_errno())
 		} 
 		else
 		{
-			$con->close();
+			$mySqlConnection->close();
 		}
 	}
 	catch(Exception $e)
@@ -35,6 +35,6 @@
 		//echo '<br />Informacja developerska/dla admina: '.$e;
 	}
 	
-	$con-> query("SET NAMES 'utf8' COLLATE 'utf8_polish_ci'");	
+	$mySqlConnection-> query("SET NAMES 'utf8' COLLATE 'utf8_polish_ci'");	
 	require_once('func.php');*/
 ?>

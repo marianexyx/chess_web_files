@@ -131,21 +131,14 @@ function otherOption(othOpt)
 	{
 		bForceStopWS = true;
 		stopWebSocket();
-		window.location.href = 'index.php?a=' + othOpt;
+		headerText(othOpt);
 	}
 	else if (othOpt.substring(0,13) == 'checkForLogin') 
 	{
 		if (websocket)
 			websocket.send(othOpt.substring(14));
-		else wrongData();
+		else headerText("wrongData");
 	}
-}
-
-function wrongData()
-{
-	bForceStopWS = true;
-	stopWebSocket();
-	window.location.href = 'index.php?a=wrongData';
 }
 
 function manageHeaderDiv(specOpt)
@@ -155,7 +148,10 @@ function manageHeaderDiv(specOpt)
 	
 	if (!bClientIsLogged)
 	{
-		$("#loggingSection").html('<a href="index.php?a=register">Zarejestruj się</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="index.php?a=login">Zaloguj się</a>&nbsp;&nbsp;|');
+		$("#loggingSection").html('\
+			<a href="#" onClick="return headerText(\'register\');">Zarejestruj się</a>&nbsp;&nbsp;|&nbsp;&nbsp;\
+			<a href="#" onClick="return headerText(\'login\');">Zaloguj się</a>&nbsp;&nbsp;|\
+			');
 		$("#user").html("&nbsp;");
 		if (!bTableIsFull)
 		{
@@ -172,7 +168,7 @@ function manageHeaderDiv(specOpt)
 	}
 	else  
 	{
-		$("#loggingSection").html('<a href="index.php?a=logout" onClick="return confirmLogout();">Wyloguj się</a>&nbsp;&nbsp;|');
+		$("#loggingSection").html('<a href="#" onClick="return websocket.send(\'logout\');">Wyloguj się</a>&nbsp;&nbsp;|');
 		$("#user").html("<b>Użytkownik:</b>&nbsp;" + clientName);
 		$("#playAsGuestBtn").hide();
 		$("#playAsGuestBtn").attr("disabled", true);
@@ -757,13 +753,6 @@ function clickedBtn(buttonType)
 	if (msgForCore) websocket.send(msgForCore); 
 }
 
-function confirmLogout() 
-{	
-	var logoutMsg = "Czy na pewno chcesz się wylogować?";
-	if (confirm(logoutMsg)) return true;
-	else return false;   
-}
-
 function serverStatus(state)
 {
 	switch (state)
@@ -775,7 +764,7 @@ function serverStatus(state)
 		
 		case "online": 
 		$("#serverCSSCircleStatus").css("background-color", "green");
-		$("#serverStatusInfo").html("ONLINE&nbsp;&nbsp;");
+		$("#serverStatusInfo").html("ONLINE");
 		break;
 		
 		case "offline":

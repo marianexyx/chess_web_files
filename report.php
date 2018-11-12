@@ -1,5 +1,5 @@
 <?php 
-	if(isset($_POST['arrayMsg']))
+	if (isset($_POST['arrayMsg']))
 	{
 		$arrayMsg = $_POST['arrayMsg'];
 		if (array_key_exists("reportMessage", $arrayMsg) && !empty($arrayMsg['reportMessage']))

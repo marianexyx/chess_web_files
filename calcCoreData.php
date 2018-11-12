@@ -25,7 +25,11 @@
 		$specialOption = '-1';
 		
 		if (empty($_SESSION['id']))
+		{
 			$_SESSION['synchronized'] = $SYNCHRONIZATION_TYPE["DESYNCHRONIZED"];
+			$_SESSION['consoleAjax'] .= ', empty($_SESSION["id"]) == true so $_SESSION["synchronized"] = $SYNCHRONIZATION_TYPE["DESYNCHRONIZED"] | ';
+		}
+		else $_SESSION['consoleAjax'] .= ', empty($_SESSION["id"]) == false | ';
 			
 		if ($_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["DESYNCHRONIZED"] && !empty($_SESSION['id']) && !empty($_SESSION['hash'])) //don't remove this 2nd part: it's checking if player is logged in php
 			$specialOption = 'checkForLogin im '.$_SESSION['id'].'&'.$_SESSION['hash'] ;
@@ -41,6 +45,10 @@
 		}
 		else //every1, even not logged
 		{
+			unset($_SESSION['login']); //todo: to powoduje gdzieś błąd w nickach i error w core
+			unset($_SESSION['id']);
+			unset($_SESSION['hash']);
+			
 			$tableIsFull = are2playersAreOnChairs(); //only logged players can make use of this flag, but maybe in future this might be usable, so always return this proper value to everyone
 			
 			if ($_SESSION['action'] == $ACTION_TYPE["NEW_WHITE_PLAYER"] || $_SESSION['action'] == $ACTION_TYPE["NEW_BLACK_PLAYER"])
@@ -82,7 +90,11 @@
 		
 		if ($_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["SYNCHRONIZED"] || $_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["GUEST1"]
 			|| $_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["GUEST2"])
-				$clientIsLogged = true;
+		{
+			$clientIsLogged = true;
+			//$_SESSION['consoleAjax'] .= ', $_SESSION["synchronized"] == $SYNCHRONIZATION_TYPE["SYNCHRONIZED"] so $clientIsLogged = true; | ';
+		}
+		//else $_SESSION['consoleAjax'] .= ', $_SESSION["synchronized"] != $SYNCHRONIZATION_TYPE["SYNCHRONIZED"] so $clientIsLogged = false; | ';
 		
 		return array
 		(

@@ -24,29 +24,26 @@
 	<body>	
 		<?
 			session_start(); 
-			require_once('include/inc.php');
 			error_reporting( error_reporting() & ~E_NOTICE ); //wyłącz ostrzeżenia, że nieznana jest 'a', itd. //future: wyłączyć reportowanie w innych php'ach docelowo też
-			checkForLogout($_GET['a']);
 		?>
 		
 		<div id="mainDiv">
 			<div id ="menu">
 				<div id="header">
-					<div id="mainPage"><a href="#" onClick="return headerText('mainPage');">Strona główna</a>&nbsp;&nbsp;|</div>
-					<div id="info"><a href="#" onClick="return headerText('info');">Informacje</a>&nbsp;&nbsp;|</div>
-					<div id="contact"><a href="#" onClick="return headerText('contact');">Kontakt</a>&nbsp;&nbsp;|</div>
-					<div id="reportBug"><a href="#" onClick="return headerText('report');">Zgłoś błąd</a>&nbsp;&nbsp;|</div>
-					<div id="loggingSection"></div>
 					<div id="serverStatus">
 						Serwer: 
 						<span id="serverCSSCircleStatus" class="dot"></span> 
 						<span id="serverStatusInfo">ŁĄCZENIE...</span>
 					</div>
+					<div id="mainPage">|&nbsp;&nbsp;<a href="#" onClick="return headerText('mainPage');">Strona główna</a>&nbsp;&nbsp;|</div>
+					<div id="info"><a href="#" onClick="return headerText('info');">Informacje</a>&nbsp;&nbsp;|</div>
+					<div id="contact"><a href="#" onClick="return headerText('contact');">Kontakt</a>&nbsp;&nbsp;|</div>
+					<div id="reportBug"><a href="#" onClick="return headerText('report');">Zgłoś błąd</a>&nbsp;&nbsp;|</div>
+					<div id="loggingSection"></div>
 					<div id="playAsGuest"><button id="playAsGuestBtn" onClick="clickedBtn('sitOnNone')" hidden="hidden" disabled>Graj jako gość</button></div>
 					<div id="user">&nbsp;</div>
 				</div>
 				<div id="headerText"></div>
-				<? checkForRequireOnce($_GET['a']); ?>
 			</div>
 			<div id="content" align="center">
 				<div id="game">						
@@ -114,9 +111,6 @@
 		<span id="startGameDialog" hidden="hidden">Wciśnij start, by rozpocząć grę. Pozostały czas: 120</span> 
 		<span id="endOfGameDialog" hidden="hidden">Koniec gry.</span> 
 		
-		<?  
-		if ($_GET['a'] != 'logout' && $_GET['b'] != 'doubleLogin' && $_GET['b'] != 'wrongData') 
-			echo '<script> $(function(){ initWebSocket(); });</script>';
-		?>
+		<script> initWebSocket(); </script>
 	</body>
 </html>																									

@@ -7,36 +7,31 @@
 	define("BLACK_TURN", "blackTurn");
 	$_SESSION['turn'] = NO_TURN;
 	
+	//require_once('include/inc.php');
+	require_once('inc.php');
+	
     function call($sql) // Wywołanie zapytania do bazy (użytkownik)
 	{
-        global $con; //to nie jest deklaracja, tylko odwołanie się do zmiennej globalnej, bo funkcję łapią zasięgiem tylko zmienne lokalne
-        return mysqli_query($con, $sql);
+        global $mySqlConnection; //to nie jest deklaracja, tylko odwołanie się do zmiennej globalnej, bo funkcję łapią zasięgiem tylko zmienne lokalne
+        return mysqli_query($mySqlConnection, $sql);
     }
      
     function row($sql) // Funkcja wybierająca szereg danych wyciąganych z bazy
 	{
-        global $con;
-        return @mysqli_fetch_assoc(mysqli_query($con, $sql)); //fetch_assoc- odwoływanie się do kolumn po ich nazwach
+        global $mySqlConnection;
+        return @mysqli_fetch_assoc(mysqli_query($mySqlConnection, $sql)); //fetch_assoc- odwoływanie się do kolumn po ich nazwach
     }
      
     function vtxt($var) // Funkcja zabezpieczająca dane wysyłane do bazy
 	{
-        global $con;
-        return trim(mysqli_real_escape_string($con, strip_tags($var)));
-		//trim() - Usuwa białe, puste znaki z początku oraz końca ciągu.
+        global $mySqlConnection;
+        return trim(mysqli_real_escape_string($mySqlConnection, strip_tags($var)));
     }
      
 	function getUser($id) // Funkcja wybierająca szereg danych o graczu z podanym ID
 	{
 		return row("SELECT * FROM users WHERE id = ".$id);
 	}
-	
-	function checkUser($sid) // Funkcja weryfikująca stan gracza (czy zalogowany)        sid- session id
-	{
-        if(empty($sid)) 
-            return header("Location: index.php?a=login"); // ...przejście do strony logowania
-		else return $sid = (int)$sid;
-	 }
 	 
 	function debugToConsole($data) 
 	{
@@ -69,41 +64,4 @@
 	$liveStreamID = getLiveStreamID();
 	$liveStreamVideoLink = getLiveStreamID('video');
 	$liveStreamChatLink = getLiveStreamID('chat');
-	
-	function checkForLogout($GET_String)
-	{
-		ob_start();	
-		if ($GET_String == 'logout' || $GET_String == 'doubleLogin' || $GET_String == 'wrongData')
-		{
-			unset($_SESSION['login']);
-			unset($_SESSION['id']);
-			unset($_SESSION['hash']);
-			unset($_SESSION['synchronized']);
-			if ($GET_String == 'doubleLogin')
-				header("Location: index.php?a=doubleLoginAlert");
-			else header("Location: index.php");
-		}
-		else if ($GET_String == 'doubleLoginAlert')
-		{
-			echo'
-				<script> 
-					window.history.pushState("", "", "/index.php");
-					alert("Wylogowywanie: podwójny login"); 
-				</script>
-			'; 
-		}
-		ob_end_flush();
-	}
-	
-	function checkForRequireOnce($GET_String)
-	{
-		ob_start();
-		if ($GET_String == 'register')
-			require_once('register.php');
-		else if ($GET_String == 'login')
-			require_once('login.php');
-		else if ($GET_String == 'report')
-			require_once('report.php');
-		ob_end_flush();
-	}
 ?>

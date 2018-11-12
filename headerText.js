@@ -1,53 +1,92 @@
-function manageReportRespnse(reportResponse)
+function sendAjaxHeaderMsg(headerType)
+{
+	var ajaxArray;
+	var ajaxUrl;
+	if (headerType == "report")
+	{
+		ajaxArray = { reportFrom: $("#reportFrom").val(), reportUserMail: $("#reportUserMail").val(), reportMessage: $("#reportMessage").val() };
+		$("#reportFrom").val('');
+		$("#reportUserMail").val('');
+		$("#reportMessage").val('');
+		ajaxUrl = "report.php";
+	}
+	else if (headerType == "register")
+	{
+		ajaxArray = { registerLogin: $("#registerLogin").val(), registerPass: $("#registerPass").val(), registerPass2: $("#registerPass2").val(), registerEmail: $("#registerEmail").val() };
+		$("#registerLogin").val('');
+		$("#registerPass").val('');
+		$("#registerPass2").val('');
+		$("#registerEmail").val('');
+		ajaxUrl = "register.php";
+	}
+	else if (headerType == "login")
+	{
+		ajaxArray = { loginLogin: $("#loginLogin").val(), loginPassword: $("#loginPassword").val() };
+		$("#loginLogin").val('');
+		$("#loginPassword").val('');
+		ajaxUrl = "login.php";
+	}
+	else return;
+	
+	$.ajax(
+	{
+		url: ajaxUrl,
+		type: "POST",
+		data: { arrayMsg: ajaxArray },
+		success: function (response) { manageAjaxHeaderResponse(headerType, response); },
+		error: function(xhr, status, error) { console.log('error: ' + error ); }
+	});
+}
+
+function manageAjaxHeaderResponse(headerType, reportResponse)
 {
 	var success = reportResponse.substr(0, 2); 
 	var msg = reportResponse.substr(3);
 	
-	if (success == "ok")
+	if (success == "er")
 	{
-		$("#headerText").html('<div id="emailConsole" style="color:black; text-align:center; clear:both;">' + msg + '</div>'); 
-		
+		$("#headerConsole").html(msg); 
+		return;
+	}
+	else if (success != "ok")
+	{
+		$("#headerText").css('padding', '0px');
+		$("#headerText").html(''); 
+		return;
+	}
+	
+	if (headerType == "report" || headerType == "register")
+	{
+		$("#headerText").html('<div id="headerConsole" style="color:black; text-align:center; clear:both;">' + msg + '</div>'); 
 		setTimeout(function() 
 		{ 
 			$("#headerText").html('');
 			$("#headerText").css('padding', '0px');
 		}, 5000)
 	}
-	else if (success == "er")
+	else if (headerType == "login")
 	{
-		$("#emailConsole").html(msg); 
+		$("#loggingSection").html('<a href="#" onClick="return websocket.send(\'logout\');">Wyloguj się</a>&nbsp;&nbsp;|');
+		headerText("mainPage");
+		if (websocket)
+			websocket.send(msg);
 	}
-	else 
-	{
-		$("#headerText").css('padding', '0px');
-		$("#headerText").html(''); 
-	}
-}
-
-function sendReport()
-{
-	var reportArray = { reportFrom: $("#reportFrom").val(), reportUserMail: $("#reportUserMail").val(), reportMessage: $("#reportMessage").val() };
-	
-	$("#reportFrom").val('');
-	$("#reportUserMail").val('');
-	$("#reportMessage").val('');
-
-	$.ajax(
-	{
-		url: "report.php",
-		type: "POST",
-		data: { arrayMsg: reportArray },
-		success: function (response) { manageReportRespnse(response); },
-		error: function(xhr, status, error) { console.log('error: ' + error ); }
-	});
 }
 
 function headerText(reference)
 {	
-	if (reference == "mainPage")
+	if (reference == "mainPage" || reference == "wrongData")
 	{
 		$("#headerText").css('padding', '0px');
 		$("#headerText").html("");
+		
+		if (reference == "wrongData")
+			stopWebSocket()
+	}
+	else if (reference == "doubleLogin")
+	{
+		$("#headerText").css('padding', '20px');
+		$("#headerText").html('<div id="headerConsole" style="color:red; text-align:center; clear:both;">Wylogowywanie: podwójny login</div>'); 
 	}
 	else if (reference == "info")
 	{
@@ -65,8 +104,6 @@ function headerText(reference)
 	else if (reference == "contact")
 	{
 		$("#headerText").css('padding', '20px');
-		/*$("#headerText").html('Zapraszam do kontaktu za pośrednictwem mojego maila:<br/>\
-		<b>mariusz.pak.89@gmail.com</b>');*/
 		$("#headerText").html('\
 							<div style="text-align:center; clear:both;">\
 								Zapraszam do kontaktu za pośrednictwem mojego maila:<br/>\
@@ -78,32 +115,101 @@ function headerText(reference)
 	{
 		$("#headerText").css('padding', '20px');
 		$("#headerText").html('\
-		<div id="emailConsole" style="color:red; text-align:center; clear:both;"></div>\
-		<br/>\
-		<div id="email" class="divTable">\
-			<div class="divTableBody">\
-				<div class="divTableRow">\
-					<div class="divTableCell">&nbsp;</div>\
-					<div class="divTableCell" style="font-size: 150%">ZGŁOŚ BŁĄD LUB AWARIĘ</div>\
-				</div>\
-				<div class="divTableRow">\
-					<div class="divTableCell"><b>Od:</b></div>\
-					<div class="divTableCell"><input type="text" id="reportFrom"/></div>\
-				</div>\
-				<div class="divTableRow">\
-					<div class="divTableCell"><b>Twój email (opcjonalnie):</b></div>\
-					<div class="divTableCell"><input type="text" id="reportUserMail"/></div>\
-				</div>\
-				<div class="divTableRow">\
-					<div class="divTableCell"><b>Wiadomość:</b></div>\
-					<div class="divTableCell"><textarea rows="5" id="reportMessage" cols="30"></textarea></div>\
-				</div>\
-				<div class="divTableRow">\
-					<div class="divTableCell">&nbsp;</div>\
-					<div class="divTableCell"><button id="sendReport" onClick="sendReport()">Wyślij</button></div>\
+			<div id="headerConsole" style="color:red; text-align:center; clear:both;"></div>\
+			<br/>\
+			<div id="email" class="divTable">\
+				<div class="divTableBody">\
+					<div class="divTableRow">\
+						<div class="divTableCell">&nbsp;</div>\
+						<div class="divTableCell" style="font-size: 150%">ZGŁOŚ BŁĄD LUB AWARIĘ</div>\
+					</div>\
+					<div class="divTableRow">\
+						<div class="divTableCell"><b>Od:</b></div>\
+						<div class="divTableCell"><input type="text" id="reportFrom"/></div>\
+					</div>\
+					<div class="divTableRow">\
+						<div class="divTableCell"><b>Twój email (opcjonalnie):</b></div>\
+						<div class="divTableCell"><input type="text" id="reportUserMail"/></div>\
+					</div>\
+					<div class="divTableRow">\
+						<div class="divTableCell"><b>Wiadomość:</b></div>\
+						<div class="divTableCell"><textarea rows="5" id="reportMessage" cols="30"></textarea></div>\
+					</div>\
+					<div class="divTableRow">\
+						<div class="divTableCell">&nbsp;</div>\
+						<div class="divTableCell"><button onClick="sendAjaxHeaderMsg(\'report\')">Wyślij</button></div>\
+					</div>\
 				</div>\
 			</div>\
-		</div>\
+		');
+	}
+	else if (reference == "register")
+	{
+		$("#headerText").css('padding', '20px');
+		$("#headerText").html('\
+			<div id="headerConsole" style="color:red; text-align:center; clear:both;"></div>\
+			<br/>\
+			<div id="register" class="divTable">\
+				<div class="divTableBody">\
+					<div class="divTableRow">\
+						<div class="divTableCell">&nbsp;</div>\
+						<div class="divTableCell" style="font-size: 150%">REJESTRACJA</div>\
+						<div class="divTableCell">&nbsp;</div>\
+					</div>\
+					<div class="divTableRow">\
+						<div class="divTableCell"><b>Login użytkownika:</b></div>\
+						<div class="divTableCell"><input type="text" id="registerLogin"/>&nbsp;&nbsp;&nbsp;(od 3 do 25 znaków)</div>\
+					</div>\
+					<div class="divTableRow">\
+						<div class="divTableCell"><b>Hasło:</b></div>\
+						<div class="divTableCell"><input type="password" id="registerPass"/>&nbsp;&nbsp;&nbsp;(od 1 do 20 znaków)</div>\
+					</div>\
+					<div class="divTableRow">\
+						<div class="divTableCell"><b>Powtórz hasło:</b></div>\
+						<div class="divTableCell"><input type="password" id="registerPass2"/></div>\
+					</div>\
+					<div class="divTableRow">\
+						<div class="divTableCell"><b>E-mail:</b></div>\
+						<div class="divTableCell"><input type="text" id="registerEmail"/>&nbsp;&nbsp;&nbsp;(od 8 do 50 znaków)</div>\
+					</div>\
+					<div class="divTableRow">\
+						<div class="divTableCell">&nbsp;</div>\
+						<div class="divTableCell"><div class="g-recaptcha" data-sitekey="6Lf9PygUAAAAAEPWjrGrWkXqkKbK6_uxtW64eKDj"></div></div>\
+					</div>\
+					<div class="divTableRow">\
+						<div class="divTableCell">&nbsp;</div>\
+						<div class="divTableCell"><button onClick="sendAjaxHeaderMsg(\'register\')">Zarejestruj się</button></div>\
+					</div>\
+				</div>\
+			</div>\
+		');
+	}
+	else if (reference == "login")
+	{
+		$("#headerText").css('padding', '20px');
+		$("#headerText").html('\
+			<div id="headerConsole" style="color:red; text-align:center; clear:both;"></div>\
+			<br/>\
+			<div id="login" class="divTable">\
+				<div class="divTableBody">\
+					<div class="divTableRow">\
+						<div class="divTableCell">&nbsp;</div>\
+						<div class="divTableCell" style="font-size: 150%">LOGOWANIE</div>\
+					</div>\
+					<div class="divTableRow">\
+						<div class="divTableCell"><b>Login użytkownika:</b></div>\
+						<div class="divTableCell"><input type ="text" id="loginLogin"/></div>\
+					</div>\
+					<div class="divTableRow">\
+						<div class="divTableCell"><b>Hasło:</b></div>\
+						<div class="divTableCell"><input type ="password" id="loginPassword"/></div>\
+					</div>\
+					<div class="divTableRow">\
+						<div class="divTableCell">&nbsp;</div>\
+						<div class="divTableCell"><button onClick="sendAjaxHeaderMsg(\'login\')">Zaloguj się</button></div>\
+					</div>\
+				</div>\
+			</div>\
 		');
 	}
 	else
