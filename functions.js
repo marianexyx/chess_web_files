@@ -133,7 +133,14 @@ function otherOption(othOpt)
 		stopWebSocket();
 		headerText(othOpt);
 	}
-	else if (othOpt.substring(0,13) == 'checkForLogin') 
+	else if (othOpt == 'loginFailed')
+	{
+		$("#headerConsole").html("Niepoprawne dane logowania."); 
+		$("#loginLogin").val('');
+		$("#loginPassword").val('');
+		setTimeout(function() { $("#headerText").css('padding', '0px'); }, 7000)
+	}
+	else if (othOpt.substring(0,13) == 'checkForLogin') //todo: looks like im not using checkForLogin anymore
 	{
 		if (websocket)
 			websocket.send(othOpt.substring(14));
@@ -143,7 +150,7 @@ function otherOption(othOpt)
 
 function manageHeaderDiv(specOpt)
 {
-	if (specOpt != null && specOpt.substring(0,13) == 'checkForLogin')
+	if (specOpt != null && specOpt.substring(0,13) == 'checkForLogin') //todo: looks like im not using checkForLogin anymore
 		return;
 	
 	if (!bClientIsLogged)
@@ -168,6 +175,8 @@ function manageHeaderDiv(specOpt)
 	}
 	else  
 	{
+		if (!$("#user").text().trim().length)
+			headerText("mainPage");
 		$("#loggingSection").html('<a href="#" onClick="return websocket.send(\'logout\');">Wyloguj się</a>&nbsp;&nbsp;|');
 		$("#user").html("<b>Użytkownik:</b>&nbsp;" + clientName);
 		$("#playAsGuestBtn").hide();
@@ -177,7 +186,7 @@ function manageHeaderDiv(specOpt)
 }
 
 
-//todo: make special file for scripts tkat should be executed after page is loaded?
+//todo: make special file for scripts that should be executed after page is loaded?
 
 function updatePlayersTimers()
 {

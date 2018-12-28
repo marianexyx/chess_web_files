@@ -38,6 +38,22 @@ function sendAjaxHeaderMsg(headerType)
 	});
 }
 
+function tryToLogin()
+{
+	//todo: check vars length here
+	if ($("#loginLogin").val() && $("#loginPassword").val())
+	{
+		var regExp = /^[a-zA-Z0-9]+$/i;
+		if (regExp.test($("#loginLogin").val()))
+		{
+			websocket.send("login " + $("#loginLogin").val() + "&" + $("#loginPassword").val());
+			$("#loginPassword").val(''); //this will block multiple login button clicking
+		}
+		else $("#headerConsole").html("Konto nie istnieje. Wypełnij pola ponownie."); 
+	}
+	else $("#headerConsole").html("Wypełnij wszystkie pola."); 
+}
+
 function manageAjaxHeaderResponse(headerType, reportResponse)
 {
 	var success = reportResponse.substr(0, 2); 
@@ -81,7 +97,7 @@ function headerText(reference)
 		$("#headerText").html("");
 		
 		if (reference == "wrongData")
-			stopWebSocket()
+			stopWebSocket();
 	}
 	else if (reference == "doubleLogin")
 	{
@@ -97,7 +113,7 @@ function headerText(reference)
 		\
 		Można grać jako gość- bez rejestrowania i logowania się. Jeżeli stół jest zajęty przez innych graczy, to można ustawić się w kolejce do następnej gry. Kolejkować mogą się zarejestrowani i zalogowani gracze.<br/><br/>\
 		\
-		Jeżeli gracz zajmuje miejsce przy stole i połączenie zostanie zerwane, nastąpi usunięcie gracza z krzesła. Gra zostaje przerwana jeżeli była w toku i następuje resetowanie planszy. Zerwanie połączenia następuje poprzez: odświerzenia strony, zamknięcia zakładki z grą, utratę połączenia z internetem i podwójne logowanie.<br/><br/>\
+		Jeżeli gracz zajmuje miejsce przy stole i połączenie zostanie zerwane, nastąpi usunięcie gracza z krzesła. Gra zostaje przerwana jeżeli była w toku i następuje resetowanie planszy. Zerwanie połączenia następuje poprzez: odświeżenia strony, zamknięcia zakładki z grą, utratę połączenia z internetem i podwójne logowanie.<br/><br/>\
 		\
 		Ze względu na trwające ciągłe testy i ulepszenia gra dostępna jest okresowo.');
 	}
@@ -206,7 +222,7 @@ function headerText(reference)
 					</div>\
 					<div class="divTableRow">\
 						<div class="divTableCell">&nbsp;</div>\
-						<div class="divTableCell"><button onClick="sendAjaxHeaderMsg(\'login\')">Zaloguj się</button></div>\
+						<div class="divTableCell"><button onClick="tryToLogin()">Zaloguj się</button></div>\
 					</div>\
 				</div>\
 			</div>\

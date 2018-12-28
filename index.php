@@ -23,8 +23,9 @@
 	</head>
 	<body>	
 		<?
+			require_once('include/func.php');
 			session_start(); 
-			error_reporting( error_reporting() & ~E_NOTICE ); //wyłącz ostrzeżenia, że nieznana jest 'a', itd. //future: wyłączyć reportowanie w innych php'ach docelowo też
+			error_reporting( error_reporting() & ~E_NOTICE ); //wyłącz ostrzeżenia, że nieznana jest 'a', itd. //todo: wyłączyć reportowanie w innych php'ach docelowo też
 		?>
 		
 		<div id="mainDiv">
@@ -92,7 +93,7 @@
 						<button id="queuePTE" onClick="changePTEsource('queuePTE')">kolejka</button> 
 						&nbsp;&nbsp;
 						<span class="tooltip"><button id="queuePlayer" onClick="clickedBtn('queueMe')" disabled>kolejkuj</button>
-							<span class="tooltiptext">Kolejkować mogą się tylko zalogowani gracze, podczas gdy stół nie jest pełen.</span>
+							<span class="tooltiptext">Kolejkować mogą się tylko zalogowani gracze, podczas gdy stół gry nie jest pełen.</span>
 							</span>
 						<button id="leaveQueue" onClick="clickedBtn('leaveQueue')" disabled>opuść</button>
 					</div>

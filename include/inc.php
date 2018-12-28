@@ -12,7 +12,6 @@
 	} 
 	
 	$mySqlConnection-> query("SET NAMES 'utf8' COLLATE 'utf8_polish_ci'");	
-	require_once('func.php');
 
 	//sexowny koid m.zelenta który mi nei zadzia³a³
 	/*mysqli_report(MYSQLI_REPORT_STRICT); //zostawi wyj¹tki, wy³¹czy wylewne ostrze¿enie dla u¿ytkowników
@@ -33,8 +32,5 @@
 	{
 		echo '<span style="color:red;">B³¹d serwera! Przepraszamy za niedogodnoœci i prosimy o rejestracjê w innym terminie.'</span>
 		//echo '<br />Informacja developerska/dla admina: '.$e;
-	}
-	
-	$mySqlConnection-> query("SET NAMES 'utf8' COLLATE 'utf8_polish_ci'");	
-	require_once('func.php');*/
+	}*/
 ?>

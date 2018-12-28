@@ -5,7 +5,7 @@
 
 	if(!isset($_SESSION)) 
 		session_start();
-	require_once('include/inc.php');
+	require_once('include/func.php');
 	
 	function saveCoreDataInSessionVars($tableDataString)
 	{
@@ -19,28 +19,19 @@
 		
 		updateClientsNamesArray($tableDataArr);
 		
-		if (array_key_exists($TABLE_DATA["SYNCHRONIZED"], $tableDataArr))
+		if (array_key_exists($TABLE_DATA["ID"], $tableDataArr))
 		{
-			$_SESSION['synchronized'] = $tableDataArr[$TABLE_DATA["SYNCHRONIZED"]];
-			
-			if (($_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["GUEST1"] && $_SESSION['id'] != 1)
-					|| ($_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["GUEST2"] && $_SESSION['id'] != 2))
+			if (intval($tableDataArr[$TABLE_DATA["ID"]]) <= intval($SYNCHRONIZATION_TYPE["UNLOGGED"]))
 			{
-				$query;
-				if ($_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["GUEST1"]) 
-					$query = row("SELECT * FROM users WHERE id = 1"); 
-				else $query = row("SELECT * FROM users WHERE id = 2"); 
-				$_SESSION['id'] = $query['id'];
-				$_SESSION['login'] = $query['login'];
-				$_SESSION['hash'] = $query['hash'];
-			}
-			else if (($_SESSION['synchronized'] != $SYNCHRONIZATION_TYPE["GUEST1"] && $_SESSION['id'] == 1)
-						|| ($_SESSION['synchronized'] != $SYNCHRONIZATION_TYPE["GUEST2"] && $_SESSION['id'] == 2))
-			{
+				unset($_SESSION['ID']);
 				unset($_SESSION['login']);
-				unset($_SESSION['id']);
-				unset($_SESSION['hash']);
 			}
+			else if (array_key_exists($tableDataArr[$TABLE_DATA["ID"]], $_SESSION['clientsArr']))
+			{
+				$_SESSION['ID'] = $tableDataArr[$TABLE_DATA["ID"]];
+				$_SESSION['login'] = $_SESSION['clientsArr'][$tableDataArr[$TABLE_DATA["ID"]]];
+			}
+			//todo: else error: all ID should have names their names in $_SESSION['clientsArr'](setted in updateClientsNamesArray())
 		}
 		if (array_key_exists($TABLE_DATA["ACTION"], $tableDataArr))
 		{
@@ -90,19 +81,23 @@
 	{
 		global $TABLE_DATA;
 		$sqlQueryString = "SELECT id, login FROM users WHERE id = ";
-		if (array_key_exists($TABLE_DATA["WHITE_PLAYER"], $tableDataArray) && $tableDataArray[$TABLE_DATA["WHITE_PLAYER"]] != "0"
-			&& $tableDataArray[$TABLE_DATA["WHITE_PLAYER"]] != "-1" && $tableDataArray[$TABLE_DATA["WHITE_PLAYER"]] != "-") 
+		
+		if (array_key_exists($TABLE_DATA["ID"], $tableDataArray) && intval($tableDataArray[$TABLE_DATA["ID"]]) > 0 && 
+			!array_key_exists($tableDataArray[$TABLE_DATA["ID"]], $_SESSION['clientsArr'])) 
 		{
-			if (!array_key_exists($tableDataArray[$TABLE_DATA["WHITE_PLAYER"]], $_SESSION['clientsArr']))
-				$sqlQueryString .= $tableDataArray[$TABLE_DATA["WHITE_PLAYER"]].' OR id = ';
+			$sqlQueryString .= $tableDataArray[$TABLE_DATA["ID"]].' OR id = ';
 		}
-		if (array_key_exists($TABLE_DATA["BLACK_PLAYER"], $tableDataArray) && $tableDataArray[$TABLE_DATA["BLACK_PLAYER"]] != "0"
-			&& $tableDataArray[$TABLE_DATA["BLACK_PLAYER"]] != "-1" && $tableDataArray[$TABLE_DATA["BLACK_PLAYER"]] != "-") 
+		if (array_key_exists($TABLE_DATA["WHITE_PLAYER"], $tableDataArray) && intval($tableDataArray[$TABLE_DATA["WHITE_PLAYER"]]) > 0 &&
+			!array_key_exists($tableDataArray[$TABLE_DATA["WHITE_PLAYER"]], $_SESSION['clientsArr'])) 
 		{
-			if (!array_key_exists($tableDataArray[$TABLE_DATA["BLACK_PLAYER"]], $_SESSION['clientsArr']))
-				$sqlQueryString .= $tableDataArray[$TABLE_DATA["BLACK_PLAYER"]].' OR id = ';
+			$sqlQueryString .= $tableDataArray[$TABLE_DATA["WHITE_PLAYER"]].' OR id = ';
 		}
-		if (array_key_exists($TABLE_DATA["QUEUE"], $tableDataArray) && $tableDataArray[$TABLE_DATA["QUEUE"]] != "0")
+		if (array_key_exists($TABLE_DATA["BLACK_PLAYER"], $tableDataArray) && intval($tableDataArray[$TABLE_DATA["BLACK_PLAYER"]]) > 0 &&
+			!array_key_exists($tableDataArray[$TABLE_DATA["BLACK_PLAYER"]], $_SESSION['clientsArr'])) 
+		{
+			$sqlQueryString .= $tableDataArray[$TABLE_DATA["BLACK_PLAYER"]].' OR id = ';
+		}
+		if (array_key_exists($TABLE_DATA["QUEUE"], $tableDataArray) && intval($tableDataArray[$TABLE_DATA["QUEUE"]]) > 0)
 		{
 			$IDsCoreListArray = explode(" ", $tableDataArray[$TABLE_DATA["QUEUE"]]);
 			foreach ($IDsCoreListArray as $sqlID)
@@ -111,12 +106,10 @@
 					$sqlQueryString .= $sqlID.' OR id = ';
 			}
 		}
-		
 		$sqlQueryString = substr($sqlQueryString, 0, -9); //removes last added: ' OR id = '
 		$sqlQueryString = trim($sqlQueryString);
 		//$_SESSION['consoleAjax'] .= ', string for database= '.implode(' , ', $sqlQueryString).' | ';
-		
-		if (preg_match('~[1-9]~', $sqlQueryString) === 1) //there is at least 1 new client in list (database query string will containts some number, if it has sqlID in it)
+		if (preg_match('~[1-9]~', $sqlQueryString) === 1) //if there is at least 1 new client in list (database query string will containts some number, if it has sqlID in it)
 		{
 			$sqlReturnArray = row($sqlQueryString);
 			//$_SESSION['consoleAjax'] .= ', new clients to save in list: $sqlReturnArray = '.implode(' | ', $sqlReturnArray).' | ';
@@ -127,7 +120,6 @@
 			}
 		}
 		//else $_SESSION['consoleAjax'] .= ', no new clients to save in list | ';
-		
 		//$_SESSION['consoleAjax'] .= ' newest session clientsArray: '.http_build_query($_SESSION['clientsArr'], '', '; ').' | ';
 	}
 	
@@ -146,7 +138,7 @@
 		return $clientNamesList;
 	}
 	
-	function makeAction($action) //actions only set msgs in PTE
+	function makeAction($action) //actions only set msgs in PTE. //todo: func name
 	{
 		global $ACTION_TYPE;
 		
@@ -194,6 +186,7 @@
 					case $ACTION_TYPE["END_GAME_DRAW"]:
 					default: $whoLost = NONE;
 				}
+				
 				if ($whoLost == WHITE) 
 				{
 					$playerWhoWon = "Czarn";
@@ -206,7 +199,8 @@
 				}
 				else if ($whoLost == NONE) 
 					$_SESSION['textboxAjax'] = 'Koniec gry: Remis.';
-				else $_SESSION['synchronized'] = $SYNCHRONIZATION_TYPE["REMOVE_AND_REFRESH_CLIENT"]; //error: undefined player type = '.$whoLost.' | ';
+				else $_SESSION['ID'] = $SYNCHRONIZATION_TYPE["UNLOGGED_REMOVE_AND_REFRESH_CLIENT"]; //error type
+				
 				if ($whoLost == WHITE || $whoLost == BLACK)
 				{
 					switch($action)
@@ -232,9 +226,7 @@
 				$_SESSION['textboxAjax'] .= ' Resetowanie planszy...';
 				break;
 	
-			default: 
-				$_SESSION['synchronized'] = $SYNCHRONIZATION_TYPE["REMOVE_AND_REFRESH_CLIENT"]; //error: unnormal ACTION_TYPE = '.$action.' | ';
-				break;
+			default: $_SESSION['id'] = $SYNCHRONIZATION_TYPE["UNLOGGED_REMOVE_AND_REFRESH_CLIENT"]; //error type
 		}
 	}
 	
@@ -254,7 +246,7 @@
 		case $GAME_STATE["TURN_BLACK"]: return BLACK_TURN;
 		case $GAME_STATE["TURN_BLACK_PROMOTE"]: return BLACK_TURN;
 		default:
-			$_SESSION['synchronized'] = $SYNCHRONIZATION_TYPE["REMOVE_AND_REFRESH_CLIENT"]; //error: whoseTurnFromGameStatus(): unknwon GAME_STATUS = '.$GS.' | ';
+			$_SESSION['ID'] = $SYNCHRONIZATION_TYPE["UNLOGGED_REMOVE_AND_REFRESH_CLIENT"]; //error type
 			return NO_TURN;
 		}
 	}

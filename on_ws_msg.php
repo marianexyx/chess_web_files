@@ -8,12 +8,10 @@
 	if(!isset($_SESSION['clientsArr']) || empty($_SESSION['clientsArr']))
 		$_SESSION['clientsArr'] = array();
 	
-	if(!isset($_SESSION['synchronized']))
-		$_SESSION['synchronized'] = $SYNCHRONIZATION_TYPE["DESYNCHRONIZED"];;
-	
-	$TABLE_DATA = array
+	//future: use numbers, not string of numbers (intval() > 0)
+	$TABLE_DATA = array //todo: name- core_data_type
 	(
-		"SYNCHRONIZED" => "0",
+		"ID" => "0",
 		"ACTION" => "1",
 		"WHITE_PLAYER" => "2",
 		"BLACK_PLAYER" => "3",
@@ -28,14 +26,15 @@
 		"ERROR" => "12"
 	);
 	
-	$SYNCHRONIZATION_TYPE = array
+	$SYNCHRONIZATION_TYPE = array //todo: name- logged_type
 	(
-		"DESYNCHRONIZED" => "0",
-		"SYNCHRONIZED" => "1",
-		"DOUBLE_LOGIN" => "2",
-		"REMOVE_AND_REFRESH_CLIENT" => "3",
-		"GUEST1" => "4",
-		"GUEST2" => "5"
+		"UNLOGGED_REMOVE_AND_REFRESH_CLIENT" => "-4",
+		"UNLOGGED_DOUBLE_LOGIN" => "-3",
+		"UNLOGGED_LOGOUT" => "-2",
+		"UNLOGGED_LOGIN_FAILED" => "-1",
+		"UNLOGGED" => "0",
+		"LOGGED_GUEST1" => "1",
+		"LOGGED_GUEST2" => "2"
 	);
 	
 	$ACTION_TYPE = array
@@ -85,8 +84,7 @@
 		$returnArray = array();
 		if ($_SESSION['consoleAjax'] != '-1') $returnArray["consoleMsg"] = $_SESSION['consoleAjax'];
 		if ($_SESSION['textboxAjax'] != '-1') $returnArray["PTEmsg"] = $_SESSION['textboxAjax'];
-		if (($_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["SYNCHRONIZED"] || $_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["GUEST1"] 
-		    || $_SESSION['synchronized'] == $SYNCHRONIZATION_TYPE["GUEST2"]) && !empty($_SESSION['id'])) $returnArray["name"] = $_SESSION['login'];
+		if (intval($_SESSION['ID']) > 0 ) $returnArray["name"] = $_SESSION['login'];
 		if ($_SESSION['turn'] != '-1') $returnArray["whoseTurn"] = $_SESSION['turn'];
 		if ($_SESSION['whitePlayer'] != '-1') $returnArray["whitePlayerName"] = $_SESSION['whitePlayer'];
 		if ($_SESSION['blackPlayer'] != '-1') $returnArray["blackPlayerName"] = $_SESSION['blackPlayer'];
@@ -117,7 +115,6 @@
 		
 	function resetSessionData()
 	{
-		$_SESSION['synchronized'] = false;
 		$_SESSION['consoleAjax'] = '-1'; 
 		$_SESSION['textboxAjax'] = '-1';
 		$_SESSION['name'] = '-1';

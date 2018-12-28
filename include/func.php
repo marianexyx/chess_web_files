@@ -5,9 +5,7 @@
 	define("NO_TURN", "noTurn");
 	define("WHITE_TURN", "whiteTurn");
 	define("BLACK_TURN", "blackTurn");
-	$_SESSION['turn'] = NO_TURN;
 	
-	//require_once('include/inc.php');
 	require_once('inc.php');
 	
     function call($sql) // Wywołanie zapytania do bazy (użytkownik)
@@ -50,17 +48,18 @@
 		if ($data = file_get_contents('https://www.youtube.com/embed/live_stream?channel='.$CHANNEL_ID))
 		{
 			// Find the video ID in there
-			if(preg_match('/\'VIDEO_ID\': \"(.*?)\"/', $data, $matches))
+			if (preg_match('/\'VIDEO_ID\': \"(.*?)\"/', $data, $matches))
 				$videoId = $matches[1];
 			else $videoId = 'Couldn\'t find video ID';
 		}
 		else $videoId = 'Couldn\'t fetch data';
 
 		if ($type == "video") return 'https://www.youtube.com/embed/'.$videoId
-		.'?autoplay=1&enablejsapi=1controls=0&disablekb=0&fs=0&iv_load_policy=3&modestbranding=1&origin=http://budgames.pl&rel=0&showinfo=0';
+		.'&autoplay=1&enablejsapi=1controls=0&disablekb=0&fs=0&iv_load_policy=3&modestbranding=1&origin=http://budgames.pl&rel=0&showinfo=0';
 		else if ($type == "chat") return 'https://www.youtube.com/live_chat?v='.$videoId.'&embed_domain=budgames.pl';
 		else return $videoId;
-	} 
+	}
+	
 	$liveStreamID = getLiveStreamID();
 	$liveStreamVideoLink = getLiveStreamID('video');
 	$liveStreamChatLink = getLiveStreamID('chat');
