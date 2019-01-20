@@ -5,10 +5,12 @@
 		if (array_key_exists("registerLogin", $arrayMsg) && !empty($arrayMsg['registerLogin']) &&
 			array_key_exists("registerPass", $arrayMsg) && !empty($arrayMsg['registerPass']) &&
 			array_key_exists("registerPass2", $arrayMsg) && !empty($arrayMsg['registerPass2']) &&
-			array_key_exists("registerEmail", $arrayMsg) && !empty($arrayMsg['registerEmail']))
+			array_key_exists("registerEmail", $arrayMsg) && !empty($arrayMsg['registerEmail']) &&
+			array_key_exists("captchaResponse", $arrayMsg) && !empty($arrayMsg['captchaResponse']))
 		{	
 			$kapcza = "6Lf9PygUAAAAAMdD3z1hDGssDbz0obmT8aLJyHTj";
-			$check = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret='.$kapcza.'&response='.$_POST['g-recaptcha-response']);
+			//todo: kapcza nie przychodzi już tym postem, bo nie jest już wysyłany formularz?
+			$check = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret='.$kapcza.'&response='.$arrayMsg['captchaResponse']);
 			$response = json_decode($check);
 	
 			require_once('illegalNicknames.php');
@@ -22,7 +24,7 @@
 			else if (strlen($pass) < 1 || strlen($pass) > 20) echo 'er:Hasło nie mieści się w danym zakresie.';
 			else if (strlen($email) < 8 || strlen($pass) > 50) echo 'er:Adres e-mail nie mieści się w danym zakresie.';
 			else if ($login == $pass) echo 'er:Login nie może być taki sam jak hasło.';
-			else if ($pass != $_POST['pass2']) echo 'er:Podane hasła nie zgadzają się.';
+			else if ($pass != $arrayMsg['registerPass2']) echo 'er:Podane hasła nie zgadzają się.';
 			else if (!($response->success)) echo 'er:Potwierdź, że nie jesteś botem.';
 			else 
 			{

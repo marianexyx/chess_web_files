@@ -47,15 +47,26 @@
 		$CHANNEL_ID = 'UCLVBCJh3oKqWR2qo58BVd-w';
 		if ($data = file_get_contents('https://www.youtube.com/embed/live_stream?channel='.$CHANNEL_ID))
 		{
-			// Find the video ID in there
-			if (preg_match('/\'VIDEO_ID\': \"(.*?)\"/', $data, $matches))
+			if (preg_match('/\'VIDEO_ID\': \"(.*?)\"/', $data, $matches)) //find the video ID in there
 				$videoId = $matches[1];
 			else $videoId = 'Couldn\'t find video ID';
 		}
 		else $videoId = 'Couldn\'t fetch data';
 
 		if ($type == "video") return 'https://www.youtube.com/embed/'.$videoId
-		.'&autoplay=1&enablejsapi=1controls=0&disablekb=0&fs=0&iv_load_policy=3&modestbranding=1&origin=http://budgames.pl&rel=0&showinfo=0';
+		.'?autoplay=1' //auto-play the video on load
+		.'&enablejsapi=1' //turn on JS API
+		.'&controls=0' //hide pause/play buttons in player
+		.'&disablekb=0' //turn off keyboard shortcuts
+		.'&fs=0' //hide the full screen button
+		.'&iv_load_policy=3' //hide the Video Annotations
+		.'&modestbranding=1' //hide the Youtube Logo
+		.'&origin=http://budgames.pl' //implements additional securities for my domain
+		.'&rel=0' //don't show realitive videos after stream stops
+		.'&showinfo=0' //hide the video title
+		.'&cc_load_policy=0' //turn off subtitles
+		.'&autohide=0' //hide video controls
+		.'&mute=1'; //mute video
 		else if ($type == "chat") return 'https://www.youtube.com/live_chat?v='.$videoId.'&embed_domain=budgames.pl';
 		else return $videoId;
 	}

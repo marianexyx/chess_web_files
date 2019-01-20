@@ -27,7 +27,6 @@
 			session_start(); 
 			error_reporting( error_reporting() & ~E_NOTICE ); //wyłącz ostrzeżenia, że nieznana jest 'a', itd. //todo: wyłączyć reportowanie w innych php'ach docelowo też
 		?>
-		
 		<div id="mainDiv">
 			<div id ="menu">
 				<div id="header">
@@ -53,6 +52,7 @@
 						<div id="perspective">
 							<div id="chessboard"><? require_once('chessboard.php'); ?></div>
 						</div>
+						<div id="shutter"></div>
 					</div>
 					<div id="additionalInfo"></div>
 					<div id="table" align="center">

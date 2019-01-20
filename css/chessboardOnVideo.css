@@ -1,7 +1,7 @@
 :root 
 {
-  --side_width: 428px;
-  --side_height: 495px;
+  --side_width: 436px;
+  --side_height: 526px;
 }
 
 #chessboard, .black_square, .white_square 
@@ -42,7 +42,7 @@
 .parent iframe 
 {
     position: relative;
-    z-index: 9;
+    z-index: 8;
 }
 
 #perspective 
@@ -50,11 +50,21 @@
     position: absolute;
 	width: var(--side_width);
     height: var(--side_height);
-    -webkit-perspective: 1100px; /* Safari 4-8  */
-    perspective: 1100px;
-    top: -20px;
-    left: 225px;
-    z-index: 8;
+    -webkit-perspective: 1300px; /* Safari 4-8  */
+    perspective: 1300px;
+    top: -31px;
+    left: 230px;
+    z-index: 7;
+}
+
+#shutter
+{
+  position: absolute;
+  width: 858px;
+  height: 484px;
+  top: 6px;
+  left: 6px;
+  z-index: 9;
 }
 
 #chessboard 

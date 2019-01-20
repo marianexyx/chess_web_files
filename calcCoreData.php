@@ -8,7 +8,7 @@
 		
 	function calculateDataFromSessionVars()
 	{	
-		global $SYNCHRONIZATION_TYPE;
+		global $LOGGED_TYPE;
 		global $ACTION_TYPE;
 		global $GAME_STATE;
 	
@@ -68,16 +68,16 @@
 		{			
 			switch($_SESSION['ID'])
 			{
-				case $SYNCHRONIZATION_TYPE["UNLOGGED_LOGIN_FAILED"]: 
+				case $LOGGED_TYPE["UNLOGGED_LOGIN_FAILED"]: 
 					$specialOption = 'loginFailed';
 					break; 
-				case $SYNCHRONIZATION_TYPE["UNLOGGED_LOGOUT"]: 
+				case $LOGGED_TYPE["UNLOGGED_LOGOUT"]: 
 					$specialOption = 'logout';
 					break;
-				case $SYNCHRONIZATION_TYPE["UNLOGGED_DOUBLE_LOGIN"]: 
+				case $LOGGED_TYPE["UNLOGGED_DOUBLE_LOGIN"]: 
 					$specialOption = 'doubleLogin';
 					break;
-				case $SYNCHRONIZATION_TYPE["UNLOGGED_REMOVE_AND_REFRESH_CLIENT"]: 
+				case $LOGGED_TYPE["UNLOGGED_REMOVE_AND_REFRESH_CLIENT"]: 
 					$specialOption = 'wrongData';
 					break;
 				//in default client isn't just logged

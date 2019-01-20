@@ -1,3 +1,4 @@
+var reCaptchaResponse;
 function sendAjaxHeaderMsg(headerType)
 {
 	var ajaxArray;
@@ -12,7 +13,7 @@ function sendAjaxHeaderMsg(headerType)
 	}
 	else if (headerType == "register")
 	{
-		ajaxArray = { registerLogin: $("#registerLogin").val(), registerPass: $("#registerPass").val(), registerPass2: $("#registerPass2").val(), registerEmail: $("#registerEmail").val() };
+		ajaxArray = { registerLogin: $("#registerLogin").val(), registerPass: $("#registerPass").val(), registerPass2: $("#registerPass2").val(), registerEmail: $("#registerEmail").val(), captchaResponse: reCaptchaResponse };
 		$("#registerLogin").val('');
 		$("#registerPass").val('');
 		$("#registerPass2").val('');
@@ -141,7 +142,7 @@ function headerText(reference)
 					</div>\
 					<div class="divTableRow">\
 						<div class="divTableCell"><b>Od:</b></div>\
-						<div class="divTableCell"><input type="text" id="reportFrom"/></div>\
+						<div clas ="divTableCell"><input type="text" id="reportFrom"/></div>\
 					</div>\
 					<div class="divTableRow">\
 						<div class="divTableCell"><b>Twój email (opcjonalnie):</b></div>\
@@ -190,7 +191,7 @@ function headerText(reference)
 					</div>\
 					<div class="divTableRow">\
 						<div class="divTableCell">&nbsp;</div>\
-						<div class="divTableCell"><div class="g-recaptcha" data-sitekey="6Lf9PygUAAAAAEPWjrGrWkXqkKbK6_uxtW64eKDj"></div></div>\
+						<div class="divTableCell"><div id="captcha_container" class="g-recaptcha"></div></div>\
 					</div>\
 					<div class="divTableRow">\
 						<div class="divTableCell">&nbsp;</div>\
@@ -199,6 +200,14 @@ function headerText(reference)
 				</div>\
 			</div>\
 		');
+		grecaptcha.render('captcha_container', 
+		{ 
+			'sitekey': '6Lf9PygUAAAAAEPWjrGrWkXqkKbK6_uxtW64eKDj', 
+			'callback':  function(response) 
+			{ 
+				reCaptchaResponse = response; 
+			}
+		});
 	}
 	else if (reference == "login")
 	{

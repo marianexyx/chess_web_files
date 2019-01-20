@@ -9,7 +9,7 @@
 		$_SESSION['clientsArr'] = array();
 	
 	//future: use numbers, not string of numbers (intval() > 0)
-	$TABLE_DATA = array //todo: name- core_data_type
+	$CORE_DATA_TYPE = array
 	(
 		"ID" => "0",
 		"ACTION" => "1",
@@ -26,7 +26,7 @@
 		"ERROR" => "12"
 	);
 	
-	$SYNCHRONIZATION_TYPE = array //todo: name- logged_type
+	$LOGGED_TYPE = array
 	(
 		"UNLOGGED_REMOVE_AND_REFRESH_CLIENT" => "-4",
 		"UNLOGGED_DOUBLE_LOGIN" => "-3",
