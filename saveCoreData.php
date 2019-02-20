@@ -21,16 +21,11 @@
 		
 		if (array_key_exists($CORE_DATA_TYPE["ID"], $tableDataArr))
 		{
-			if (intval($tableDataArr[$CORE_DATA_TYPE["ID"]]) <= intval($LOGGED_TYPE["UNLOGGED"]))
-			{
-				unset($_SESSION['ID']);
+			$_SESSION['ID'] = $tableDataArr[$CORE_DATA_TYPE["ID"]];
+			if (intval($tableDataArr[$CORE_DATA_TYPE["ID"]]) <= intval($LOGGED_TYPE["UNLOGGED"])) //client is unlogged (has ID <= 0)
 				unset($_SESSION['login']);
-			}
-			else if (array_key_exists($tableDataArr[$CORE_DATA_TYPE["ID"]], $_SESSION['clientsArr']))
-			{
-				$_SESSION['ID'] = $tableDataArr[$CORE_DATA_TYPE["ID"]];
+			else if (array_key_exists($tableDataArr[$CORE_DATA_TYPE["ID"]], $_SESSION['clientsArr'])) //client is logged (has ID > 0)
 				$_SESSION['login'] = $_SESSION['clientsArr'][$tableDataArr[$CORE_DATA_TYPE["ID"]]];
-			}
 			//todo: else error: all ID should have names their names in $_SESSION['clientsArr'](setted in updateClientsNamesArray())
 		}
 		if (array_key_exists($CORE_DATA_TYPE["ACTION"], $tableDataArr))

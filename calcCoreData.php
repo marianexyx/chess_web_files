@@ -84,6 +84,8 @@
 			}
 		}
 		
+		$_SESSION['consoleAjax'] .= ', $specialOption = '.$specialOption.', $_SESSION["ID"] = '.$_SESSION['ID'].' | ';
+		
 		return array
 		(
 			"clientIsLogged" => $clientIsLogged,

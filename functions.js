@@ -2,6 +2,33 @@
 //future: poupychać funkcje do osobnych plików
 //future: resetCoreMsgsArr() jeżeli przy sukcesie ajaxu nie będzie dozwolonego wyniku albo przez np. 10 sekund nie będzie odblokowana flaga blokująca pętle kontenera na wiadomości z core'a
 
+function detectIE() 
+{
+    var ua = window.navigator.userAgent;
+
+    var msie = ua.indexOf('MSIE '); //IE 10 or older => return version number
+    if (msie > 0)
+        return parseInt(ua.substring(msie + 5, ua.indexOf('.', msie)), 10);
+
+    var trident = ua.indexOf('Trident/'); //IE 11 => return version number
+    if (trident > 0) 
+	{
+        var rv = ua.indexOf('rv:');
+        return parseInt(ua.substring(rv + 3, ua.indexOf('.', rv)), 10);
+    }
+
+    var edge = ua.indexOf('Edge/'); //Edge (IE 12+) => return version number
+    if (edge > 0) 
+       return parseInt(ua.substring(edge + 5, ua.indexOf('.', edge)), 10); 
+
+    return false; //other browser
+}
+
+if (detectIE())
+	alert('Gra nie działa na przeglądarce Internet Explorer.\nSugerowane przeglądarki: Firefox, Chrome, Opera');
+else if (navigator.userAgent.match('CriOS') || /^((?!chrome|android).)*safari/i.test(navigator.userAgent))
+	alert('Strona nie działa na przeglądarce Safari.\nSugerowane przeglądarki: Firefox, Chrome, Opera');
+
 function doCoreAjaxCall()
 {
 	if (coreMsgsArr != undefined && coreMsgsArr.length > 0)
@@ -156,8 +183,8 @@ function manageHeaderDiv(specOpt)
 	if (!bClientIsLogged)
 	{
 		$("#loggingSection").html('\
-			<a href="#" onClick="return headerText(\'register\');">Zarejestruj się</a>&nbsp;&nbsp;|&nbsp;&nbsp;\
-			<a href="#" onClick="return headerText(\'login\');">Zaloguj się</a>&nbsp;&nbsp;|\
+			<button onClick="return headerText(\'register\');">Zarejestruj się</button>\
+			<button onClick="return headerText(\'login\');">Zaloguj się</button>\
 			');
 		$("#user").html("&nbsp;");
 		if (!bTableIsFull)
@@ -177,7 +204,7 @@ function manageHeaderDiv(specOpt)
 	{
 		if (!$("#user").text().trim().length)
 			headerText("mainPage");
-		$("#loggingSection").html('<a href="#" onClick="return websocket.send(\'logout\');">Wyloguj się</a>&nbsp;&nbsp;|');
+		$("#loggingSection").html('<button onClick="return websocket.send(\'logout\');">Wyloguj się</button>');
 		$("#user").html("<b>Użytkownik:</b>&nbsp;" + clientName);
 		$("#playAsGuestBtn").hide();
 		$("#playAsGuestBtn").attr("disabled", true);

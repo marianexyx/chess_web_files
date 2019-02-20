@@ -35,10 +35,10 @@
 						<span id="serverCSSCircleStatus" class="dot"></span> 
 						<span id="serverStatusInfo">ŁĄCZENIE...</span>
 					</div>
-					<div id="mainPage">|&nbsp;&nbsp;<a href="#" onClick="return headerText('mainPage');">Strona główna</a>&nbsp;&nbsp;|</div>
-					<div id="info"><a href="#" onClick="return headerText('info');">Informacje</a>&nbsp;&nbsp;|</div>
-					<div id="contact"><a href="#" onClick="return headerText('contact');">Kontakt</a>&nbsp;&nbsp;|</div>
-					<div id="reportBug"><a href="#" onClick="return headerText('report');">Zgłoś błąd</a>&nbsp;&nbsp;|</div>
+					<div id="mainPage"><button onClick="return headerText('mainPage');">Strona główna</button></div>
+					<div id="info"><button onClick="return headerText('info');">Informacje</button></div>
+					<div id="contact"><button onClick="return headerText('contact');">Kontakt</button></div>
+					<div id="reportBug"><button onClick="return headerText('report');">Zgłoś błąd</button></div>
 					<div id="loggingSection"></div>
 					<div id="playAsGuest"><button id="playAsGuestBtn" onClick="clickedBtn('sitOnNone')" hidden="hidden" disabled>Graj jako gość</button></div>
 					<div id="user">&nbsp;</div>

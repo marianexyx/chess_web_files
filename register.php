@@ -9,7 +9,6 @@
 			array_key_exists("captchaResponse", $arrayMsg) && !empty($arrayMsg['captchaResponse']))
 		{	
 			$kapcza = "6Lf9PygUAAAAAMdD3z1hDGssDbz0obmT8aLJyHTj";
-			//todo: kapcza nie przychodzi już tym postem, bo nie jest już wysyłany formularz?
 			$check = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret='.$kapcza.'&response='.$arrayMsg['captchaResponse']);
 			$response = json_decode($check);
 	
@@ -32,15 +31,12 @@
 				{
 					if (filter_var($email, FILTER_VALIDATE_EMAIL))
 					{
-						$pass = md5(sha1($pass)); //future: podobno złamano md5 jakiś czas temu. 
-						//future: password_hash($pass, PASSWORD_DEFAULT) - nowa lepsza funkcja (z solą- ponad 3 znaki używać). 
 						$bIsClientExists = row("SELECT id FROM users WHERE login ='$login' OR email = '$email'");
 						if ($bIsClientExists) 
 							echo 'er:Istnieje już gracz o takim samym loginie lub adresie email.';
 						else
 						{
-							$randomHash = bin2hex(mcrypt_create_iv(10, MCRYPT_DEV_URANDOM)); //create new random login hash for user
-							call("INSERT INTO users (login, password, email, hash) VALUES ('$login','$pass','$email','$randomHash')");
+							call("INSERT INTO users (login, password, email) VALUES ('$login','$pass','$email')");
 							echo 'ok:Zarejestrowano poprawnie.';
 						}
 					}

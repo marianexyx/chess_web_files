@@ -20,13 +20,6 @@ function sendAjaxHeaderMsg(headerType)
 		$("#registerEmail").val('');
 		ajaxUrl = "register.php";
 	}
-	else if (headerType == "login")
-	{
-		ajaxArray = { loginLogin: $("#loginLogin").val(), loginPassword: $("#loginPassword").val() };
-		$("#loginLogin").val('');
-		$("#loginPassword").val('');
-		ajaxUrl = "login.php";
-	}
 	else return;
 	
 	$.ajax(
@@ -83,7 +76,7 @@ function manageAjaxHeaderResponse(headerType, reportResponse)
 	}
 	else if (headerType == "login")
 	{
-		$("#loggingSection").html('<a href="#" onClick="return websocket.send(\'logout\');">Wyloguj się</a>&nbsp;&nbsp;|');
+		$("#loggingSection").html('<button onClick="return websocket.send(\'logout\');">Wyloguj się</button>');
 		headerText("mainPage");
 		if (websocket)
 			websocket.send(msg);
